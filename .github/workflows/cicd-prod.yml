@@ -1,0 +1,74 @@
+name: CI/CD Pipeline - Production
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  build-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Permissions
+        run: |
+          sudo chown -R $(whoami) .
+          sudo chmod -R 755 .
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Copy .env.prod to .env locally
+        run: cp .env.prod .env
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.0.0'
+
+      - name: Remove node_modules and package-lock.json
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build the project (with 8GB memory limit)
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=8192"
+          npm run build
+
+      - name: Print working directory
+        run: pwd
+
+      - name: Install zip and rsync
+        run: sudo apt-get install -y zip rsync
+
+      - name: Zip the dist folder and .env.prod
+        run: zip -r deployment-prod.zip dist .env.prod
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan 20.40.54.151 >> ~/.ssh/known_hosts
+
+      - name: Transfer deployment.zip to server
+        run: |
+          rsync -avz deployment-prod.zip tipapp@20.40.54.151:/home/tipapp/deployments-admin-prod/
+
+      - name: Clean server directory and extract deployment.zip
+        run: |
+          ssh tipapp@20.40.54.151 << 'EOF'
+            # Clean up existing files
+            # rm -rf /home/tipapp/deployments-admin-prod/*  # Uncomment if needed
+            unzip -o /home/tipapp/deployments-admin-prod/deployment-prod.zip -d /home/tipapp/deployments-admin-prod
+            rm /home/tipapp/deployments-admin-prod/deployment-prod.zip
+            mv /home/tipapp/deployments-admin-prod/.env.prod /home/tipapp/deployments-admin-prod/.env
+            cp /home/tipapp/deployments-admin-prod/.env /home/tipapp/deployments-admin-prod/dist
+          EOF

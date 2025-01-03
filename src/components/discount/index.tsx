@@ -1,0 +1,11 @@
+/* eslint-disable import/newline-after-import */
+/* eslint-disable prettier/prettier */
+/* eslint-disable import/prefer-default-export */
+import AddDiscount from './addDiscount'
+import EditDiscount from './editDiscount'
+
+export {
+    AddDiscount,
+    EditDiscount,
+  }
+  
