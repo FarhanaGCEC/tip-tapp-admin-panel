@@ -1,6 +1,7 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react/no-array-index-key */
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GetTopTippersThisWeek } from '../../api/dashboard/dashboard'
 import Button from '../common/button'
 import { formatAmount } from '../../hooks/formatter'
@@ -9,8 +10,13 @@ import NoDataFound from '../../assets/images/NoDataFound.png'
 
 function TopTippers() {
   const topTippers = GetTopTippersThisWeek()
+  const navigate = useNavigate()
 
   useEffect(() => {}, [topTippers])
+
+  const handleViewAllClick = () => {
+    navigate('/manage-finances')
+  }
 
   return (
     <div>
@@ -66,7 +72,10 @@ function TopTippers() {
           )}
 
           {topTippers?.data && topTippers.data.length > 0 && (
-            <Button className="mt-[15px] h-[40px] w-full bg-black">
+            <Button
+              className="mt-[15px] h-[40px] w-full bg-black"
+              onClick={handleViewAllClick}
+            >
               <span className="text-white">View all</span>
             </Button>
           )}

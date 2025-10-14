@@ -8,9 +8,8 @@ import Router from './router'
 import { store } from './stores/store'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
-import ScrollToTop  from './utils/scrolltop'
+import ScrollToTop from './utils/scrolltop'
 import { ScrollRestoration } from 'react-router-dom'
-
 
 function Loader() {
   return (
@@ -21,17 +20,16 @@ function Loader() {
 }
 
 function App() {
-  
   return (
     <Suspense fallback={<Loader />}>
       <BrowserRouter>
         <Provider store={store}>
           <SharedData.Provider>
             <QueryClientProvider client={new QueryClient()}>
-              <ScrollToTop/>
+              <ScrollToTop />
               <Router />
               <ReactQueryDevtools initialIsOpen={false} />
-              <Notification />
+              <Notification options={{}} getRef={() => {}} />
             </QueryClientProvider>
           </SharedData.Provider>
         </Provider>

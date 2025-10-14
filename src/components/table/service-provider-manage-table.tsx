@@ -1,9 +1,15 @@
+/* eslint-disable react/function-component-definition */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/prop-types */
+/* eslint-disable prefer-template */
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable react/jsx-curly-brace-presence */
+import { useState } from 'react'
 import Table from '../common/table'
 import SlideoverRegistry from '../../pages/user-management/slideover-registry'
 import { TipItem } from '../../types/tpandsptype'
 import Label from '../common/label/active-banned-new-label'
 import Lucide from '../common/lucide'
-import { useState } from 'react'
 import { useDeactiveUserAndActive } from '../../api/tp-and-sp-management/tp-sp-management'
 import StatusButton from '../common/button/statusBtn'
 
@@ -30,18 +36,10 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
   pending,
   handleClick,
 }) => {
-  const [useridparam, setuseridparame] = useState('')
-  const [userStatus, setuserStatus] = useState('')
-
-  const {
-    data: userData,
-    isLoading: isFetchingUserData,
-    isError: isFetchingUserError,
-  } = useDeactiveUserAndActive(useridparam, userStatus)
+  const { mutate: deactivateActivateUser } = useDeactiveUserAndActive()
 
   const DeactiveAndActivehandle = (userid: string, typesatus: string) => {
-    setuseridparame(userid)
-    setuserStatus(typesatus)
+    deactivateActivateUser({ userid, satustype: typesatus })
   }
   const Tdheader = headers
     .map((header) => {

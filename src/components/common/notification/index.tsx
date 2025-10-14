@@ -22,26 +22,31 @@ export interface NotificationProps
   getRef: (el: NotificationElement) => void
 }
 
-function Notification(props: NotificationProps) {
+function Notification({
+  options = {},
+  getRef = () => {},
+  onCompositionStart,
+  children,
+  className = '',
+  ...computedProps
+}: NotificationProps) {
   const initialRender = useRef(true)
   const toastifyRef = createRef<NotificationElement>()
 
   const { notification } = SharedDataContainer.useContainer()
 
-  const {
-    options,
-    getRef,
-    onCompositionStart,
-    children,
-    className,
-    ...computedProps
-  } = props
-
   useEffect(() => {
     if (toastifyRef.current) {
       if (initialRender.current) {
         getRef(toastifyRef.current)
-        init(toastifyRef.current, props)
+        init(toastifyRef.current, {
+          options,
+          getRef,
+          onCompositionStart,
+          children,
+          className,
+          ...computedProps,
+        })
         initialRender.current = false
       } else {
         reInit(toastifyRef.current)
@@ -89,12 +94,6 @@ function Notification(props: NotificationProps) {
       </div>
     </div>
   )
-}
-
-Notification.defaultProps = {
-  className: '',
-  options: {},
-  getRef: () => {},
 }
 
 export default Notification

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/default-param-last */
 /* eslint-disable no-useless-catch */
 import {
   UseMutationResult,
@@ -7,14 +9,19 @@ import {
   useQueryClient,
 } from 'react-query'
 import authFetch from './axiosinterceptor'
-import { GetUserDetailsResponse } from '../types/adminUserTypes'
+import { GetUserDetailsResponse, AddUserPayload } from '../types/adminUserTypes'
 
-export const useAddUserDetails = (): UseMutationResult<any> => {
+export const useAddUserDetails = (): UseMutationResult<
+  any,
+  any,
+  AddUserPayload,
+  unknown
+> => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationKey: 'add_user_details',
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: AddUserPayload) => {
       try {
         const response = await authFetch.post(
           '/auth/register-admin-users',
@@ -62,23 +69,26 @@ export const useUpdateUserDetails = (): UseMutationResult<any> => {
 export const useGetUserDetails = (
   searchdata: string,
   roletype: string,
-  roleid: number,
   active: string,
   page: number,
-  pageSize: number
+  pageSize: number,
+  roleid?: number
 ): UseQueryResult<GetUserDetailsResponse> => {
   return useQuery({
     queryKey: [
       'get_all_users_and_search_users',
       searchdata,
       roletype,
+      roleid,
       page,
       pageSize,
     ],
     queryFn: async () => {
       try {
         const response = await authFetch.get<GetUserDetailsResponse>(
-          `/user-details?status=${active}&roleid=${roleid}&limit=${pageSize}&page=${page}&role=${roletype}${
+          `/user-details?status=${active}${
+            roleid ? `&roleid=${roleid}` : ''
+          }&limit=${pageSize}&page=${page}&role=${roletype}${
             searchdata ? `&search=${searchdata}` : ''
           }`
         )

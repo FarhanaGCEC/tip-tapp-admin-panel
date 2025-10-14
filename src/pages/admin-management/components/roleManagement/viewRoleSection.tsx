@@ -3,14 +3,17 @@ import PermissionCard from './permissonCard'
 import { Permissions } from '../../constant/permissons'
 
 function ViewRoleSection(props: { roleId: number }) {
-  const { roleId } = props; 
-  const { data }  = useGetRoleById(roleId) 
+  const { roleId } = props
+  const { data } = useGetRoleById(roleId)
 
-  
   return (
     <form className="rounded-lg">
       <div className="mb-6 flex justify-start rounded-lg bg-white p-6">
-        {`Role Name: ${data?.name || 'Unknown'}`}
+        {`Role Name: ${
+          data?.name === 'SUPER_ADMIN'
+            ? 'Administrator'
+            : data?.name || 'Unknown'
+        }`}
       </div>
       <div className="my-8 text-[16px]">
         <span>Permission List</span>
@@ -31,4 +34,3 @@ function ViewRoleSection(props: { roleId: number }) {
 }
 
 export default ViewRoleSection
-

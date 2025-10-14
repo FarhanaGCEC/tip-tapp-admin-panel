@@ -4,7 +4,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import Button from '../../../../components/common/button'
@@ -15,10 +15,11 @@ import {
   NotificationTypes,
 } from '../../../../constants/common-enums'
 import { useAddUserDetails } from '../../../../api/admin-user-management'
+import { AddUserPayload } from '../../../../types/adminUserTypes'
 import { Icons } from '../../../../constants'
 import Toast from '../../../../utils/notification'
 import SharedDataContainer from '../../../../containers/sharedData'
-import SelectElement from '../../../../components/common/form-elements/select-element-secondary'
+import CustomDropdown from '../../../../components/common/form-elements/custom-dropdown'
 import { useUploadImage } from '../../../../api/auth-management'
 import Separator from '../../../../components/common/separator/separator'
 
@@ -29,6 +30,8 @@ const schema = yup
     Email: yup.string().email('Invalid email').required('Email is required'),
     Password: yup.string().required('Password is required'),
     Phone: yup.string().required('Phone Number is required'),
+    Whatsapp: yup.string().optional(),
+    roleId: yup.number().required('Role is required'),
   })
   .required()
 
@@ -39,6 +42,7 @@ function AddUserSection(props: { roles: [] }) {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -56,7 +60,17 @@ function AddUserSection(props: { roles: [] }) {
 
   const onSubmit = (data: any) => {
     setLoading(true)
-    mutate({ ...data, ProfilePictureURL: uploadedImage || '' })
+    const payload: AddUserPayload = {
+      FirstName: data.FirstName,
+      LastName: data.LastName,
+      Email: data.Email,
+      Password: data.Password,
+      Phone: data.Phone,
+      Whatsapp: data.Whatsapp || '',
+      ProfilePictureURL: uploadedImage || '',
+      roleId: data.roleId,
+    }
+    mutate(payload)
   }
 
   const { setNotification, handleSlider } = SharedDataContainer.useContainer()
@@ -94,10 +108,10 @@ function AddUserSection(props: { roles: [] }) {
   }, [fileUploadSuccess, uploadData])
 
   const formatedRoles = Array.isArray(roles)
-    ? roles.map((role: { name: string }, key) => ({
-        id: key,
+    ? roles.map((role: { id: number; name: string }) => ({
+        id: role.id,
         value: role.name,
-        name: role.name,
+        name: role.name === 'SUPER_ADMIN' ? 'Administrator' : role.name,
       }))
     : []
 
@@ -239,26 +253,34 @@ function AddUserSection(props: { roles: [] }) {
               type="number"
               placeholder="Whatsapp"
               register={register}
-              required={true}
+              required={false}
               error={errors.whatsapp}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>
         </div>
         <div className="lg:max-w-[325px]">
-          <SelectElement
-            id="role"
-            label="Role"
-            name="Role"
-            register={register}
-            required={true}
-            error={errors.Role}
-            labelAlignment={AlignmentTypes.BLOCK}
-            onChange={(e) => {
-              setValue('Role', e.target.value)
-            }}
-            options={formatedRoles}
-            inputClassName="!mt-0"
+          <Controller
+            name="roleId"
+            control={control}
+            render={({ field, fieldState }) => (
+              <CustomDropdown
+                id="role"
+                label="Role"
+                placeholder="Select a role"
+                options={formatedRoles}
+                value={
+                  formatedRoles.find((role) => role.id === field.value)
+                    ?.value || ''
+                }
+                onChange={(roleId) => {
+                  field.onChange(roleId)
+                }}
+                required={true}
+                error={fieldState.error?.message}
+                labelAlignment="block"
+              />
+            )}
           />
         </div>
       </div>

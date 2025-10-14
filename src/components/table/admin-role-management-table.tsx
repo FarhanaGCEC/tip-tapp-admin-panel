@@ -71,7 +71,7 @@ const RoleManagementTable: React.FC<RoleManagementTableProps> = ({
               key={item.id}
             >
               <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item.name}
+                {item.name === 'SUPER_ADMIN' ? 'Administrator' : item.name}
               </Table.Td>
               <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
                 {item.userCount}

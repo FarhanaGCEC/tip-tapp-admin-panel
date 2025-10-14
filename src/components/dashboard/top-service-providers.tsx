@@ -1,6 +1,7 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react/no-array-index-key */
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GetTopServiceProviders } from '../../api/dashboard/dashboard'
 import StarRating from './star-rating'
 import Button from '../common/button'
@@ -10,8 +11,13 @@ import NoDataFound from '../../assets/images/NoDataFound.png'
 
 function TopServiceProviders() {
   const { data: topServiceProviders } = GetTopServiceProviders()
+  const navigate = useNavigate()
 
   useEffect(() => {}, [topServiceProviders])
+
+  const handleViewAllClick = () => {
+    navigate('/manage-service-providers')
+  }
 
   return (
     <div>
@@ -67,7 +73,10 @@ function TopServiceProviders() {
           )}
 
           {topServiceProviders && topServiceProviders.length > 0 && (
-            <Button className="mt-[15px] w-full bg-black">
+            <Button
+              className="mt-[15px] w-full bg-black"
+              onClick={handleViewAllClick}
+            >
               <span className="text-white">View all</span>
             </Button>
           )}

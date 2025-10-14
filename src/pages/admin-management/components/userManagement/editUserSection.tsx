@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import Button from '../../../../components/common/button'
@@ -22,7 +22,8 @@ import {
   useGetUserById,
   useUpdateUserDetails,
 } from '../../../../api/admin-user-management'
-import SelectElement from '../../../../components/common/form-elements/select-element-secondary'
+import { AddUserPayload } from '../../../../types/adminUserTypes'
+import CustomDropdown from '../../../../components/common/form-elements/custom-dropdown'
 import { useUploadImage } from '../../../../api/auth-management'
 import Separator from '../../../../components/common/separator/separator'
 
@@ -32,6 +33,8 @@ const schema = yup
     LastName: yup.string().required('Last Name is required'),
     Email: yup.string().email('Invalid email').required('Email is required'),
     Phone: yup.string().required('Phone Number is required'),
+    Whatsapp: yup.string().optional(),
+    roleId: yup.number().required('Role is required'),
   })
   .required()
 
@@ -41,6 +44,7 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
     handleSubmit,
     formState: { errors },
     setValue,
+    control,
   } = useForm({
     resolver: yupResolver(schema),
   })
@@ -65,10 +69,18 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
   const { data } = useGetUserById(userId)
 
   const onSubmit = (data: any) => {
+    const payload: Partial<AddUserPayload> = {
+      FirstName: data.FirstName,
+      LastName: data.LastName,
+      Email: data.Email,
+      Phone: data.Phone,
+      Whatsapp: data.Whatsapp || '',
+      ProfilePictureURL: uploadedImage ? uploadedImage : data.ProfilePictureURL,
+      roleId: data.roleId,
+    }
     updateUser({
       userId,
-      ...data,
-      ProfilePictureURL: uploadedImage ? uploadedImage : data.ProfilePictureURL,
+      ...payload,
     })
   }
 
@@ -104,7 +116,7 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
       setValue('LastName', userData.LastName)
       setValue('Email', userData.Email)
       setValue('Phone', userData.Phone)
-      setValue('Role', userData.role.name)
+      setValue('roleId', userData.role.id)
       setValue('Whatsapp', userData.Whatsapp)
     }
 
@@ -112,10 +124,10 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
   }, [userId, setValue, data])
 
   const formatedRoles = Array.isArray(roles)
-    ? roles.map((role: { name: string }, key) => ({
-        id: key,
+    ? roles.map((role: { id: number; name: string }) => ({
+        id: role.id,
         value: role.name,
-        name: role.name,
+        name: role.name === 'SUPER_ADMIN' ? 'Administrator' : role.name,
       }))
     : []
 
@@ -188,7 +200,7 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
         )}
       </div>
       <Separator />
-      <div className="grid-cols-2 gap-4 lg:p-6 max-lg:p-3 lg:grid">
+      <div className="grid-cols-2 gap-4 max-lg:p-3 lg:grid lg:p-6">
         <InputElement
           id="firstName"
           label="First Name"
@@ -229,7 +241,7 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
           type="text"
           placeholder="Whatsapp"
           register={register}
-          required={true}
+          required={false}
           error={errors.Whatsapp}
           labelAlignment={AlignmentTypes.BLOCK}
         />
@@ -244,20 +256,27 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
           error={errors.Phone}
           labelAlignment={AlignmentTypes.BLOCK}
         />
-        <SelectElement
-          id="role"
-          label="Role"
-          name="Role"
-          register={register}
-          required={true}
-          error={errors.Role}
-          labelAlignment={AlignmentTypes.BLOCK}
-          onChange={(e) => {
-            setValue('Role', e.target.value)
-          }}
-          options={formatedRoles}
-          value={data?.role?.name}
-          inputClassName="!mt-0"
+        <Controller
+          name="roleId"
+          control={control}
+          render={({ field, fieldState }) => (
+            <CustomDropdown
+              id="role"
+              label="Role"
+              placeholder="Select a role"
+              options={formatedRoles}
+              value={
+                formatedRoles.find((role) => role.id === field.value)?.value ||
+                ''
+              }
+              onChange={(roleId) => {
+                field.onChange(roleId)
+              }}
+              required={true}
+              error={fieldState.error?.message}
+              labelAlignment="block"
+            />
+          )}
         />
       </div>
 
@@ -271,7 +290,7 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
         </Button>
         <Button
           type="submit"
-          className=" bg-black py-2 text-white max-lg:min-w-[55px] lg:min-w-[120px] max-lg:px-4 lg:px-10"
+          className=" bg-black py-2 text-white max-lg:min-w-[55px] max-lg:px-4 lg:min-w-[120px] lg:px-10"
           disabled={isLoading}
         >
           {isLoading ? 'Updating...' : 'Update'}

@@ -12,6 +12,7 @@ import {
 import { monthNames } from '../../../constants/months'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
 import Lucide from '../../common/lucide'
+import Tippy from '../../common/tippy'
 
 const UserTrendChart: React.FC = () => {
   const spQuery = GetNewSPCountByMonth()
@@ -365,16 +366,18 @@ const UserTrendChart: React.FC = () => {
                 </div>
               </div>
               <div className="mr-[25px] mt-[12px]">
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="mr-[25px] w-[140px] rounded-lg border border-gray-300 p-1 text-sm text-gray-500"
-                >
-                  <option value="All">All</option>
-                  <option value="Service Providers">Service Providers</option>
-                  <option value="Tippers">Tippers</option>
-                  <option value="Both">Both</option>
-                </select>
+                <Tippy content="Filter by user role: Tipper (can give tips), Service Provider (can receive tips), Dual Role (can both give and receive tips)">
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="mr-[25px] w-[140px] rounded-lg border border-gray-300 p-1 text-sm text-gray-500"
+                  >
+                    <option value="All">All</option>
+                    <option value="Service Providers">Service Providers</option>
+                    <option value="Tippers">Tippers</option>
+                    <option value="Both">Dual Role</option>
+                  </select>
+                </Tippy>
               </div>
             </div>
 

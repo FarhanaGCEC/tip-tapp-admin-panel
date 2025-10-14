@@ -134,22 +134,22 @@ export const FooterManagementHeadings = [
 export const NewslettersManagementHeadings = [
   {
     key: 1,
-    label: 'ADDED DATE',
+    label: 'CREATE DATE',
   },
   {
     key: 2,
-    label: 'SEND DATE',
+    label: 'RECEIVED DATE',
   },
   {
     key: 3,
     label: 'TITLE',
   },
   {
-    key: 5,
+    key: 4,
     label: 'STATUS',
   },
   {
-    key: 6,
+    key: 5,
     label: 'ACTIONS',
   },
 ]
@@ -243,7 +243,6 @@ export const AdminUserTableHeadings = [
   },
 ]
 
-
 export const AdminRolesTableHeadings = [
   {
     key: 1,
@@ -335,7 +334,7 @@ export const FAQCategoryTableHeadings = [
   },
   {
     key: 3,
-    label: 'ADDED BY' ,
+    label: 'ADDED BY',
   },
   {
     key: 4,
@@ -412,5 +411,4 @@ export const TableHeadingReport = [
     key: 6,
     label: 'CLOSE BALANCE',
   },
- 
 ]

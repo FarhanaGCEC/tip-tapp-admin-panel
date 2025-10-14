@@ -68,9 +68,9 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
                 className={`${
                   header.key == 3
                     ? 'whitespace-nowrap border-b-0  '
-                    : header.key == 5
+                    : header.key == 4
                     ? ' whitespace-nowrap border-b-0 pr-24 text-center '
-                    : header.key == 6
+                    : header.key == 5
                     ? ' border-b-0  text-right '
                     : 'whitespace-nowrap border-b-0'
                 }`}
@@ -87,9 +87,9 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
               key={item.id}
             >
               <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-               
-                {item.createdAt
-                  ? DateTime.fromISO(item.createdAt)
+                {/* Create Date - using dateTime field */}
+                {item.dateTime
+                  ? DateTime.fromISO(item.dateTime)
                       .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone) // Set to user's local timezone
                       .toLocaleString({
                         year: 'numeric',
@@ -98,11 +98,23 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
                         hour: 'numeric',
                         minute: '2-digit',
                         hour12: true,
-                      }) 
+                      })
                   : '-'}
               </Table.Td>
               <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item.sentAt ? getDateValue(item.sentAt) : '-'}
+                {/* Received Date - using sentAt field with meaningful text for null */}
+                {item.sentAt
+                  ? DateTime.fromISO(item.sentAt)
+                      .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+                      .toLocaleString({
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })
+                  : 'Not Received'}
               </Table.Td>
               <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
                 {item.title.length > 20
@@ -110,6 +122,7 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
                   : item.title}
               </Table.Td>
               <Table.Td className="border-b-0 bg-white text-center shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                {/* Status column - showing status from API */}
                 <StatusButton status={item.status} />
               </Table.Td>
               <Table.Td className="cursor-pointer border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">

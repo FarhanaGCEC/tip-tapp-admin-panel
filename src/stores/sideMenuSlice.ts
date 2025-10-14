@@ -16,7 +16,24 @@ export interface SideMenuState {
 }
 
 const permissionsToken = localStorage.getItem('validationToken')
-let availablePermissons = permissionsToken ? JSON.parse(atob(permissionsToken.split('.')[1])) : { permissions: [] }
+let availablePermissons: { permissions: string[]; name?: string } = {
+  permissions: [],
+}
+
+if (permissionsToken) {
+  try {
+    const tokenParts = permissionsToken.split('.')
+    if (tokenParts.length >= 2) {
+      const payload = tokenParts[1]
+      // Add padding if needed for Base64 decoding
+      const paddedPayload = payload + '='.repeat((4 - (payload.length % 4)) % 4)
+      availablePermissons = JSON.parse(atob(paddedPayload))
+    }
+  } catch (error) {
+    console.warn('Failed to decode permissions token:', error)
+    availablePermissons = { permissions: [] }
+  }
+}
 
 const hasPermission = (requiredPermission: string) => {
   if (availablePermissons.name === 'SUPER_ADMIN') {
@@ -29,72 +46,94 @@ const initialState: SideMenuState = {
   menu: [
     {
       icon: 'Home',
-      title: 'Home',
+      title: 'Dashboard',
       pathname: '/dashboard',
     },
-    hasPermission('user_management.view') && {
-      icon: 'User',
-      title: 'Admin Users',
-      subMenu: [
-        hasPermission('user_management.view') && {
-          icon: 'Activity',
-          pathname: '/manage-users',
-          title: 'User List',
-        },
-        hasPermission('role_management.view') && {
-          icon: 'Activity',
-          pathname: '/manage-user-roles',
-          title: 'User Roles',
-        },
-      ].filter(Boolean), 
-    },
-    hasPermission('tp_management.view') && {
-      icon: 'Users',
-      title: 'Tipper',
-      pathname: '/manage-tippers',
-    },
-    hasPermission('sp_management.view') && {
-      icon: 'Box',
-      title: 'Service Provider',
-      pathname: '/manage-service-providers',
-    },
+    hasPermission('user_management.view')
+      ? {
+          icon: 'User',
+          title: 'Admin Users',
+          subMenu: [
+            hasPermission('user_management.view')
+              ? {
+                  icon: 'Activity',
+                  pathname: '/manage-users',
+                  title: 'User List',
+                }
+              : null,
+            hasPermission('role_management.view')
+              ? {
+                  icon: 'Activity',
+                  pathname: '/manage-user-roles',
+                  title: 'User Roles',
+                }
+              : null,
+          ].filter((item) => item !== null) as Menu[],
+        }
+      : null,
+    hasPermission('tp_management.view')
+      ? {
+          icon: 'Users',
+          title: 'Tipper',
+          pathname: '/manage-tippers',
+        }
+      : null,
+    hasPermission('sp_management.view')
+      ? {
+          icon: 'Box',
+          title: 'Service Provider',
+          pathname: '/manage-service-providers',
+        }
+      : null,
     {
       icon: 'Wallet',
       title: 'Tip Management',
       pathname: '/manage-finances',
     },
-    hasPermission('review_management.view') && {
-      icon: 'MessageSquare',
-      title: 'Reviews',
-      pathname: '/manage-reviews',
-    },
-    hasPermission('footer_management.view') && {
-      icon: 'FileCode',
-      title: 'Footer',
-      subMenu: [
-        hasPermission('footer_management.view') && {
-          icon: 'Activity',
-          pathname: '/footer-management',
-          title: 'Footer List',
-        },
-        hasPermission('faq_management.view') && {
-          icon: 'Activity',
-          pathname: '/manage-faqs',
-          title: 'FAQ',
-        },
-        hasPermission('faq_category.view') && {
-          icon: 'Activity',
-          pathname: '/manage-faq-categories',
-          title: 'FAQ Category',
-        },
-      ].filter(Boolean), 
-    },
+    hasPermission('review_management.view')
+      ? {
+          icon: 'MessageSquare',
+          title: 'Reviews',
+          pathname: '/manage-reviews',
+        }
+      : null,
+    hasPermission('footer_management.view')
+      ? {
+          icon: 'FileCode',
+          title: 'Footer',
+          subMenu: [
+            hasPermission('footer_management.view')
+              ? {
+                  icon: 'Activity',
+                  pathname: '/footer-management',
+                  title: 'Footer List',
+                }
+              : null,
+            hasPermission('faq_management.view')
+              ? {
+                  icon: 'Activity',
+                  pathname: '/manage-faqs',
+                  title: 'FAQ',
+                }
+              : null,
+            hasPermission('faq_category.view')
+              ? {
+                  icon: 'Activity',
+                  pathname: '/manage-faq-categories',
+                  title: 'FAQ Category',
+                }
+              : null,
+          ].filter((item) => item !== null) as Menu[],
+        }
+      : null,
     'devider',
-    hasPermission('announcement.view') && {
-      icon: 'Megaphone',
-      title: 'Announcements',
-      pathname: '/annoucements',
-    },
+    hasPermission('announcement.view')
+      ? {
+          icon: 'Megaphone',
+          title: 'Announcements',
+          pathname: '/annoucements',
+        }
+      : null,
     {
       icon: 'Newspaper',
       title: 'Newsletters',
@@ -105,23 +144,25 @@ const initialState: SideMenuState = {
       title: 'Reports',
       pathname: '/reports',
     },
-    hasPermission('settings.view') && {
-      icon: 'Settings',
-      title: 'Settings',
-      subMenu: [
-        {
-          icon: 'Activity',
-          pathname: '/tip-setting',
-          title: 'Tip Settings',
-        },
-        {
-          icon: 'Activity',
-          pathname: '/gateway-setting',
-          title: 'Gateways',
-        },
-      ],
-    },
-  ].filter(Boolean), 
+    hasPermission('settings.view')
+      ? {
+          icon: 'Settings',
+          title: 'Settings',
+          subMenu: [
+            {
+              icon: 'Activity',
+              pathname: '/tip-setting',
+              title: 'Tip Settings',
+            },
+            {
+              icon: 'Activity',
+              pathname: '/gateway-setting',
+              title: 'Gateways',
+            },
+          ],
+        }
+      : null,
+  ].filter((item) => item !== null) as (Menu | 'devider')[],
 }
 
 export const sideMenuSlice = createSlice({

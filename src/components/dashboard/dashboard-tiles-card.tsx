@@ -1,12 +1,21 @@
 import DashboardTile from './dashboard-tiles'
 import {
   GetWeeklyTotalAndDifferenceTips,
-  GetWeeklyTotalAndDifferenceWD,
+  // GetWeeklyTotalAndDifferenceWD,
 } from '../../api/dashboard/dashboard'
-import TileSVG1 from '../../assets/images/dashboard/tile1.svg'
-import TileSVG2 from '../../assets/images/dashboard/tile2.svg'
-import TileSVG3 from '../../assets/images/dashboard/tile3.svg'
-import TileSVG4 from '../../assets/images/dashboard/tile4.svg'
+import {
+  GetTipAppBalance,
+  GetTipsBalance,
+  GetWithdrawalBalance,
+} from '../../api/tip-management'
+// Dashboard tile icons - keeping for potential future use
+// import TileSVG1 from '../../assets/images/dashboard/tile1.svg'
+// import TileSVG2 from '../../assets/images/dashboard/tile2.svg'
+// import TileSVG3 from '../../assets/images/dashboard/tile3.svg'
+// import TileSVG4 from '../../assets/images/dashboard/tile4.svg'
+import TipBlanceIcon from '../../assets/images/tip-balance-icon.png'
+import TipGivenIcon from '../../assets/images/tip-given-icon.png'
+import TipWithdrawIcon from '../../assets/images/tip-withdraw-icon.png'
 import { formatAmount, formatTiles } from '../../hooks/formatter'
 
 function DashboardTilesCard() {
@@ -15,72 +24,90 @@ function DashboardTilesCard() {
     isLoading: tipsLoading,
     error: tipsError,
   } = GetWeeklyTotalAndDifferenceTips()
+  // const {
+  //   data: withdrawalsData,
+  //   isLoading: wdLoading,
+  //   error: wdError,
+  // } = GetWeeklyTotalAndDifferenceWD()
+
+  // Tip Management API hooks
   const {
-    data: withdrawalsData,
-    isLoading: wdLoading,
-    error: wdError,
-  } = GetWeeklyTotalAndDifferenceWD()
+    data: withdrawalBalanceData,
+    isSuccess: withdrawalBalanceSuccess,
+    isLoading: withdrawalBalanceLoading,
+    refetch: withdrawalBalanceRefetch,
+  } = GetWithdrawalBalance()
+  const {
+    data: TipsBalanceData,
+    isSuccess: TipsBalanceSuccess,
+    isLoading: TipsBalanceLoading,
+    refetch: TipsBalanceRefetch,
+  } = GetTipsBalance()
+  const {
+    data: TipAppBalanceData,
+    isSuccess: TipAppBalanceSuccess,
+    isLoading: TipAppBalanceLoading,
+    refetch: TipAppBalanceRefetch,
+  } = GetTipAppBalance()
 
   const getBgColor = (percentage: number) => {
     return percentage >= 0 ? 'bg-success' : 'bg-danger'
   }
 
+  // Keep TipsAmount for percentage calculation
   const TipsAmount = formatAmount(tipsData?.totalLast7DaysTips || 0)
-  const WithdrawAmount = formatAmount(
-    withdrawalsData?.totalLast7DaysWithdrawals || 0
+
+  // Tip Management amounts
+  const TipGivenAmount = formatAmount(parseFloat(TipsBalanceData?.data || '0'))
+  const TipWithdrawalAmount = formatAmount(
+    parseFloat(withdrawalBalanceData?.data || '0')
+  )
+  const TipBalanceAmount = formatAmount(
+    parseFloat(TipAppBalanceData?.data || '0')
   )
 
   return (
     <div>
       <div className="intro-y block h-fit items-center sm:flex ">
-        <h2 className="mt-[30px] w-fit text-[19px] text-lg font-medium text-[#2D3748]">
+        <h2 className="mt-[20px] w-fit text-[19px] text-lg font-medium text-[#2D3748]">
           Tips Overview
         </h2>
       </div>
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4 xl:gap-[39px]">
+      <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 xl:gap-[39px]">
+        {/* Tip Given */}
         <DashboardTile
-          amount={`AED ${TipsAmount}`}
+          amount={`AED ${TipGivenAmount}`}
           percentage={formatTiles(
-            tipsData?.dailyAverageComparisonPercentageTips || 0.00
+            tipsData?.dailyAverageComparisonPercentageTips || 0.0
           )}
-          label="Tips Received"
+          label="Tip Given"
           tooltipText={`${formatTiles(
-            tipsData?.dailyAverageComparisonPercentageTips || 0.00
+            tipsData?.dailyAverageComparisonPercentageTips || 0.0
           )}% than last month`}
           tippyBgColor={getBgColor(
-            tipsData?.dailyAverageComparisonPercentageTips || 0.00
+            tipsData?.dailyAverageComparisonPercentageTips || 0.0
           )}
-          icon={TileSVG1}
+          icon={TipGivenIcon}
         />
+
+        {/* Tip Withdrawal */}
         <DashboardTile
-          amount="AED 0.00"
+          amount={`AED ${TipWithdrawalAmount}`}
           percentage="0.00"
-          label="Tip Commission"
-          tooltipText="than last month"
+          label="Tip Withdrawal"
+          tooltipText="Total withdrawals"
           tippyBgColor="bg-success"
-          icon={TileSVG2}
+          icon={TipWithdrawIcon}
         />
+
+        {/* Tip Balance */}
         <DashboardTile
-          amount="AED 0.00"
+          amount={`AED ${TipBalanceAmount}`}
           percentage="0.00"
-          label="Amount Pending "
-          tooltipText="than last month"
+          label="Tip Balance"
+          tooltipText="Available tip balance"
           tippyBgColor="bg-success"
-          icon={TileSVG3}
-        />
-        <DashboardTile
-          amount={`AED ${WithdrawAmount}`}
-          percentage={formatTiles(
-            withdrawalsData?.dailyAverageComparisonPercentageWithdrawals || 0.00
-          )}
-          label="Amount Received "
-          tooltipText={`${formatTiles(
-            withdrawalsData?.dailyAverageComparisonPercentageWithdrawals || 0.00
-          )}% than last month`}
-          tippyBgColor={getBgColor(
-            withdrawalsData?.dailyAverageComparisonPercentageWithdrawals || 0.00
-          )}
-          icon={TileSVG4}
+          icon={TipBlanceIcon}
         />
       </div>
     </div>

@@ -51,7 +51,7 @@ function Main() {
 
   // Type assertion for pathname to ensure it's a valid key
   const breadcrumbLabel =
-    breadcrumbMap[pathname as keyof typeof breadcrumbMap] || 'Home'
+    breadcrumbMap[pathname as keyof typeof breadcrumbMap] || 'Dashboard'
 
   const showSearchDropdown = () => {
     setSearchDropdown(true)
@@ -60,7 +60,21 @@ function Main() {
     setSearchDropdown(false)
   }
 
-  let user = JSON.parse(localStorage.getItem('user') || '{}')
+  let user: {
+    Email: string
+    Role: string
+    ProfilePictureURL?: string
+    FirstName?: string
+    LastName?: string
+  } = { Email: '', Role: '' }
+  try {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      user = JSON.parse(userData)
+    }
+  } catch (error) {
+    console.warn('Failed to parse user data from localStorage:', error)
+  }
   const { data } = useGetNotificationsList()
 
   return (
@@ -176,13 +190,13 @@ function Main() {
             <Menu.Button className="image-fit zoom-in intro-x block h-8 w-8 scale-110 overflow-hidden rounded-full shadow-lg">
               <img
                 alt="Midone Tailwind HTML Admin Template"
-                src={user?.ProfilePictureURL || PreviewImage}
+                src={user.ProfilePictureURL || PreviewImage}
               />
             </Menu.Button>
             <Menu.Items className="relative mt-px w-56  before:absolute before:inset-0 before:z-[-1] before:block before:rounded-md before:bg-black ">
               <Menu.Header className="font-normal">
                 <div className="font-medium">
-                  {`${user.FirstName  } ${  user.LastName}`}
+                  {`${user.FirstName || 'User'} ${user.LastName || ''}`}
                 </div>
                 <div className="/70 mt-0.5 break-before-auto text-xs dark:text-slate-500">
                   {truncate(user.Email)}

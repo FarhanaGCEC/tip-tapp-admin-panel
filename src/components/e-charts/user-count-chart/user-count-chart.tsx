@@ -2,20 +2,39 @@ import React, { useEffect, useRef, useState } from 'react'
 import * as echarts from 'echarts'
 import { GetUsersCountByType } from '../../../api/dashboard/dashboard'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
+import Tippy from '../../common/tippy'
 
 function UserCountChart() {
   const { data: counts, isLoading, error } = GetUsersCountByType()
 
-  const chartRef = useRef(null)
+  const chartRef = useRef<HTMLDivElement>(null)
+  const [isChartReady, setIsChartReady] = useState(false)
 
   const [selectedUserType, setSelectedUserType] = useState('Both')
+
+  // Set chart ready state when component mounts
+  useEffect(() => {
+    setIsChartReady(true)
+  }, [])
 
   useEffect(() => {
     let myChart: echarts.ECharts
 
-    if (!isLoading && counts) {
+    if (!isLoading && counts && chartRef.current && isChartReady) {
       const chartDom = chartRef.current
-      myChart = echarts.init(chartDom)
+
+      // Validate DOM element before initialization
+      if (!chartDom || !chartDom.offsetParent) {
+        console.warn('Chart DOM element is not ready for initialization')
+        return
+      }
+
+      try {
+        myChart = echarts.init(chartDom)
+      } catch (error) {
+        console.error('Failed to initialize chart:', error)
+        return
+      }
 
       let data: { value: any; name: string }[] = []
       if (selectedUserType === 'Both') {
@@ -108,7 +127,14 @@ function UserCountChart() {
         window.removeEventListener('resize', handleResize)
       }
     }
-  }, [counts, isLoading, selectedUserType])
+
+    // Cleanup function for when component unmounts
+    return () => {
+      if (myChart) {
+        myChart.dispose()
+      }
+    }
+  }, [counts, isLoading, selectedUserType, isChartReady])
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -142,44 +168,56 @@ function UserCountChart() {
       </div>
       <div className="mt-[15px] flex w-full flex-col items-center rounded-xl bg-white pt-4">
         <div className="mb-4 flex items-center justify-between gap-2">
-          <button
-            className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-              selectedUserType === 'Tippers'
-                ? 'bg-black text-white'
-                : 'bg-gray-200 text-black'
-            }`}
-            onClick={() => setSelectedUserType('Tippers')}
-          >
-            Tipper
-          </button>
-          <button
-            className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-              selectedUserType === 'ServiceProviders'
-                ? 'bg-black text-white'
-                : 'bg-gray-200 text-black'
-            }`}
-            onClick={() => setSelectedUserType('ServiceProviders')}
-          >
-            {/* Service Provider */}
-            <span className="hidden 2xl:block">Service Provider</span>
-            <span className="block 2xl:hidden">SP</span>
-          </button>
-          <button
-            className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-              selectedUserType === 'Both'
-                ? 'bg-black text-white'
-                : 'bg-gray-200 text-black'
-            }`}
-            onClick={() => setSelectedUserType('Both')}
-          >
-            Both
-          </button>
+          <Tippy content="Users who can give tips to service providers">
+            <button
+              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
+                selectedUserType === 'Tippers'
+                  ? 'bg-black text-white'
+                  : 'bg-gray-200 text-black'
+              }`}
+              onClick={() => setSelectedUserType('Tippers')}
+            >
+              Tipper
+            </button>
+          </Tippy>
+          <Tippy content="Users who can receive tips from tippers">
+            <button
+              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
+                selectedUserType === 'ServiceProviders'
+                  ? 'bg-black text-white'
+                  : 'bg-gray-200 text-black'
+              }`}
+              onClick={() => setSelectedUserType('ServiceProviders')}
+            >
+              {/* Service Provider */}
+              <span className="hidden 2xl:block">Service Provider</span>
+              <span className="block 2xl:hidden">SP</span>
+            </button>
+          </Tippy>
+          <Tippy content="Users who can both give and receive tips (dual role)">
+            <button
+              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
+                selectedUserType === 'Both'
+                  ? 'bg-black text-white'
+                  : 'bg-gray-200 text-black'
+              }`}
+              onClick={() => setSelectedUserType('Both')}
+            >
+              Dual Role
+            </button>
+          </Tippy>
         </div>
         <div
           ref={chartRef}
           className="w-full"
           style={{ height: '400px', paddingBottom: '25px' }}
-        ></div>
+        >
+          {isLoading && (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-gray-500">Loading chart...</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

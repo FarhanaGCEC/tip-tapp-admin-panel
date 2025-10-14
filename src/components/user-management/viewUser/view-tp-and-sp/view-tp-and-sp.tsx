@@ -1,3 +1,10 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react/button-has-type */
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable eqeqeq */
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable jsx-a11y/heading-has-content */
 /* eslint-disable import/no-useless-path-segments */
 /* eslint-disable jsx-a11y/anchor-is-valid */
@@ -24,8 +31,8 @@ import Toast from '../../../../utils/notification'
 import SharedDataContainer from '../../../../containers/sharedData'
 import { Icons, NotificationTypes } from '../../../../constants'
 import LoadingIcon from '../../../common/loading-icon'
-//import { Tab,Menu } from '../../../common/headless'
-//import Lucide from '../../../common/lucide'
+// import { Tab,Menu } from '../../../common/headless'
+// import Lucide from '../../../common/lucide'
 import PreviewImage from '../../../../assets/images/default-image.png'
 import { Tab } from '../../../common/headless'
 import { UseQueryResult } from 'react-query'
@@ -44,8 +51,6 @@ function ViewTpandSp(props: ViewUserProps) {
   const posApi = PosApi.useAPI()
   const { setNotification, handleSlider } = SharedDataContainer.useContainer()
   const [isloading, setIsLoading] = useState<boolean>(false)
-  const [useridparam, setuseridparame] = useState('')
-  const [userStatus, setuserStatus] = useState('')
   const {
     data,
     isSuccess,
@@ -54,11 +59,8 @@ function ViewTpandSp(props: ViewUserProps) {
     error,
     refetch,
   }: UseQueryResult<TipItem> = useGetUserById(props.userId)
-  const {
-    data: userData,
-    isLoading: isFetchingUserData,
-    isError: isFetchingUserError,
-  } = useDeactiveUserAndActive(useridparam, userStatus)
+  const { mutate: deactivateActivateUser, isLoading: isUpdatingStatus } =
+    useDeactiveUserAndActive()
   const { t } = useTranslation('pos')
 
   const schema = yup
@@ -106,7 +108,7 @@ function ViewTpandSp(props: ViewUserProps) {
     setIsLoading(false)
   }
 
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createCustomer = async (customer: any) => {
     setIsLoading(true)
     /* TODO: Remove after after set customer type */
@@ -138,11 +140,35 @@ function ViewTpandSp(props: ViewUserProps) {
     `<p>${t('viewUserManagementNotes.fields.description.placeolder')}.</p>`
   )
 
-  //const { handleSlider, slideOverPreview } = SharedDataContainer.useContainer()
+  // const { handleSlider, slideOverPreview } = SharedDataContainer.useContainer()
 
   const DeactiveAndActivehandle = (userid: string, typesatus: string) => {
-    setuseridparame(userid)
-    setuserStatus(typesatus)
+    deactivateActivateUser(
+      { userid, satustype: typesatus },
+      {
+        onSuccess: (data) => {
+          const action = typesatus === 'active' ? 'deactivated' : 'activated'
+          setNotification({
+            title: 'Success',
+            message: `User ${action} successfully`,
+            icon: Icons.CHECKCIRCLE,
+            type: NotificationTypes.SUCCESS,
+          })
+          Toast()
+          refetch() // Refresh user data
+        },
+        onError: (error: any) => {
+          setNotification({
+            title: 'Error',
+            message:
+              error?.response?.data?.message || 'Failed to update user status',
+            icon: Icons.XCIRCLE,
+            type: NotificationTypes.ERROR,
+          })
+          Toast()
+        },
+      }
+    )
   }
 
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
@@ -155,7 +181,7 @@ function ViewTpandSp(props: ViewUserProps) {
 
   const truncatedBio =
     bio !== 'Not Provided Yet' && !isExpanded && bio.length > 20
-      ? bio.substring(0, 20) + '...'
+      ? `${bio.substring(0, 20)  }...`
       : bio
 
   return (
@@ -194,6 +220,7 @@ function ViewTpandSp(props: ViewUserProps) {
                   {data?.Status == 'active' ? (
                     <Button
                       className=" w-40 bg-[#D70000] "
+                      disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
                           data?.KeyCloakID || '',
@@ -201,25 +228,29 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">Deactivate</span>
+                      <span className=" text-white sm:block">
+                        {isUpdatingStatus ? 'Deactivating...' : 'Deactivate'}
+                      </span>
                     </Button>
                   ) : data?.Status == 'new' ? (
-                    <Button className=" w-40 bg-[#03C50B] px-6 py-2">
-                      <span
-                        className=" text-white sm:block"
-                        onClick={() => {
-                          DeactiveAndActivehandle(
-                            data?.KeyCloakID || '',
-                            data?.Status || ''
-                          )
-                        }}
-                      >
-                        Activate
+                    <Button
+                      className=" w-40 bg-[#03C50B] px-6 py-2"
+                      disabled={isUpdatingStatus}
+                      onClick={() => {
+                        DeactiveAndActivehandle(
+                          data?.KeyCloakID || '',
+                          data?.Status || ''
+                        )
+                      }}
+                    >
+                      <span className=" text-white sm:block">
+                        {isUpdatingStatus ? 'Activating...' : 'Activate'}
                       </span>
                     </Button>
                   ) : data?.Status == 'banned' ? (
                     <Button
                       className=" w-40 bg-[#03C50B] px-6  py-2 "
+                      disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
                           data?.KeyCloakID || '',
@@ -227,11 +258,14 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">Activate</span>
+                      <span className=" text-white sm:block">
+                        {isUpdatingStatus ? 'Activating...' : 'Activate'}
+                      </span>
                     </Button>
                   ) : (
                     <Button
                       className=" w-40 bg-[#D70000] px-5 py-1"
+                      disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
                           data?.KeyCloakID || '',
@@ -239,7 +273,9 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">Deactivate</span>
+                      <span className=" text-white sm:block">
+                        {isUpdatingStatus ? 'Deactivating...' : 'Deactivate'}
+                      </span>
                     </Button>
                   )}
                 </>,

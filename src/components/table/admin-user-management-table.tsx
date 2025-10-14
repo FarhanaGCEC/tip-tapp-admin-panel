@@ -74,7 +74,9 @@ const AdminManagementTable: React.FC<AdminManagementTableProps> = ({
                 {item.Phone || 'N/A'}
               </Table.Td>
               <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item?.role?.name || 'N/A'}
+                {item?.role?.name === 'SUPER_ADMIN'
+                  ? 'Administrator'
+                  : item?.role?.name || 'N/A'}
               </Table.Td>
               <Table.Td className="ml-4 border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md">
                 <div className="flex justify-center">

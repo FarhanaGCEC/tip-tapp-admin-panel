@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { FaCamera } from 'react-icons/fa'
 
 function Profile() {
@@ -16,7 +17,7 @@ function Profile() {
         />
       </svg>
       <div className="absolute bottom-0 right-2 rounded-full bg-black p-1">
-        <FaCamera className="text-sm text-white" />
+        {FaCamera({ className: 'text-sm text-white' })}
       </div>
     </div>
   )
