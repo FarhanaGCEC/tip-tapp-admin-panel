@@ -20,6 +20,16 @@ export interface AddUserPayload {
   roleId: number
 }
 
+export interface UpdateUserPayload {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  whatsapp?: string
+  ProfilePictureURL?: string
+  roleId: number
+}
+
 export interface UserDetailsItem {
   id: number
   KeyCloakID: string

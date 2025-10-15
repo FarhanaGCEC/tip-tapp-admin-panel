@@ -1,16 +1,22 @@
-import { UseQueryResult, useQuery } from 'react-query'
+import {
+  UseQueryResult,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from 'react-query'
 import authFetch from './axiosinterceptor'
 
 export interface PushNotificationType {
-  NotificationID?: string
+  NotificationID: number
   RichText?: string
   UserID?: string
-  Title?: string
-  Message?: string
-  NotificationDate?: string
-  IsRead?: boolean
+  Title: string
+  Message: string
+  NotificationDate: string
+  IsRead: boolean
+  NotificationType: string
   TipperProfilePictureUrl?: string
-  tipper: UserType
+  tipper?: UserType
 }
 
 export interface UserType {
@@ -35,19 +41,39 @@ export interface UserType {
 
 export interface GetPushNotificationType {
   items: PushNotificationType[]
-  totalCount: number
-  totalPages: number
+  meta: {
+    totalItems: number
+    itemCount: number
+    itemsPerPage: number
+    totalPages: number
+    currentPage: number
+  }
 }
 
-export const useGetNotificationsList =
-  (): UseQueryResult<GetPushNotificationType> => {
-    return useQuery({
-      queryKey: ['get_push_notification_list'],
-      queryFn: async () => {
-        return await authFetch.get(`/notifications`, {})
-      },
-      select(data) {
-        return data?.data?.data || []
-      },
-    })
+export const useGetNotificationsList = (
+  page = 1,
+  limit = 10
+): UseQueryResult<GetPushNotificationType> => {
+  return useQuery({
+    queryKey: ['get_push_notification_list', page, limit],
+    queryFn: async () => {
+      return authFetch.get(`/notifications/admin?page=${page}&limit=${limit}`)
+    },
+    select(data) {
+      return data?.data?.data || { items: [], meta: {} }
+    },
+  })
+}
+
+export const useMarkNotificationAsRead = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (notificationId: number) => {
+      return authFetch.patch(`/notifications/admin/${notificationId}/read`)
+    },
+    onSuccess() {
+      queryClient.invalidateQueries(['get_push_notification_list'])
+    },
+  })
 }

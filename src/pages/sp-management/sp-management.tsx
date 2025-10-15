@@ -76,10 +76,10 @@ const SpManagementPage = () => {
   })
 
   let typingTimeout: NodeJS.Timeout
- function getSize() {
-   const screenSize = window.innerWidth
-   return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
- }
+  function getSize() {
+    const screenSize = window.innerWidth
+    return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
+  }
   const handleClick = (
     { title, component }: FormContent,
     userId: string,
@@ -102,7 +102,7 @@ const SpManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setQuery(value)
+      setQuery(value.toLowerCase())
     }, 750)
   }
 
@@ -113,7 +113,7 @@ const SpManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setserchpending(value)
+      setserchpending(value.toLowerCase())
     }, 750)
   }
 
@@ -195,7 +195,6 @@ const SpManagementPage = () => {
     setCurrentPage(1)
   }, [query, temparayStore, dates])
 
- 
   const cleantoggleFilters = () => {
     setdates('')
     setTakedates('')

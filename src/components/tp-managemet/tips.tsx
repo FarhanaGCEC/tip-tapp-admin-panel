@@ -48,7 +48,7 @@ const Tips = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setQuery(value)
+      setQuery(value.toLowerCase())
     }, 750)
   }
   useEffect(() => {

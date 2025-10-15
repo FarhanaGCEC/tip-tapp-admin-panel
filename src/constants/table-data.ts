@@ -412,3 +412,11 @@ export const TableHeadingReport = [
     label: 'CLOSE BALANCE',
   },
 ]
+
+export const NotificationsHeadings = [
+  { key: 1, label: 'TITLE' },
+  { key: 2, label: 'MESSAGE' },
+  { key: 3, label: 'TYPE' },
+  { key: 4, label: 'DATE' },
+  { key: 5, label: 'STATUS' },
+]

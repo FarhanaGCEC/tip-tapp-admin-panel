@@ -22,18 +22,18 @@ import {
   useGetUserById,
   useUpdateUserDetails,
 } from '../../../../api/admin-user-management'
-import { AddUserPayload } from '../../../../types/adminUserTypes'
+import { UpdateUserPayload } from '../../../../types/adminUserTypes'
 import CustomDropdown from '../../../../components/common/form-elements/custom-dropdown'
 import { useUploadImage } from '../../../../api/auth-management'
 import Separator from '../../../../components/common/separator/separator'
 
 const schema = yup
   .object({
-    FirstName: yup.string().required('First Name is required'),
-    LastName: yup.string().required('Last Name is required'),
-    Email: yup.string().email('Invalid email').required('Email is required'),
-    Phone: yup.string().required('Phone Number is required'),
-    Whatsapp: yup.string().optional(),
+    firstName: yup.string().required('First Name is required'),
+    lastName: yup.string().required('Last Name is required'),
+    email: yup.string().email('Invalid email').required('Email is required'),
+    phone: yup.string().required('Phone Number is required'),
+    whatsapp: yup.string().optional(),
     roleId: yup.number().required('Role is required'),
   })
   .required()
@@ -69,12 +69,12 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
   const { data } = useGetUserById(userId)
 
   const onSubmit = (data: any) => {
-    const payload: Partial<AddUserPayload> = {
-      FirstName: data.FirstName,
-      LastName: data.LastName,
-      Email: data.Email,
-      Phone: data.Phone,
-      Whatsapp: data.Whatsapp || '',
+    const payload: Partial<UpdateUserPayload> = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      whatsapp: data.whatsapp || '',
       ProfilePictureURL: uploadedImage ? uploadedImage : data.ProfilePictureURL,
       roleId: data.roleId,
     }
@@ -112,12 +112,12 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
   useEffect(() => {
     async function fetchUserData() {
       const userData = data
-      setValue('FirstName', userData.FirstName)
-      setValue('LastName', userData.LastName)
-      setValue('Email', userData.Email)
-      setValue('Phone', userData.Phone)
+      setValue('firstName', userData.FirstName)
+      setValue('lastName', userData.LastName)
+      setValue('email', userData.Email)
+      setValue('phone', userData.Phone)
       setValue('roleId', userData.role.id)
-      setValue('Whatsapp', userData.Whatsapp)
+      setValue('whatsapp', userData.Whatsapp)
     }
 
     fetchUserData()
@@ -137,6 +137,22 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
     }
   }, [fileUploadSuccess, uploadData])
 
+  // Add missing upload error handling
+  useEffect(() => {
+    if (isUploadError && uploadError) {
+      setNotification({
+        message: `Upload failed: ${
+          uploadError.response?.data?.message ||
+          uploadError.message ||
+          'Unknown error'
+        }`,
+        icon: Icons.CLOSE,
+        type: NotificationTypes.ERROR,
+      })
+      Toast()
+    }
+  }, [isUploadError, uploadError, setNotification])
+
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -152,6 +168,9 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
         } catch (error) {
           console.error('Image upload error:', error)
         }
+      }
+      img.onerror = (error) => {
+        console.error('Invalid image file:', error)
       }
     }
   }
@@ -204,56 +223,56 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
         <InputElement
           id="firstName"
           label="First Name"
-          name="FirstName"
+          name="firstName"
           type="text"
           placeholder="First Name"
           register={register}
           required={true}
-          error={errors.FirstName}
+          error={errors.firstName}
           labelAlignment={AlignmentTypes.BLOCK}
         />
         <InputElement
           id="lastName"
           label="Last Name"
-          name="LastName"
+          name="lastName"
           type="text"
           placeholder="Last Name"
           register={register}
           required={true}
-          error={errors.LastName}
+          error={errors.lastName}
           labelAlignment={AlignmentTypes.BLOCK}
         />
         <InputElement
           id="email"
           label="Email"
-          name="Email"
+          name="email"
           type="email"
           placeholder="Email"
           register={register}
           required={true}
-          error={errors.Email}
+          error={errors.email}
           labelAlignment={AlignmentTypes.BLOCK}
         />
         <InputElement
           id="whatsapp"
           label="Whatsapp"
-          name="Whatsapp"
+          name="whatsapp"
           type="text"
           placeholder="Whatsapp"
           register={register}
           required={false}
-          error={errors.Whatsapp}
+          error={errors.whatsapp}
           labelAlignment={AlignmentTypes.BLOCK}
         />
         <InputElement
           id="phoneNumber"
           label="Phone Number"
-          name="Phone"
+          name="phone"
           type="text"
           placeholder="Phone Number"
           register={register}
           required={true}
-          error={errors.Phone}
+          error={errors.phone}
           labelAlignment={AlignmentTypes.BLOCK}
         />
         <Controller

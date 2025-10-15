@@ -1,3 +1,8 @@
+/* eslint-disable react/button-has-type */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable prefer-const */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable jsx-a11y/anchor-is-valid */
@@ -9,13 +14,17 @@
 import { useState } from 'react'
 import _, { truncate } from 'lodash'
 import { Link, useLocation } from 'react-router-dom'
+import clsx from 'clsx'
 import Lucide from '../../components/common/lucide'
 import Breadcrumb from '../../base-components/Breadcrumb'
 import { FormInput } from '../common/form-elements/components'
 import { Menu, Popover } from '../common/headless'
 import PreviewImage from '../../../src/assets/images/tip-app-logo.png'
 import SocketClient from '../../hooks/SocketClient'
-import { useGetNotificationsList } from '../../api/notification'
+import {
+  useGetNotificationsList,
+  useMarkNotificationAsRead,
+} from '../../api/notification'
 import NoDataFound from '../../assets/images/NoDataFound.png'
 
 // function getCurrentDate() {
@@ -75,7 +84,35 @@ function Main() {
   } catch (error) {
     console.warn('Failed to parse user data from localStorage:', error)
   }
-  const { data } = useGetNotificationsList()
+  const { data, isLoading, error } = useGetNotificationsList(1, 10)
+  const markAsReadMutation = useMarkNotificationAsRead()
+
+  // Calculate unread count
+  const unreadCount = data?.items?.filter((item) => !item.IsRead).length || 0
+
+  // Handle marking notification as read
+  const handleMarkAsRead = async (notificationId: number) => {
+    try {
+      await markAsReadMutation.mutateAsync(notificationId)
+      // The query will automatically refetch due to React Query's cache invalidation
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
+  }
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
+    )
+
+    if (diffInMinutes < 1) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
 
   return (
     <>
@@ -150,39 +187,119 @@ function Main() {
         <div className="flex items-center justify-end space-x-2">
           <Popover className="intro-x mr-4 sm:mr-2">
             <Popover.Button
-              className=" 
-              zoom-in relative
-              block items-center before:absolute before:right-0 before:top-[-2px] before:h-[8px] before:w-[8px] before:rounded-full
-              before:bg-danger  before:content-['']   "
+              className={clsx([
+                'zoom-in relative block items-center',
+                unreadCount > 0 &&
+                  "before:absolute before:right-0 before:top-[-2px] before:h-[8px] before:w-[8px] before:rounded-full before:bg-danger before:content-['']",
+              ])}
             >
-              <Lucide icon="Bell" className=" h-5 w-5  " />
+              <Lucide icon="Bell" className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Popover.Button>
             <Popover.Panel className="mt-2 w-[280px] p-5 sm:w-[350px]">
               <div className="mb-5 font-medium">Notifications</div>
               <div className="h-64 overflow-y-auto">
-                {data?.items.map((item) => (
-                  <div
-                    key={item.NotificationID}
-                    className="mb-2 flex items-center justify-between"
-                  >
-                    <div className="flex items-center">
-                      <img
-                        src={item.TipperProfilePictureUrl || PreviewImage}
-                        alt="profile"
-                        className="h-8 w-8 rounded-full object-cover"
-                      />
-                      <div className="ml-2">
-                        <div className="text-sm">{item.Title}</div>
-                        <div
-                          className="text-xs text-gray-500"
-                          dangerouslySetInnerHTML={{
-                            __html: item.Message || '',
-                          }}
-                        />
+                {isLoading ? (
+                  <div className="flex h-32 items-center justify-center">
+                    <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+                  </div>
+                ) : error ? (
+                  <div className="flex h-32 items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-sm text-red-500">
+                        Failed to load notifications
                       </div>
                     </div>
                   </div>
-                ))}
+                ) : !data?.items || data.items.length === 0 ? (
+                  <div className="flex h-32 items-center justify-center">
+                    <div className="text-center">
+                      <img
+                        src={NoDataFound}
+                        alt="No notifications"
+                        className="mx-auto mb-2 h-16 w-16"
+                      />
+                      <div className="text-sm text-slate-500">
+                        No notifications available
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {data.items.slice(0, 10).map((item) => (
+                      <div
+                        key={item.NotificationID}
+                        className={clsx([
+                          'mb-3 rounded-lg p-2 transition-colors',
+                          item.IsRead
+                            ? 'hover:bg-slate-50'
+                            : 'bg-blue-50 hover:bg-blue-100',
+                        ])}
+                      >
+                        <div className="flex items-start">
+                          {!item.IsRead && (
+                            <div className="mr-2 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                          )}
+                          <div className="flex-1">
+                            <div
+                              className={clsx([
+                                'text-sm',
+                                item.IsRead
+                                  ? 'text-slate-600'
+                                  : 'font-semibold text-slate-900',
+                              ])}
+                            >
+                              {item.Title}
+                            </div>
+                            <div className="mt-1 line-clamp-2 text-xs text-slate-500">
+                              {item.Message}
+                            </div>
+                            {/* <div className="mt-1 text-xs text-slate-400">
+                              {formatDate(item.NotificationDate)}
+                            </div> */}
+                            {!item.IsRead && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleMarkAsRead(item.NotificationID)
+                                }}
+                                className="mt-2 text-xs text-blue-600 underline hover:text-blue-800"
+                              >
+                                Mark as read
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {data.items.length > 0 && (
+                      <div className="border-t border-slate-200 pt-3">
+                        <Link
+                          to="/notifications"
+                          className="hover:text-primary-dark block w-full py-2 text-center text-sm text-primary"
+                        >
+                          View All Notifications
+                        </Link>
+                      </div>
+                    )}
+
+                    {data.items.length <= 10 && data.meta.totalItems > 10 && (
+                      <div className="border-t border-slate-200 pt-3">
+                        <Link
+                          to="/notifications"
+                          className="hover:text-primary-dark block w-full py-2 text-center text-sm text-primary"
+                        >
+                          View All Notifications
+                        </Link>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </Popover.Panel>
           </Popover>

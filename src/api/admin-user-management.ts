@@ -48,9 +48,10 @@ export const useUpdateUserDetails = (): UseMutationResult<any> => {
     mutationKey: 'update_user_details',
     mutationFn: async (data: any) => {
       try {
+        const { userId, ...payload } = data
         const response = await authFetch.patch(
-          `/auth/update/${data.userId}`,
-          data
+          `/auth/update/${userId}`,
+          payload
         )
         return response.data
       } catch (error) {

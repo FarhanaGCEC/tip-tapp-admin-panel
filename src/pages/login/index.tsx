@@ -1,10 +1,18 @@
+/* eslint-disable no-else-return */
+/* eslint-disable react/jsx-no-bind */
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { useDispatch } from 'react-redux'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form'
 import illustrationUrl from '../../assets/images/final-logo.svg'
 import Button from '../../components/common/button'
-import { FormCheck, FormInput } from '../../components/common/form-elements/components'
+import {
+  FormCheck,
+  FormInput,
+} from '../../components/common/form-elements/components'
 import { AuthApi } from '../../api'
 import Toast from '../../utils/notification'
 import SharedDataContainer from '../../containers/sharedData'
@@ -16,7 +24,7 @@ function Main() {
   const dispatch = useDispatch()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [emailError, setEmailError] = useState('') 
+  const [emailError, setEmailError] = useState('')
   const { setNotification, handleSlider } = SharedDataContainer.useContainer()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const sucessHandlerLogin = (username: any, message: string) => {
@@ -44,7 +52,7 @@ function Main() {
     })
     setIsLoading(false)
   }
-  const { mutate , data , isSuccess , isError } = useLogin()
+  const { mutate, data, isSuccess, isError } = useLogin()
 
   async function login() {
     // Email validation
@@ -55,25 +63,41 @@ function Main() {
     } else {
       setEmailError('')
     }
-    
+
     setIsLoading(true)
-    mutate({email , password })
+    mutate({ email, password })
   }
 
   useEffect(() => {
     if (isSuccess && data) {
+      // Check if user has staff role
+      const userRole = data?.user?.Role?.toLowerCase()
+      if (userRole !== 'staff') {
+        errorHandler(
+          'Access denied. You are not authorized to access this system.'
+        )
+        // Clear any tokens that might have been set
+        localStorage.removeItem('jwtToken')
+        localStorage.removeItem('validationToken')
+        localStorage.removeItem('user')
+        return
+      }
       sucessHandlerLogin(email, 'Successfully Login')
     }
     if (isError) {
       errorHandler('Please Check Your Login Credentials.')
     }
-  }, [isSuccess , isError , data])
+  }, [isSuccess, isError, data])
 
-  useEffect(() =>{
-    if(isSuccess){
-      localStorage.setItem('jwtToken', data?.access_token)
-      localStorage.setItem('validationToken', data?.validation_token)
-      localStorage.setItem('user' , JSON.stringify(data?.user))
+  useEffect(() => {
+    if (isSuccess && data) {
+      // Only set tokens if user has staff role
+      const userRole = data?.user?.Role?.toLowerCase()
+      if (userRole === 'staff') {
+        localStorage.setItem('jwtToken', data?.access_token)
+        localStorage.setItem('validationToken', data?.validation_token)
+        localStorage.setItem('user', JSON.stringify(data?.user))
+      }
     }
   }, [data, isSuccess])
 
@@ -125,7 +149,7 @@ function Main() {
                 />
                 {/* Display error message for invalid email */}
                 {emailError && (
-                  <div className="intro-x mt-2 text-red-500 text-xs">
+                  <div className="intro-x mt-2 text-xs text-red-500">
                     {emailError}
                   </div>
                 )}

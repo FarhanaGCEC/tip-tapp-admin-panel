@@ -1,10 +1,18 @@
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
-import { useForm, Controller, FieldError } from 'react-hook-form'
+import { useForm, FieldError } from 'react-hook-form'
 import Button from '../../../../components/common/button'
 import InputElement from '../../../../components/common/form-elements/input-element'
-import { AlignmentTypes, NotificationTypes } from '../../../../constants/common-enums'
+import {
+  AlignmentTypes,
+  NotificationTypes,
+} from '../../../../constants/common-enums'
 import Separator from '../../../../components/common/separator/separator'
-import { useUpdateRoles, useGetRoleById } from '../../../../api/admin-role-management'
+import {
+  useUpdateRoles,
+  useGetRoleById,
+} from '../../../../api/admin-role-management'
 import { toTitleCase } from '../../../../utils/textFormatters'
 import InputElementSecondary from '../../../../components/common/form-elements/input-element-secondary'
 import { Permissions } from '../../constant/permissons'
@@ -12,21 +20,30 @@ import { Icons } from '../../../../constants'
 import Toast from '../../../../utils/notification'
 import SharedDataContainer from '../../../../containers/sharedData'
 
-
 function EditRoleSection({ roleId }: { roleId: number }) {
   const [selectedSection, setSelectedSection] = useState('user_management')
-  const [filteredOptions, setFilteredOptions] = useState(Object.keys(Permissions).map(key => ({ label: key })))
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm()
-  
+  const [filteredOptions, setFilteredOptions] = useState(
+    Object.keys(Permissions).map((key) => ({ label: key }))
+  )
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm()
+
   const { data: roleData } = useGetRoleById(roleId)
-  const { mutate , isSuccess , isError } = useUpdateRoles()
+  const { mutate, isSuccess, isError } = useUpdateRoles()
 
   useEffect(() => {
     if (roleData) {
       setValue('rolename', roleData.name)
-      roleData.permissions.forEach((perm: any) => {
-        setValue(`permission_${perm.name}`, true)
-      })
+      // Initialize selectedPermissions with existing role permissions
+      const existingPermissions = roleData.permissions.map(
+        (perm: any) => perm.name
+      )
+      setSelectedPermissions(existingPermissions)
     }
   }, [roleData, setValue])
 
@@ -39,16 +56,13 @@ function EditRoleSection({ roleId }: { roleId: number }) {
   }
 
   const onSubmit = (data: any) => {
-    const selectedPermissions = Object.entries(data)
-      .filter(([key, value]) => key.startsWith('permission_'))
-      .flatMap(([key, permissions]) =>
-        Object.entries(permissions as { [key: string]: string })
-          .filter(([permKey, permValue]) => permValue)
-          .map(([permKey, permValue]) => permValue)
-      )
-    mutate({ roleId, name: data.rolename, permissions: selectedPermissions })
+    mutate({
+      roleId,
+      name: data.rolename,
+      permissions: selectedPermissions,
+    })
   }
-  const { setNotification , handleSlider } = SharedDataContainer.useContainer()
+  const { setNotification, handleSlider } = SharedDataContainer.useContainer()
 
   useEffect(() => {
     if (isSuccess) {
@@ -73,7 +87,7 @@ function EditRoleSection({ roleId }: { roleId: number }) {
       handleSlider()
     }
   }, [isError])
-  
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="rounded-lg">
       <div className="mb-6 flex justify-start rounded-lg bg-white p-6">
@@ -84,7 +98,7 @@ function EditRoleSection({ roleId }: { roleId: number }) {
           type="text"
           placeholder="Enter role name"
           register={register}
-          required={true}
+          required
           error={errors.rolename}
           labelAlignment={AlignmentTypes.BLOCK}
           value={roleData?.name}
@@ -152,11 +166,22 @@ function EditRoleSection({ roleId }: { roleId: number }) {
                         <input
                           type="checkbox"
                           id={`permission_${value}`}
-                          {...register(`permission_${value}`)}
                           value={value}
-                          defaultChecked={roleData?.permissions.some(
-                            (perm: any) => perm.name === value
-                          )} // Set defaultChecked based on existing permissions
+                          checked={selectedPermissions.includes(value)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedPermissions([
+                                ...selectedPermissions,
+                                value,
+                              ])
+                            } else {
+                              setSelectedPermissions(
+                                selectedPermissions.filter(
+                                  (perm) => perm !== value
+                                )
+                              )
+                            }
+                          }}
                           className="mr-2 cursor-pointer rounded border-slate-200 shadow-sm transition-all duration-100 ease-in-out checked:border-primary checked:bg-primary focus:ring-4 focus:ring-primary focus:ring-opacity-20"
                         />
                         {toTitleCase(key)}

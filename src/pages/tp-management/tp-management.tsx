@@ -64,10 +64,10 @@ const TpManagementPage = () => {
   let typingTimeout: NodeJS.Timeout
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-   function getSize() {
-     const screenSize = window.innerWidth
-     return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
-   }
+  function getSize() {
+    const screenSize = window.innerWidth
+    return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
+  }
   const handleClick = (
     { title, component }: FormContent,
     userId: string,
@@ -105,7 +105,7 @@ const TpManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setQuery(value)
+      setQuery(value.toLowerCase())
     }, 750)
   }
   const [Prefixtype] = useState([

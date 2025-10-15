@@ -185,7 +185,7 @@ function AddUserSection(props: { roles: [] }) {
               placeholder="First Name"
               register={register}
               required={true}
-              error={errors.firstName}
+              error={errors.FirstName}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>
@@ -198,7 +198,7 @@ function AddUserSection(props: { roles: [] }) {
               placeholder="Last Name"
               register={register}
               required={true}
-              error={errors.lastName}
+              error={errors.LastName}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>
@@ -213,7 +213,7 @@ function AddUserSection(props: { roles: [] }) {
               placeholder="Email"
               register={register}
               required={true}
-              error={errors.email}
+              error={errors.Email}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>
@@ -226,7 +226,7 @@ function AddUserSection(props: { roles: [] }) {
               placeholder="Password"
               register={register}
               required={true}
-              error={errors.password}
+              error={errors.Password}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>
@@ -241,7 +241,7 @@ function AddUserSection(props: { roles: [] }) {
               placeholder="Phone Number"
               register={register}
               required={true}
-              error={errors.phoneNumber}
+              error={errors.Phone}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>
@@ -254,7 +254,7 @@ function AddUserSection(props: { roles: [] }) {
               placeholder="Whatsapp"
               register={register}
               required={false}
-              error={errors.whatsapp}
+              error={errors.Whatsapp}
               labelAlignment={AlignmentTypes.BLOCK}
             />
           </div>

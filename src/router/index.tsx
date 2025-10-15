@@ -193,6 +193,7 @@ import FAQManagement from '../pages/faq-management'
 import FAQCategoryManagement from '../pages/faq-category-management'
 import ReportPage from '../pages/report/report'
 import Annoucements from '../pages/annoucements'
+import Notifications from '../pages/notifications'
 
 function Router() {
   const { error, pos } = RouteRegistry
@@ -249,6 +250,10 @@ function Router() {
         {
           path: 'annoucements',
           element: <Annoucements />,
+        },
+        {
+          path: 'notifications',
+          element: <Notifications />,
         },
         {
           path: 'contact-management/suppliers',

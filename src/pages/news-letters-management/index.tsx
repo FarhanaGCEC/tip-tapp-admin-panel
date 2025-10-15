@@ -74,7 +74,7 @@ const NewsLettersManagement = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setSearch(value)
+      setSearch(value.toLowerCase())
     }, 750)
   }
 
