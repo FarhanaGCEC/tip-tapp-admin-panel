@@ -97,6 +97,13 @@ const initialState: SideMenuState = {
           pathname: '/manage-reviews',
         }
       : null,
+    hasPermission('support_management.view')
+      ? {
+          icon: 'Headphones',
+          title: 'Support',
+          pathname: '/contact-us-management',
+        }
+      : null,
     hasPermission('footer_management.view')
       ? {
           icon: 'FileCode',

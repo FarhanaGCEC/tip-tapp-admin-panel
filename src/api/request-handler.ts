@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import axios from 'axios'
 
 const axiosInstance = axios.create({
@@ -8,11 +9,23 @@ const axiosInstance = axios.create({
     'Content-type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-    /* TODO: Get from local storage after implement autentication */
     'X-Tenant': '',
-    Authorization: '',
   },
 })
+
+// Request interceptor to add Bearer token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwtToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 axiosInstance.interceptors.response.use(
   (response) => response,

@@ -194,6 +194,7 @@ import FAQCategoryManagement from '../pages/faq-category-management'
 import ReportPage from '../pages/report/report'
 import Annoucements from '../pages/annoucements'
 import Notifications from '../pages/notifications'
+import ContactUsManagement from '../pages/contact-us-management'
 
 function Router() {
   const { error, pos } = RouteRegistry
@@ -254,6 +255,10 @@ function Router() {
         {
           path: 'notifications',
           element: <Notifications />,
+        },
+        {
+          path: 'contact-us-management',
+          element: <ContactUsManagement />,
         },
         {
           path: 'contact-management/suppliers',
