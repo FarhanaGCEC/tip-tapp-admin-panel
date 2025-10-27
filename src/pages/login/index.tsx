@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form'
 import illustrationUrl from '../../assets/images/final-logo.svg'
 import Button from '../../components/common/button'
@@ -22,6 +23,7 @@ import { useLogin } from '../../api/auth-management'
 function Main() {
   const authApi = AuthApi.useAPI()
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -39,7 +41,7 @@ function Main() {
     handleSlider()
     setTimeout(() => {
       handleSlider()
-      window.location.href = '/'
+      navigate('/')
     }, 800)
   }
   const errorHandler = (error: any) => {
@@ -82,24 +84,19 @@ function Main() {
         localStorage.removeItem('user')
         return
       }
+
+      // Set tokens first for staff users
+      localStorage.setItem('jwtToken', data?.access_token)
+      localStorage.setItem('validationToken', data?.validation_token)
+      localStorage.setItem('user', JSON.stringify(data?.user))
+
+      // Then show success message and redirect
       sucessHandlerLogin(email, 'Successfully Login')
     }
     if (isError) {
       errorHandler('Please Check Your Login Credentials.')
     }
   }, [isSuccess, isError, data])
-
-  useEffect(() => {
-    if (isSuccess && data) {
-      // Only set tokens if user has staff role
-      const userRole = data?.user?.Role?.toLowerCase()
-      if (userRole === 'staff') {
-        localStorage.setItem('jwtToken', data?.access_token)
-        localStorage.setItem('validationToken', data?.validation_token)
-        localStorage.setItem('user', JSON.stringify(data?.user))
-      }
-    }
-  }, [data, isSuccess])
 
   const UserLogin = async (userData: any) => {
     setIsLoading(true)
