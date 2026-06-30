@@ -82,17 +82,17 @@ const TipManagementPage = () => {
       <div className=" mt-5 lg:grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 xl:gap-[39px]">
         <TipCard
           title={'Tip Given'}
-          amount={parseFloat(TipsBalanceData?.data)}
+          amountData={TipsBalanceData}
           icon={TipGivenIcon}
         />
         <TipCard
           title={'Tip Withdrawal'}
-          amount={parseFloat(withdrawalBalanceData?.data)}
+          amountData={withdrawalBalanceData}
           icon={TipWithdrawIcon}
         />
         <TipCard
           title={'Tip Balance'}
-          amount={parseFloat(TipAppBalanceData?.data)}
+          amountData={TipAppBalanceData}
           icon={TipBlanceIcon}
         />
       </div>

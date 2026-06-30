@@ -1,3 +1,5 @@
+import { DualAmount } from './currency'
+
 interface Meta {
   totalItems: number
   itemCount: number
@@ -20,13 +22,17 @@ export interface TipItem {
   serviceProviderName: string
   createdAt: string
   amount: number
+  amountAED?: number
+  amounts?: DualAmount
 }
 
 export interface WithdrawalItem {
   WithdrawId: number
   serviceProviderName: string
   Amount: number
-  Method:string
+  amountAED?: number
+  amounts?: DualAmount
+  Method: string
   DateCreate: string
 }
 

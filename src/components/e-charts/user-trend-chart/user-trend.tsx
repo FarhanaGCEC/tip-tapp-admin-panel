@@ -11,8 +11,14 @@ import {
 } from '../../../api/dashboard/dashboard'
 import { monthNames } from '../../../constants/months'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
-import Lucide from '../../common/lucide'
+import PeriodSelector from '../../common/period-selector/period-selector'
 import Tippy from '../../common/tippy'
+import {
+  getMonthKey,
+  getPeriodLabel,
+  getPreviousMonthKey,
+  PeriodMonth,
+} from '../../../utils/periodFilter'
 
 const UserTrendChart: React.FC = () => {
   const spQuery = GetNewSPCountByMonth()
@@ -29,12 +35,15 @@ const UserTrendChart: React.FC = () => {
     { month: string; count: string }[] | undefined
   >()
 
-  const [thisMonthTotal, setThisMonthTotal] = useState(0)
-  const [lastMonthTotal, setLastMonthTotal] = useState(0)
   const [selectedType, setSelectedType] = useState('All')
   const [selectedYear, setSelectedYear] = useState(
     new Date().getFullYear().toString()
   )
+  const [selectedMonth, setSelectedMonth] = useState<PeriodMonth>('all')
+  const [primaryTotal, setPrimaryTotal] = useState(0)
+  const [secondaryTotal, setSecondaryTotal] = useState(0)
+  const [primaryLabel, setPrimaryLabel] = useState('This Month')
+  const [secondaryLabel, setSecondaryLabel] = useState('Last Month')
 
   useEffect(() => {
     if (spQuery.data && tpQuery.data && bothQuery.data) {
@@ -46,79 +55,106 @@ const UserTrendChart: React.FC = () => {
       setTpChartData(tpData)
       setBothChartData(bothData)
 
-      calculateTotals(spData, tpData, bothData, selectedType)
+      calculateTotals(spData, tpData, bothData, selectedType, selectedYear, selectedMonth)
     }
-  }, [spQuery.data, tpQuery.data, bothQuery.data, selectedType, selectedYear])
+  }, [spQuery.data, tpQuery.data, bothQuery.data, selectedType, selectedYear, selectedMonth])
 
   const calculateTotals = (
     spData: { month: string; count: string }[] | undefined,
     tpData: { month: string; count: string }[] | undefined,
     bothData: { month: string; count: string }[] | undefined,
-    selectedType: string
+    selectedType: string,
+    year: string,
+    month: PeriodMonth
   ) => {
-    let thisMonthCount = 0
-    let lastMonthCount = 0
-    const year = parseInt(selectedYear, 10)
-    const currentDate = new Date()
-    const currentMonth = `${selectedYear}-${String(
-      currentDate.getMonth() + 1
-    ).padStart(2, '0')}`
-    const lastMonthDate = new Date(year, currentDate.getMonth() - 1)
-    const lastMonth = `${selectedYear}-${String(
-      lastMonthDate.getMonth() + 1
-    ).padStart(2, '0')}`
-
     const getMonthCount = (
       data: { month: string; count: string }[],
       targetMonth: string
-    ) => {
-      return parseInt(
-        data.find((item) => item.month === targetMonth)?.count || '0',
-        10
-      )
+    ) =>
+      parseInt(data.find((item) => item.month === targetMonth)?.count || '0', 10)
+
+    const countForType = (targetMonth: string) => {
+      if (!spData || !tpData || !bothData) return 0
+      if (selectedType === 'All') {
+        return (
+          getMonthCount(spData, targetMonth) +
+          getMonthCount(tpData, targetMonth) +
+          getMonthCount(bothData, targetMonth)
+        )
+      }
+      if (selectedType === 'Service Providers') {
+        return getMonthCount(spData, targetMonth)
+      }
+      if (selectedType === 'Tippers') {
+        return getMonthCount(tpData, targetMonth)
+      }
+      return getMonthCount(bothData, targetMonth)
     }
 
     if (spData && tpData && bothData) {
-      if (selectedType === 'All') {
-        thisMonthCount =
-          getMonthCount(spData, currentMonth) +
-          getMonthCount(tpData, currentMonth) +
-          getMonthCount(bothData, currentMonth)
-        lastMonthCount =
-          getMonthCount(spData, lastMonth) +
-          getMonthCount(tpData, lastMonth) +
-          getMonthCount(bothData, lastMonth)
-      } else if (selectedType === 'Service Providers') {
-        thisMonthCount = getMonthCount(spData, currentMonth)
-        lastMonthCount = getMonthCount(spData, lastMonth)
-      } else if (selectedType === 'Tippers') {
-        thisMonthCount = getMonthCount(tpData, currentMonth)
-        lastMonthCount = getMonthCount(tpData, lastMonth)
-      } else if (selectedType === 'Both') {
-        thisMonthCount = getMonthCount(bothData, currentMonth)
-        lastMonthCount = getMonthCount(bothData, lastMonth)
+      if (month !== 'all') {
+        const monthKey = getMonthKey(year, month) || ''
+        const prevKey = getPreviousMonthKey(year, month) || ''
+        setPrimaryTotal(countForType(monthKey))
+        setSecondaryTotal(countForType(prevKey))
+        setPrimaryLabel(getPeriodLabel(year, month))
+        setSecondaryLabel('Previous Month')
+        return
       }
 
-      setThisMonthTotal(thisMonthCount)
-      setLastMonthTotal(lastMonthCount)
+      const now = new Date()
+      const isCurrentYear = year === String(now.getFullYear())
+
+      if (isCurrentYear) {
+        const thisMonth = `${year}-${String(now.getMonth() + 1).padStart(2, '0')}`
+        const lastDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastMonth = `${lastDate.getFullYear()}-${String(
+          lastDate.getMonth() + 1
+        ).padStart(2, '0')}`
+        setPrimaryTotal(countForType(thisMonth))
+        setSecondaryTotal(countForType(lastMonth))
+        setPrimaryLabel('This Month')
+        setSecondaryLabel('Last Month')
+        return
+      }
+
+      const yearMonthKeys = Array.from({ length: 12 }, (_, index) =>
+        `${year}-${String(index + 1).padStart(2, '0')}`
+      )
+      const monthlyCounts = yearMonthKeys.map((key) => countForType(key))
+      const yearTotal = monthlyCounts.reduce((sum, value) => sum + value, 0)
+      const peak = monthlyCounts.reduce(
+        (best, value, index) =>
+          value > best.value ? { value, index } : best,
+        { value: 0, index: 0 }
+      )
+
+      setPrimaryTotal(yearTotal)
+      setSecondaryTotal(peak.value)
+      setPrimaryLabel('Year Total')
+      setSecondaryLabel(
+        peak.value ? `Peak (${monthNames[peak.index]})` : 'Peak Month'
+      )
     }
   }
-  const yearOptions = Array.from({ length: 4 }, (_, i) => {
-    const year = new Date().getFullYear() - i
-    return (
-      <option key={year} value={year.toString()}>
-        {year}/01 to {year}/12
-      </option>
-    )
-  })
 
-  const xAxisData = Array.from({ length: 12 }, (_, i) =>
-    `${i + 1}`.padStart(2, '0')
-  )
-
+  const xAxisData =
+    selectedMonth === 'all'
+      ? Array.from({ length: 12 }, (_, i) => `${i + 1}`.padStart(2, '0'))
+      : (() => {
+          const monthIndex = Number(selectedMonth) - 1
+          const start = Math.max(0, monthIndex - 2)
+          const end = Math.min(12, monthIndex + 3)
+          return Array.from({ length: end - start }, (_, i) =>
+            String(start + i + 1).padStart(2, '0')
+          )
+        })()
   const formattedXAxisData = xAxisData.map(
     (month) => monthNames[parseInt(month, 10) - 1]
   )
+
+  const isSingleMonthView = selectedMonth !== 'all'
+  const chartType = isSingleMonthView ? 'bar' : 'line'
 
   const spYAxisData = xAxisData.map(
     (month) =>
@@ -154,9 +190,9 @@ const UserTrendChart: React.FC = () => {
     seriesData = [
       {
         name: 'Service Providers',
-        type: 'line',
+        type: chartType,
         data: spYAxisData,
-        smooth: true,
+        smooth: !isSingleMonthView,
         lineStyle: {
           color: '#06768d',
           width: 3,
@@ -169,9 +205,9 @@ const UserTrendChart: React.FC = () => {
       },
       {
         name: 'Tippers',
-        type: 'line',
+        type: chartType,
         data: tpYAxisData,
-        smooth: true,
+        smooth: !isSingleMonthView,
         lineStyle: {
           color: '#010048',
           width: 3,
@@ -184,9 +220,9 @@ const UserTrendChart: React.FC = () => {
       },
       {
         name: 'Both',
-        type: 'line',
+        type: chartType,
         data: bothYAxisData,
-        smooth: true,
+        smooth: !isSingleMonthView,
         lineStyle: {
           color: '#000000',
           width: 2,
@@ -202,9 +238,9 @@ const UserTrendChart: React.FC = () => {
     seriesData = [
       {
         name: 'Service Providers',
-        type: 'line',
+        type: chartType,
         data: spYAxisData,
-        smooth: true,
+        smooth: !isSingleMonthView,
         lineStyle: {
           color: '#06768d',
           width: 3,
@@ -220,9 +256,9 @@ const UserTrendChart: React.FC = () => {
     seriesData = [
       {
         name: 'Tippers',
-        type: 'line',
+        type: chartType,
         data: tpYAxisData,
-        smooth: true,
+        smooth: !isSingleMonthView,
         lineStyle: {
           color: '#010048',
           width: 3,
@@ -238,9 +274,9 @@ const UserTrendChart: React.FC = () => {
     seriesData = [
       {
         name: 'Both',
-        type: 'line',
+        type: chartType,
         data: bothYAxisData,
-        smooth: true,
+        smooth: !isSingleMonthView,
         lineStyle: {
           color: '#000000',
           width: 2,
@@ -268,7 +304,7 @@ const UserTrendChart: React.FC = () => {
     },
     xAxis: {
       type: 'category',
-      boundaryGap: false,
+      boundaryGap: isSingleMonthView,
       data: formattedXAxisData,
       axisLine: {
         lineStyle: {
@@ -320,19 +356,15 @@ const UserTrendChart: React.FC = () => {
           User Trend
         </h2>
         <div className="mt-[20px]">
-          <div className="relative w-[200px]">
-            <Lucide
-              icon="Calendar"
-              className="absolute inset-y-0 left-0 z-10 my-auto ml-2 h-4 w-4 text-gray-500"
-            />
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 p-1 pl-10 text-sm"
-            >
-              {yearOptions}
-            </select>
-          </div>
+          <PeriodSelector
+            year={selectedYear}
+            month={selectedMonth}
+            onYearChange={(year) => {
+              setSelectedYear(year)
+              setSelectedMonth('all')
+            }}
+            onMonthChange={setSelectedMonth}
+          />
         </div>
       </div>
 
@@ -352,17 +384,17 @@ const UserTrendChart: React.FC = () => {
               <div className="mt-[20px] flex items-center space-x-4">
                 <div className="text-center font-semibold">
                   <div className="text-xl">
-                    {thisMonthTotal ? thisMonthTotal.toLocaleString() : '0'}
+                    {primaryTotal ? primaryTotal.toLocaleString() : '0'}
                   </div>
-                  <div className="text-sm">This Month</div>
+                  <div className="text-sm">{primaryLabel}</div>
                 </div>
                 <div className="h-[50px] border-[1px] border-dashed" />
 
                 <div className="text-center font-semibold">
                   <div className="text-xl">
-                    {lastMonthTotal ? lastMonthTotal.toLocaleString() : '0'}
+                    {secondaryTotal ? secondaryTotal.toLocaleString() : '0'}
                   </div>
-                  <div className="text-sm">Last Month</div>
+                  <div className="text-sm">{secondaryLabel}</div>
                 </div>
               </div>
               <div className="mr-[25px] mt-[12px]">
@@ -370,7 +402,7 @@ const UserTrendChart: React.FC = () => {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="mr-[25px] w-[140px] rounded-lg border border-gray-300 p-1 text-sm text-gray-500"
+                    className="mr-[25px] h-10 w-[140px] appearance-none rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-[#2D3748] shadow-sm focus:border-[#06768d] focus:outline-none focus:ring-2 focus:ring-[#06768d]/20"
                   >
                     <option value="All">All</option>
                     <option value="Service Providers">Service Providers</option>

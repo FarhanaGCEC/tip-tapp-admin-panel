@@ -101,25 +101,78 @@ export const GetUsersCountByType = (): UseQueryResult<any> => {
   })
 }
 
-export const GetWithdrawalsPerMonth = (): UseQueryResult<any> => {
+export const GetWithdrawalReceivedTrend = (
+  year: string
+): UseQueryResult<{
+  received: MonthlyTrendResponse
+  withdrawals: MonthlyTrendResponse
+}> => {
   return useQuery({
-    queryKey: ['get_withdrawals_per_month'],
+    queryKey: ['get_withdrawal_received_trend', year],
     queryFn: async () => {
-      return await authFetch.get('/invoices/stats/total-withdrawal-by-month')
+      return await authFetch.get(
+        `/tip-management/stats/withdrawal-received-trend?year=${year}`
+      )
     },
-    select(data: { data: any }) {
+    select(data: { data: WithdrawalReceivedTrendApiResponse }) {
       return data?.data
     },
   })
 }
 
-export const GetTipsPerMonth = (): UseQueryResult<any> => {
+export type MonthlyTrendPoint = {
+  month: string
+  monthIndex: number
+  monthLabel: string
+  total: number
+  totalAED: number
+  amounts?: {
+    amounts?: { GBP: number; AED: number }
+    amount?: number
+    amountAED?: number
+  }
+}
+
+export type MonthlyTrendResponse = {
+  totalsByMonth: MonthlyTrendPoint[]
+  maxTotal: number
+  thisMonthTotal: number
+  lastMonthTotal: number
+  thisMonthTotalAED: number
+  lastMonthTotalAED: number
+  year: number
+}
+
+type WithdrawalReceivedTrendApiResponse = {
+  received: MonthlyTrendResponse
+  withdrawals: MonthlyTrendResponse
+}
+
+export const GetWithdrawalsPerMonth = (year?: string): UseQueryResult<MonthlyTrendResponse> => {
   return useQuery({
-    queryKey: ['get_tips_per_month'],
+    queryKey: ['get_withdrawals_per_month', year],
     queryFn: async () => {
-      return await authFetch.get('/tip-management/stats/total-tips-by-month')
+      const query = year ? `?year=${year}` : ''
+      return await authFetch.get(
+        `/invoices/stats/total-withdrawal-by-month${query}`
+      )
     },
-    select(data: { data: any }) {
+    select(data: { data: MonthlyTrendResponse }) {
+      return data?.data
+    },
+  })
+}
+
+export const GetTipsPerMonth = (year?: string): UseQueryResult<MonthlyTrendResponse> => {
+  return useQuery({
+    queryKey: ['get_tips_per_month', year],
+    queryFn: async () => {
+      const query = year ? `?year=${year}` : ''
+      return await authFetch.get(
+        `/tip-management/stats/total-tips-by-month${query}`
+      )
+    },
+    select(data: { data: MonthlyTrendResponse }) {
       return data?.data
     },
   })

@@ -10,6 +10,10 @@ import {
 } from 'react-query'
 import authFetch from './axiosinterceptor'
 import { GetUserDetailsResponse, AddUserPayload } from '../types/adminUserTypes'
+import {
+  isAuthErrorStatus,
+  isValidNumericUserId,
+} from '../utils/authSession'
 
 export const useAddUserDetails = (): UseMutationResult<
   any,
@@ -109,17 +113,19 @@ export const useGetUserById = (userparameid: string): UseQueryResult<any> => {
   return useQuery({
     queryKey: ['get_user_by_id', userparameid],
     queryFn: async () => {
-      try {
-        const response = await authFetch.get(`/user-details/${userparameid}`)
-        return response.data.data
-      } catch (error) {
-        throw error
-      }
+      const response = await authFetch.get(
+        `/user-details/admin/${userparameid}`
+      )
+      return response.data.data
     },
-    onSuccess: () => {},
-    onError: (error: any) => {
-      console.error('Fetch error:', error)
-    },
+    enabled: isValidNumericUserId(userparameid),
+    retry: (failureCount, error) =>
+      isAuthErrorStatus(
+        (error as { response?: { status?: number } })?.response?.status
+      )
+        ? false
+        : failureCount < 2,
+    onError: () => {},
   })
 }
 

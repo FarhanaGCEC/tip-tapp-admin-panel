@@ -1,6 +1,8 @@
 import Table from '../common/table'
 import date from 'date-and-time'
-import { TipItem, WithdrawalItem } from '../../types/tips'
+import { WithdrawalItem } from '../../types/tips'
+import { useCurrencyStore } from '../../stores/currencyStore'
+import { formatMoney } from '../../utils/formatMoney'
 
 interface WithdrawalTableProps {
   headers: { key: number; label: string }[]
@@ -11,6 +13,8 @@ const WithdrawalTable: React.FC<WithdrawalTableProps> = ({
   headers,
   withdrawalItems,
 }) => {
+  const currency = useCurrencyStore((state) => state.currency)
+
   return (
     <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
       <Table.Thead variant="default">
@@ -49,7 +53,7 @@ const WithdrawalTable: React.FC<WithdrawalTableProps> = ({
               {item.serviceProviderName || 'N/A'}
             </Table.Td>
             <Table.Td className="cursor-pointer  border-b-0 bg-white px-16 pr-5 text-end shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Amount || 0}
+              {formatMoney(item, currency)}
             </Table.Td>
           </Table.Tr>
         ))}

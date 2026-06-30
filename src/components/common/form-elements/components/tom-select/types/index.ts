@@ -1,5 +1,5 @@
 import TomSelectPlugin from 'tom-select'
-import { TomSettings, RecursivePartial } from 'tom-select/src/types/index'
+import { TomSettings, RecursivePartial } from '../../../../../../types/tom-select'
 
 export interface TomSelectElement extends HTMLSelectElement {
   TomSelect: TomSelectPlugin

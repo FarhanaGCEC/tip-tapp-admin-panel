@@ -1,6 +1,8 @@
 import Table from '../common/table'
 import date from 'date-and-time'
 import { TipItem } from '../../types/tips'
+import { useCurrencyStore } from '../../stores/currencyStore'
+import { formatMoney } from '../../utils/formatMoney'
 
 interface TipManagementTableProps {
   headers: { key: number; label: string }[]
@@ -11,6 +13,8 @@ const TipManagementTable: React.FC<TipManagementTableProps> = ({
   headers,
   tipItems,
 }) => {
+  const currency = useCurrencyStore((state) => state.currency)
+
   return (
     <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
       <Table.Thead variant="default">
@@ -52,7 +56,7 @@ const TipManagementTable: React.FC<TipManagementTableProps> = ({
               {item.serviceProviderName || 'N/A'}
             </Table.Td>
             <Table.Td className="cursor-pointer border-b-0  bg-white   text-end  first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              {item.amount}
+              {formatMoney(item, currency)}
             </Table.Td>
           </Table.Tr>
         ))}

@@ -102,7 +102,7 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
                   onClick={() =>
                     handleClick(
                       SlideoverRegistry.viewTpAndSpManagement,
-                      item.KeyCloakID,
+                      item.id.toString(),
                       pending
                     )
                   }

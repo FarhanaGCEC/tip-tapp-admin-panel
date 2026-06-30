@@ -1,375 +1,453 @@
 /* eslint-disable react/function-component-definition */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable no-console */
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
 import {
-  GetWithdrawalsPerMonth,
-  GetTipsPerMonth,
+  GetWithdrawalReceivedTrend,
+  MonthlyTrendPoint,
 } from '../../../api/dashboard/dashboard'
-import { monthNames } from '../../../constants/months'
-import { formatThousands } from '../../../hooks/formatter'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
-import Lucide from '../../common/lucide'
+import LoadingIcon from '../../common/loading-icon'
+import PeriodSelector from '../../common/period-selector/period-selector'
+import { PeriodMonth } from '../../../utils/periodFilter'
+import { useCurrencyStore } from '../../../stores/currencyStore'
+import { formatMoney, getAmountValue } from '../../../utils/formatMoney'
+import { Currency } from '../../../types/currency'
+import {
+  getChartWindowPoints,
+  getMonthKey,
+  getPeriodLabel,
+  getPreviousMonthKey,
+} from '../../../utils/periodFilter'
+import { escapeHtml } from '../../../utils/escapeHtml'
+import { monthNames } from '../../../constants/months'
+
+type TrendType = 'All' | 'Withdrawals' | 'Tips'
+
+const getMonthAmount = (
+  point: MonthlyTrendPoint | undefined,
+  currency: Currency
+): number => {
+  if (!point) return 0
+  if (point.amounts) {
+    return getAmountValue(point.amounts, currency) ?? 0
+  }
+  return currency === 'GBP'
+    ? Number(point.total) || 0
+    : Number(point.totalAED) || 0
+}
+
+const formatChartMoney = (value: number, currency: Currency): string =>
+  formatMoney(
+    currency === 'GBP' ? { amount: value } : { amountAED: value },
+    currency
+  )
+
+const formatAxisValue = (value: number, currency: Currency): string => {
+  if (value >= 1000) {
+    return currency === 'GBP'
+      ? `£${(value / 1000).toFixed(1)}k`
+      : `${(value / 1000).toFixed(1)}k`
+  }
+  return currency === 'GBP' ? `£${value}` : `${value}`
+}
+
+const sumForType = (
+  withdrawalPoint: MonthlyTrendPoint | undefined,
+  tipsPoint: MonthlyTrendPoint | undefined,
+  selectedType: TrendType,
+  currency: Currency
+): number => {
+  const withdrawal = getMonthAmount(withdrawalPoint, currency)
+  const tips = getMonthAmount(tipsPoint, currency)
+  if (selectedType === 'Withdrawals') return withdrawal
+  if (selectedType === 'Tips') return tips
+  return withdrawal + tips
+}
 
 const TipsAndWithdrawalsChart: React.FC = () => {
-  const withdrawalsQuery = GetWithdrawalsPerMonth()
-  const tipsQuery = GetTipsPerMonth()
-
-  const [withdrawalsData, setWithdrawalsData] = useState<
-    { month: string; totalWithdrawal: string }[] | undefined
-  >()
-  const [tipsData, setTipsData] = useState<
-    { month: string; totalTips: string }[] | undefined
-  >()
-
-  const [selectedType, setSelectedType] = useState('All')
+  const currency = useCurrencyStore((state) => state.currency)
+  const [selectedType, setSelectedType] = useState<TrendType>('All')
   const [selectedYear, setSelectedYear] = useState(
     new Date().getFullYear().toString()
   )
-  const [thisMonthTotal, setThisMonthTotal] = useState(0)
-  const [lastMonthTotal, setLastMonthTotal] = useState(0)
+  const [selectedMonth, setSelectedMonth] = useState<PeriodMonth>('all')
 
-  useEffect(() => {
-    if (withdrawalsQuery.data) {
-      setWithdrawalsData(withdrawalsQuery.data.totalsByMonth)
-    }
-    if (tipsQuery.data) {
-      setTipsData(tipsQuery.data.totalsByMonth)
-    }
+  const { data, isLoading, isError } = GetWithdrawalReceivedTrend(selectedYear)
 
-    if (withdrawalsQuery.data && tipsQuery.data) {
-      calculateTotals(
-        withdrawalsQuery.data.totalsByMonth,
-        tipsQuery.data.totalsByMonth,
-        selectedType,
-        selectedYear
-      )
-    }
-  }, [withdrawalsQuery.data, tipsQuery.data, selectedType, selectedYear])
+  const withdrawalsByMonth = data?.withdrawals?.totalsByMonth ?? []
+  const tipsByMonth = data?.received?.totalsByMonth ?? []
 
-  const calculateTotals = (
-    withdrawals: { month: string; totalWithdrawal: string }[] | undefined,
-    tips: { month: string; totalTips: string }[] | undefined,
-    type: string,
-    year: string
-  ) => {
-    let thisMonthWithdrawal = 0
-    let lastMonthWithdrawal = 0
-    let thisMonthTips = 0
-    let lastMonthTips = 0
+  const chartWithdrawals = useMemo(
+    () =>
+      getChartWindowPoints(withdrawalsByMonth, selectedYear, selectedMonth),
+    [withdrawalsByMonth, selectedYear, selectedMonth]
+  )
 
-    if (withdrawals && tips) {
-      const currentDate = new Date()
-      const currentMonth = (currentDate.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')
+  const chartTips = useMemo(
+    () => getChartWindowPoints(tipsByMonth, selectedYear, selectedMonth),
+    [tipsByMonth, selectedYear, selectedMonth]
+  )
 
-      const lastMonthDate = new Date(
-        currentDate.setMonth(currentDate.getMonth() - 1)
-      )
-      const lastMonth = (lastMonthDate.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')
+  const chartMonths = useMemo(
+    () =>
+      (chartTips.length ? chartTips : chartWithdrawals).map(
+        (point) => point.monthLabel
+      ),
+    [chartTips, chartWithdrawals]
+  )
 
-      const thisMonthWithdrawalData = withdrawals.find(
-        (data) => data.month === `${year}-${currentMonth}`
-      )
-      const thisMonthTipsData = tips.find(
-        (data) => data.month === `${year}-${currentMonth}`
-      )
+  const withdrawalsSeries = useMemo(
+    () => chartWithdrawals.map((point) => getMonthAmount(point, currency)),
+    [chartWithdrawals, currency]
+  )
 
-      const lastMonthWithdrawalData = withdrawals.find(
-        (data) => data.month === `${year}-${lastMonth}`
-      )
-      const lastMonthTipsData = tips.find(
-        (data) => data.month === `${year}-${lastMonth}`
-      )
+  const tipsSeries = useMemo(
+    () => chartTips.map((point) => getMonthAmount(point, currency)),
+    [chartTips, currency]
+  )
 
-      if (type === 'All') {
-        thisMonthWithdrawal = parseFloat(
-          thisMonthWithdrawalData?.totalWithdrawal || '0'
+  const { primaryTotal, secondaryTotal, primaryLabel, secondaryLabel } =
+    useMemo(() => {
+      const now = new Date()
+      const isCurrentYear = selectedYear === String(now.getFullYear())
+
+      if (selectedMonth !== 'all') {
+        const monthKey = getMonthKey(selectedYear, selectedMonth)
+        const prevKey = getPreviousMonthKey(selectedYear, selectedMonth)
+        const withdrawalPoint = withdrawalsByMonth.find(
+          (point) => point.month === monthKey
         )
-        lastMonthWithdrawal = parseFloat(
-          lastMonthWithdrawalData?.totalWithdrawal || '0'
+        const tipsPoint = tipsByMonth.find((point) => point.month === monthKey)
+        const prevWithdrawal = withdrawalsByMonth.find(
+          (point) => point.month === prevKey
         )
+        const prevTips = tipsByMonth.find((point) => point.month === prevKey)
 
-        thisMonthTips = parseFloat(thisMonthTipsData?.totalTips || '0')
-        lastMonthTips = parseFloat(lastMonthTipsData?.totalTips || '0')
-
-        setThisMonthTotal(thisMonthWithdrawal + thisMonthTips)
-        setLastMonthTotal(lastMonthWithdrawal + lastMonthTips)
-      } else if (type === 'Withdrawals') {
-        thisMonthWithdrawal = parseFloat(
-          thisMonthWithdrawalData?.totalWithdrawal || '0'
-        )
-        lastMonthWithdrawal = parseFloat(
-          lastMonthWithdrawalData?.totalWithdrawal || '0'
-        )
-
-        setThisMonthTotal(thisMonthWithdrawal)
-        setLastMonthTotal(lastMonthWithdrawal)
-      } else if (type === 'Tips') {
-        thisMonthTips = parseFloat(thisMonthTipsData?.totalTips || '0')
-        lastMonthTips = parseFloat(lastMonthTipsData?.totalTips || '0')
-
-        setThisMonthTotal(thisMonthTips)
-        setLastMonthTotal(lastMonthTips)
+        return {
+          primaryTotal: sumForType(
+            withdrawalPoint,
+            tipsPoint,
+            selectedType,
+            currency
+          ),
+          secondaryTotal: sumForType(
+            prevWithdrawal,
+            prevTips,
+            selectedType,
+            currency
+          ),
+          primaryLabel: getPeriodLabel(selectedYear, selectedMonth),
+          secondaryLabel: 'Previous Month',
+        }
       }
+
+      if (isCurrentYear) {
+        const thisKey = `${now.getFullYear()}-${String(
+          now.getMonth() + 1
+        ).padStart(2, '0')}`
+        const lastDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastKey = `${lastDate.getFullYear()}-${String(
+          lastDate.getMonth() + 1
+        ).padStart(2, '0')}`
+
+        return {
+          primaryTotal: sumForType(
+            withdrawalsByMonth.find((point) => point.month === thisKey),
+            tipsByMonth.find((point) => point.month === thisKey),
+            selectedType,
+            currency
+          ),
+          secondaryTotal: sumForType(
+            withdrawalsByMonth.find((point) => point.month === lastKey),
+            tipsByMonth.find((point) => point.month === lastKey),
+            selectedType,
+            currency
+          ),
+          primaryLabel: 'This Month',
+          secondaryLabel: 'Last Month',
+        }
+      }
+
+      const yearTotals = withdrawalsByMonth.map((point, index) =>
+        sumForType(point, tipsByMonth[index], selectedType, currency)
+      )
+      const yearTotal = yearTotals.reduce((sum, value) => sum + value, 0)
+      const peak = yearTotals.reduce(
+        (best, value, index) =>
+          value > best.value ? { value, index } : best,
+        { value: 0, index: 0 }
+      )
+
+      return {
+        primaryTotal: yearTotal,
+        secondaryTotal: peak.value,
+        primaryLabel: 'Year Total',
+        secondaryLabel: peak.value
+          ? `Peak (${monthNames[peak.index]})`
+          : 'Peak Month',
+      }
+    }, [
+      currency,
+      selectedMonth,
+      selectedType,
+      selectedYear,
+      tipsByMonth,
+      withdrawalsByMonth,
+    ])
+
+  const isSingleMonthView = selectedMonth !== 'all'
+
+  const activeSeries = useMemo(() => {
+    const chartType = isSingleMonthView ? ('bar' as const) : ('line' as const)
+
+    const withdrawals = {
+      name: 'Withdrawals',
+      type: chartType,
+      data: withdrawalsSeries,
+      smooth: !isSingleMonthView,
+      symbol: isSingleMonthView ? undefined : 'circle',
+      symbolSize: isSingleMonthView ? undefined : 7,
+      barMaxWidth: 36,
+      lineStyle: { color: '#06768d', width: 3 },
+      itemStyle: { color: '#06768d', borderWidth: 2, borderColor: '#fff' },
+      areaStyle: isSingleMonthView
+        ? undefined
+        : {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(6, 118, 141, 0.25)' },
+                { offset: 1, color: 'rgba(6, 118, 141, 0.02)' },
+              ],
+            },
+          },
     }
-  }
 
-  const xAxisData = monthNames
+    const tips = {
+      name: 'Tips Received',
+      type: chartType,
+      data: tipsSeries,
+      smooth: !isSingleMonthView,
+      symbol: isSingleMonthView ? undefined : 'circle',
+      symbolSize: isSingleMonthView ? undefined : 7,
+      barMaxWidth: 36,
+      lineStyle: { color: '#010048', width: 3 },
+      itemStyle: { color: '#010048', borderWidth: 2, borderColor: '#fff' },
+      areaStyle: isSingleMonthView
+        ? undefined
+        : {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(1, 0, 72, 0.2)' },
+                { offset: 1, color: 'rgba(1, 0, 72, 0.02)' },
+              ],
+            },
+          },
+    }
 
-  const withdrawalsYAxisData = xAxisData.map((month, index) => {
-    const monthString = (index + 1).toString().padStart(2, '0')
-    return (
-      withdrawalsData?.find(
-        (data) => data.month === `${selectedYear}-${monthString}`
-      )?.totalWithdrawal || 0
-    )
-  })
+    if (selectedType === 'Withdrawals') return [withdrawals]
+    if (selectedType === 'Tips') return [tips]
+    return [withdrawals, tips]
+  }, [isSingleMonthView, selectedType, tipsSeries, withdrawalsSeries])
 
-  const tipsYAxisData = xAxisData.map((month, index) => {
-    const monthString = (index + 1).toString().padStart(2, '0')
-    return (
-      tipsData?.find((data) => data.month === `${selectedYear}-${monthString}`)
-        ?.totalTips || 0
-    )
-  })
+  const maxValue = useMemo(() => {
+    const values =
+      selectedType === 'Withdrawals'
+        ? withdrawalsSeries
+        : selectedType === 'Tips'
+        ? tipsSeries
+        : [...withdrawalsSeries, ...tipsSeries]
+    return Math.max(...values, 0)
+  }, [selectedType, tipsSeries, withdrawalsSeries])
 
-  const yearOptions = Array.from({ length: 4 }, (_, i) => {
-    const year = new Date().getFullYear() - i
-    return (
-      <option key={year} value={year.toString()}>
-        {year}/01 to {year}/12
-      </option>
-    )
-  })
-
-  let seriesData: {
-    name: string
-    type: string
-    data: (string | 0)[]
-    smooth: boolean
-    lineStyle: { color: string; width: number; type: string }
-    itemStyle: { color: string; borderWidth: number }
-  }[] = []
-
-  if (selectedType === 'All') {
-    seriesData = [
-      {
-        name: 'Withdrawals',
-        type: 'line',
-        data: withdrawalsYAxisData,
-        smooth: true,
-        lineStyle: {
-          color: '#06768d',
-          width: 3,
-          type: 'solid',
-        },
-        itemStyle: {
-          color: '#06768d',
-          borderWidth: 3,
-        },
-      },
-      {
-        name: 'Tips',
-        type: 'line',
-        data: tipsYAxisData,
-        smooth: true,
-        lineStyle: {
-          color: '#010048',
-          width: 3,
-          type: 'solid',
-        },
-        itemStyle: {
-          color: '#010048',
-          borderWidth: 3,
-        },
-      },
-    ]
-  } else if (selectedType === 'Withdrawals') {
-    seriesData = [
-      {
-        name: 'Withdrawals',
-        type: 'line',
-        data: withdrawalsYAxisData,
-        smooth: true,
-        lineStyle: {
-          color: '#06768d',
-          width: 3,
-          type: 'solid',
-        },
-        itemStyle: {
-          color: '#06768d',
-          borderWidth: 3,
-        },
-      },
-    ]
-  } else if (selectedType === 'Tips') {
-    seriesData = [
-      {
-        name: 'Tips',
-        type: 'line',
-        data: tipsYAxisData,
-        smooth: true,
-        lineStyle: {
-          color: '#010048',
-          width: 3,
-          type: 'solid',
-        },
-        itemStyle: {
-          color: '#010048',
-          borderWidth: 3,
-        },
-      },
-    ]
-  }
+  const hasActivity = maxValue > 0
 
   const option = {
     tooltip: {
       trigger: 'axis',
+      backgroundColor: '#fff',
+      borderColor: '#E2E8F0',
+      borderWidth: 1,
+      textStyle: { color: '#2D3748', fontSize: 13 },
+      formatter: (params: {
+        seriesName: string
+        value: number
+        axisValue: string
+      }[]) => {
+        const lines = params.map(
+          (item) =>
+            `${escapeHtml(item.seriesName)}: ${formatChartMoney(item.value, currency)}`
+        )
+        const header = escapeHtml(params[0]?.axisValue ?? '')
+        return [header, ...lines].join('\n')
+      },
+    },
+    legend: {
+      show: selectedType === 'All',
+      bottom: 0,
+      icon: 'circle',
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: '#64748b', fontSize: 13 },
     },
     grid: {
-      left: '30px',
-      right: '30px',
-      bottom: '30px',
-      top: '10px',
+      left: '12px',
+      right: '20px',
+      bottom: selectedType === 'All' ? '48px' : '24px',
+      top: '16px',
       containLabel: true,
     },
     xAxis: {
       type: 'category',
-      boundaryGap: false,
-      data: xAxisData,
-      axisLine: {
-        lineStyle: {
-          color: '#C8C8C8',
-        },
-      },
-      axisLabel: {
-        fontSize: 14,
-        color: '#64748b',
-      },
+      boundaryGap: isSingleMonthView,
+      data: chartMonths,
+      axisLine: { lineStyle: { color: '#E2E8F0' } },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 12, color: '#64748b' },
     },
     yAxis: {
       type: 'value',
-      name: '',
-      nameLocation: 'center',
-      nameTextStyle: {
-        fontFamily: 'Ciutadella-Medium',
-        fontSize: 14,
-        color: '#101B33',
-      },
-      nameGap: 24,
-      axisLine: {
-        lineStyle: {
-          color: '#C8C8C8',
-        },
-      },
+      min: 0,
+      max: maxValue > 0 ? undefined : 100,
+      splitNumber: 5,
+      axisLine: { show: false },
+      axisTick: { show: false },
       axisLabel: {
-        fontSize: 14,
+        fontSize: 12,
         color: '#64748b',
+        formatter: (value: number) => formatAxisValue(value, currency),
       },
-      splitLine: {
-        lineStyle: {
-          type: 'dotted',
-          color: '#EDEDED',
-        },
-      },
+      splitLine: { lineStyle: { type: 'dashed', color: '#F1F5F9' } },
     },
-    series: seriesData,
+    series: activeSeries,
+  }
+
+  const emptyPeriodLabel = getPeriodLabel(selectedYear, selectedMonth)
+
+  if (isLoading) {
+    return (
+      <div className="mt-[30px]">
+        <h2 className="text-[19px] text-lg font-medium text-[#2D3748]">
+          Withdrawal & Received Trend
+        </h2>
+        <div className="mt-4 flex h-[420px] items-center justify-center rounded-xl bg-white shadow-md">
+          <LoadingIcon icon="oval" color="#06768d" className="h-8 w-8" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isError || (!withdrawalsByMonth.length && !tipsByMonth.length)) {
+    return (
+      <div className="mt-[30px]">
+        <h2 className="text-[19px] text-lg font-medium text-[#2D3748]">
+          Withdrawal & Received Trend
+        </h2>
+        <div className="mt-4 flex w-full flex-col items-center justify-center rounded-xl bg-white px-4 shadow-md">
+          <img
+            src={NoDataFound}
+            alt="No data found"
+            className="max-h-[320px] w-fit object-cover"
+          />
+          <span className="mb-12 text-center text-gray-500">
+            No data found for this period.
+          </span>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="mt-[30px]">
-      {(!withdrawalsData || withdrawalsData.length === 0) &&
-      (!tipsData || tipsData.length === 0) ? (
-        <div>
-          <h2 className="mr-5 text-[19px] text-lg font-medium text-[#2D3748] sm:mt-[20px]">
-            Withdrawal & Received Trend
-          </h2>
-          <div className="mt-[15px] flex w-full flex-col items-center justify-center rounded-xl bg-white px-4 shadow-md">
-            <img
-              src={NoDataFound}
-              alt="No data found"
-              className="max-h-[395px] min-h-[395px] w-fit object-cover"
-            />
-            <span className="mb-12 text-center">No Data Found...</span>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-[19px] text-lg font-medium text-[#2D3748]">
+          Withdrawal & Received Trend
+        </h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <PeriodSelector
+            year={selectedYear}
+            month={selectedMonth}
+            onYearChange={(year) => {
+              setSelectedYear(year)
+              setSelectedMonth('all')
+            }}
+            onMonthChange={setSelectedMonth}
+          />
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value as TrendType)}
+            className="h-10 w-[150px] appearance-none rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-[#2D3748] shadow-sm focus:border-[#06768d] focus:outline-none focus:ring-2 focus:ring-[#06768d]/20"
+          >
+            <option value="All">All</option>
+            <option value="Withdrawals">Withdrawals</option>
+            <option value="Tips">Tips Received</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-xl bg-white p-5 shadow-md">
+        <div className="mb-4 flex flex-wrap items-center gap-6 border-b border-gray-100 pb-4">
+          <div>
+            <p className="text-2xl font-semibold text-[#2D3748]">
+              {formatChartMoney(primaryTotal, currency)}
+            </p>
+            <p className="text-sm text-gray-500">{primaryLabel}</p>
+          </div>
+          <div className="hidden h-10 border-l border-dashed border-gray-300 sm:block" />
+          <div>
+            <p className="text-2xl font-semibold text-[#2D3748]">
+              {formatChartMoney(secondaryTotal, currency)}
+            </p>
+            <p className="text-sm text-gray-500">{secondaryLabel}</p>
+          </div>
+          <div className="ml-auto hidden items-center gap-4 text-sm text-gray-500 sm:flex">
+            {selectedType !== 'Tips' && (
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#06768d]" />
+                Withdrawals
+              </span>
+            )}
+            {selectedType !== 'Withdrawals' && (
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#010048]" />
+                Tips Received
+              </span>
+            )}
           </div>
         </div>
-      ) : (
-        <>
-          <div className="intro-y block h-10 items-center justify-between sm:flex">
-            <h2 className="mr-5 text-[19px] text-lg font-medium text-[#2D3748] sm:mt-[20px]">
-              Withdrawal & Received Trend
-            </h2>
-            <div className="mt-[20px]">
-              <div className="relative w-[200px]">
-                <Lucide
-                  icon="Calendar"
-                  className="absolute inset-y-0 left-0 z-10 my-auto ml-2 h-4 w-4 text-gray-500"
-                />
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 p-1 pl-10 text-sm"
-                >
-                  {yearOptions}
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="relative mt-[20px] rounded-xl bg-white">
-            <div className="ml-[25px] flex h-[50px] w-full items-center justify-between">
-              <div className="mt-[20px] flex items-center space-x-4">
-                <div className="text-center font-semibold">
-                  <div className="text-xl">
-                    {thisMonthTotal
-                      ? formatThousands(thisMonthTotal).toLocaleString()
-                      : '0'}
-                  </div>
-                  <div className="text-sm">This Month</div>
-                </div>
-                <div className="h-[50px] border-[1px] border-dashed" />
 
-                <div className="text-center font-semibold">
-                  <div className="text-xl">
-                    {lastMonthTotal
-                      ? formatThousands(lastMonthTotal).toLocaleString()
-                      : '0'}
-                  </div>
-                  <div className="text-sm">Last Month</div>
-                </div>
-              </div>
-              <div className="mr-[25px] mt-[12px]">
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="mr-[25px] w-[120px] rounded-lg border border-gray-300 p-1 text-sm text-gray-500"
-                >
-                  <option value="All">All</option>
-                  <option value="Withdrawals">Withdrawals</option>
-                  <option value="Tips">Tips</option>
-                </select>
-              </div>
-            </div>
-            <ReactECharts
-              option={option}
-              notMerge
-              lazyUpdate
-              theme=""
-              style={{
-                height: '500px',
-                width: '100%',
-                marginTop: '20px',
-                backgroundColor: 'white',
-                borderRadius: '12px',
-              }}
+        {!hasActivity ? (
+          <div className="flex h-[360px] flex-col items-center justify-center text-center">
+            <img
+              src={NoDataFound}
+              alt="No activity"
+              className="mb-4 h-40 w-auto object-contain opacity-80"
             />
+            <p className="text-base font-medium text-gray-600">
+              No activity in {emptyPeriodLabel}
+            </p>
+            <p className="mt-1 text-sm text-gray-400">
+              Tips and withdrawals will appear here once recorded.
+            </p>
           </div>
-        </>
-      )}
+        ) : (
+          <ReactECharts
+            option={option}
+            notMerge
+            lazyUpdate
+            style={{ height: '380px', width: '100%' }}
+          />
+        )}
+      </div>
     </div>
   )
 }

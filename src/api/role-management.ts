@@ -95,7 +95,7 @@ export const useGetUserById = (userparameid: string): UseQueryResult<any> => {
     queryFn: async () => {
       try {
         const response = await authFetch.get(
-          `/user-details/keycloak/${userparameid}`
+          `/user-details/admin/${userparameid}`
         )
         return response.data.data
       } catch (error) {

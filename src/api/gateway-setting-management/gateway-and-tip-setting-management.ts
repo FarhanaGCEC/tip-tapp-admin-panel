@@ -9,6 +9,7 @@ import {
 } from 'react-query'
 import authFetch from '../axiosinterceptor'
 import {
+  ActivePaymentGatewayResponse,
   FormDataTipSetting,
   GatewayItem,
   GetGatewayResponse,
@@ -32,12 +33,14 @@ export const GetGatewaySettingDetails = (
     ],
     queryFn: async () => {
       try {
+        const params = new URLSearchParams()
+        if (pageSize) params.set('limit', String(pageSize))
+        params.set('page', String(page))
+        if (searchdata) params.set('search', searchdata)
+        if (active) params.set('isActive', active)
+
         const response = await authFetch.get<GetGatewayResponse>(
-          `/settings-gateway${
-            pageSize ? `?limit=${pageSize}` : ''
-          }&page=${page}${searchdata ? `&search=${searchdata}` : ''} ${
-            active ? `&isActive=${active}` : ''
-          }`
+          `/settings-gateway?${params.toString()}`
         )
         return response?.data
       } catch (error) {
@@ -82,6 +85,7 @@ export const GatewaySettingUpdate = (
     {
       onSuccess: (data) => {
         queryClient.invalidateQueries(['get_gateway_setting_all_and_search'])
+        queryClient.invalidateQueries(['get_active_payment_gateway'])
       },
       onError: (error: any) => {
         handleError(error.message)
@@ -109,10 +113,30 @@ export const GatewaySettingAdd = () => {
     {
       onSuccess: (data) => {
         queryClient.invalidateQueries(['get_gateway_setting_all_and_search'])
+        queryClient.invalidateQueries(['get_active_payment_gateway'])
       },
       onError: (error: any) => {},
     }
   )
+}
+
+export const GetActivePaymentGateway = (): UseQueryResult<ActivePaymentGatewayResponse> => {
+  return useQuery({
+    queryKey: ['get_active_payment_gateway'],
+    queryFn: async () => {
+      try {
+        const response = await authFetch.get<ActivePaymentGatewayResponse>(
+          '/settings-gateway/active-payment'
+        )
+        return response.data
+      } catch (error) {
+        throw error
+      }
+    },
+    onError: (error) => {
+      console.error('Fetch error:', error)
+    },
+  })
 }
 
 export const GatewaySettingFindOne = (
@@ -196,6 +220,7 @@ export const TestEmail = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['get_gateway_setting_all_and_search'])
+        queryClient.invalidateQueries(['get_active_payment_gateway'])
       },
       onError: (error: any) => {
         console.error('Mutation Error:', error)

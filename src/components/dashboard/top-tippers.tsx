@@ -4,12 +4,14 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GetTopTippersThisWeek } from '../../api/dashboard/dashboard'
 import Button from '../common/button'
-import { formatAmount } from '../../hooks/formatter'
 import { ProfileImage } from '../../utils/userData'
 import NoDataFound from '../../assets/images/NoDataFound.png'
+import { useCurrencyStore } from '../../stores/currencyStore'
+import { formatMoney } from '../../utils/formatMoney'
 
 function TopTippers() {
   const topTippers = GetTopTippersThisWeek()
+  const currency = useCurrencyStore((state) => state.currency)
   const navigate = useNavigate()
 
   useEffect(() => {}, [topTippers])
@@ -38,14 +40,18 @@ function TopTippers() {
                   {tipper ? (
                     <div className="flex items-center">
                       <img
-                        src={tipper.profilePictureUrl || ProfileImage}
+                        src={tipper.profilePictureUrl?.trim() || ProfileImage}
                         alt={`${tipper.firstName} ${tipper.lastName}`}
                         className="mr-3 h-[55px] w-[55px] rounded-[30px] object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = ProfileImage
+                        }}
                       />
                       <div>
                         <p className="text-base font-semibold capitalize">{`${tipper.firstName} ${tipper.lastName}`}</p>
                         <p className="text-sm text-gray-500">
-                          AED {formatAmount(tipper.totalTipAmount) || 0.0}
+                          {formatMoney(tipper, currency)}
                         </p>
                       </div>
                     </div>

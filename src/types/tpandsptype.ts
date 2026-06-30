@@ -5,6 +5,29 @@ interface BankDetails {
   accountName: string | null;
   ibanNumber: string | null;
 }
+
+export type OnboardingStatus = 'not_started' | 'incomplete' | 'completed'
+
+export interface CardDetails {
+  bankName?: string | null
+  accountNumber?: string | null
+  ibanNumber?: string | null
+  accountHolderName?: string | null
+  currency?: string | null
+  onboardingStatus?: OnboardingStatus
+  onboardingStatusLabel?: string | null
+  isOnboarded?: boolean
+  payoutsEnabled?: boolean
+}
+
+export interface PayoutOnboarding {
+  status?: OnboardingStatus
+  statusLabel?: string | null
+  isOnboarded?: boolean
+  payoutsEnabled?: boolean
+  bankName?: string | null
+  accountLast4?: string | null
+}
 export interface TipItem {
   id: number
   KeyCloakID: string
@@ -27,12 +50,25 @@ export interface TipItem {
   Status: string
   NotificationSettings: string | null
   bankDetails: BankDetails[] | null
+  cardDetails?: CardDetails | null
+  payoutOnboarding?: PayoutOnboarding | null
   Provider: string
   CreatedAt: string
   UpdatedAt: string
   FrontImageID: string
   BackImageID: string
   EmiratesId: string
+  balance?: number
+  BalanceOriginal?: number
+  TotalWithdrawal?: number
+  TotalWithdrawalOriginal?: number
+  TotalTipsGiven?: number
+  TotalTipsGivenOriginal?: number
+  financials?: {
+    balance?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+    totalWithdrawal?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+    totalTipsGiven?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+  }
 }
 
 interface Meta {

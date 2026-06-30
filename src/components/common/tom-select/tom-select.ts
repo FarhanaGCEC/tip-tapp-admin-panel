@@ -1,4 +1,4 @@
-import { TomSettings, RecursivePartial } from 'tom-select/src/types/index'
+import { TomSettings, RecursivePartial } from '../../../types/tom-select'
 import TomSelect from 'tom-select'
 import _ from 'lodash'
 import { TomSelectProps, TomSelectElement } from './index'

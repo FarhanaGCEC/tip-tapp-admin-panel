@@ -39,9 +39,13 @@ function TopServiceProviders() {
                   {provider ? (
                     <div className="flex items-center">
                       <img
-                        src={provider.profilePictureUrl || ProfileImage}
+                        src={provider.profilePictureUrl?.trim() || ProfileImage}
                         alt={`${provider.firstName} ${provider.lastName}`}
                         className="mr-3 h-[55px] w-[55px] rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = ProfileImage
+                        }}
                       />
                       <div>
                         <p className="text-base font-semibold capitalize">{`${provider.firstName} ${provider.lastName}`}</p>

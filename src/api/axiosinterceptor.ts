@@ -1,39 +1,72 @@
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import axios from 'axios'
+import {
+  applyAdminAuthHeaders,
+  clearAuthSession,
+  diagnoseForbiddenAccess,
+  isJwtExpired,
+  isValidationTokenExpired,
+} from '../utils/authSession'
 
 const authFetch = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/api`,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
-});
+})
+
+function assertValidSession(url?: string): void {
+  const isLogin = url?.includes('/auth/login')
+  const token = localStorage.getItem('jwtToken')
+
+  if (token && isJwtExpired(token)) {
+    clearAuthSession()
+    window.location.reload()
+    throw new axios.Cancel('Token expired')
+  }
+
+  if (!isLogin) {
+    const validationToken = localStorage.getItem('validationToken')
+    if (validationToken && isValidationTokenExpired()) {
+      clearAuthSession()
+      window.location.reload()
+      throw new axios.Cancel('Validation token expired')
+    }
+  }
+}
 
 authFetch.interceptors.request.use(
   (config) => {
-   const token = localStorage.getItem("jwtToken");
-    if (token) {
-      const decodedToken: any = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("user");
-        localStorage.removeItem("userType");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("email");
-        localStorage.removeItem("validationToken");
-        localStorage.removeItem("notification_token");  
-        localStorage.removeItem("userEmail");  
-        localStorage.removeItem("selectedCurrency");
-        window.location.reload();
-        throw new axios.Cancel("Token expired");
-      }
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+    assertValidSession(config.url)
+    return applyAdminAuthHeaders(config)
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  (error) => Promise.reject(error)
+)
 
-export default authFetch;
+authFetch.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status
+
+    if (status === 401) {
+      clearAuthSession()
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+      return Promise.reject(error)
+    }
+
+    if (status === 403) {
+      const diagnostics = diagnoseForbiddenAccess()
+      const apiMessage = error?.response?.data?.message
+      error.forbiddenDiagnostics = diagnostics
+      error.userMessage =
+        apiMessage ||
+        diagnostics.reason ||
+        'Access denied. Check your role permissions and tokens.'
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+export default authFetch

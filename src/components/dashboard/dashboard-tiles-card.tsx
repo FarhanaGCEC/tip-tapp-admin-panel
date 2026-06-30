@@ -1,70 +1,29 @@
 import DashboardTile from './dashboard-tiles'
-import {
-  GetWeeklyTotalAndDifferenceTips,
-  // GetWeeklyTotalAndDifferenceWD,
-} from '../../api/dashboard/dashboard'
+import { GetWeeklyTotalAndDifferenceTips } from '../../api/dashboard/dashboard'
 import {
   GetTipAppBalance,
   GetTipsBalance,
   GetWithdrawalBalance,
+  GetPlatformCommission,
 } from '../../api/tip-management'
-// Dashboard tile icons - keeping for potential future use
-// import TileSVG1 from '../../assets/images/dashboard/tile1.svg'
-// import TileSVG2 from '../../assets/images/dashboard/tile2.svg'
-// import TileSVG3 from '../../assets/images/dashboard/tile3.svg'
-// import TileSVG4 from '../../assets/images/dashboard/tile4.svg'
 import TipBlanceIcon from '../../assets/images/tip-balance-icon.png'
 import TipGivenIcon from '../../assets/images/tip-given-icon.png'
 import TipWithdrawIcon from '../../assets/images/tip-withdraw-icon.png'
-import { formatAmount, formatTiles } from '../../hooks/formatter'
+import { formatTiles } from '../../hooks/formatter'
+import { useCurrencyStore } from '../../stores/currencyStore'
+import { formatMoney } from '../../utils/formatMoney'
 
 function DashboardTilesCard() {
-  const {
-    data: tipsData,
-    isLoading: tipsLoading,
-    error: tipsError,
-  } = GetWeeklyTotalAndDifferenceTips()
-  // const {
-  //   data: withdrawalsData,
-  //   isLoading: wdLoading,
-  //   error: wdError,
-  // } = GetWeeklyTotalAndDifferenceWD()
-
-  // Tip Management API hooks
-  const {
-    data: withdrawalBalanceData,
-    isSuccess: withdrawalBalanceSuccess,
-    isLoading: withdrawalBalanceLoading,
-    refetch: withdrawalBalanceRefetch,
-  } = GetWithdrawalBalance()
-  const {
-    data: TipsBalanceData,
-    isSuccess: TipsBalanceSuccess,
-    isLoading: TipsBalanceLoading,
-    refetch: TipsBalanceRefetch,
-  } = GetTipsBalance()
-  const {
-    data: TipAppBalanceData,
-    isSuccess: TipAppBalanceSuccess,
-    isLoading: TipAppBalanceLoading,
-    refetch: TipAppBalanceRefetch,
-  } = GetTipAppBalance()
+  const currency = useCurrencyStore((state) => state.currency)
+  const { data: tipsData } = GetWeeklyTotalAndDifferenceTips()
+  const { data: withdrawalBalanceData } = GetWithdrawalBalance()
+  const { data: TipsBalanceData } = GetTipsBalance()
+  const { data: TipAppBalanceData } = GetTipAppBalance()
+  const { data: platformCommissionData } = GetPlatformCommission()
 
   const getBgColor = (percentage: number) => {
     return percentage >= 0 ? 'bg-success' : 'bg-danger'
   }
-
-  // Keep TipsAmount for percentage calculation
-  const TipsAmount = formatAmount(tipsData?.totalLast7DaysTips || 0)
-
-  // Tip Management amounts
-  const TipGivenAmount = formatAmount(parseFloat(TipsBalanceData?.data || '0'))
-  const TipWithdrawalAmount = formatAmount(
-    parseFloat(withdrawalBalanceData?.data || '0')
-  )
-  const TipBalanceAmount = formatAmount(
-    parseFloat(TipAppBalanceData?.data || '0')
-  )
 
   return (
     <div>
@@ -73,10 +32,9 @@ function DashboardTilesCard() {
           Tips Overview
         </h2>
       </div>
-      <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 xl:gap-[39px]">
-        {/* Tip Given */}
+      <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4 xl:gap-[39px]">
         <DashboardTile
-          amount={`AED ${TipGivenAmount}`}
+          amount={formatMoney(TipsBalanceData, currency)}
           percentage={formatTiles(
             tipsData?.dailyAverageComparisonPercentageTips || 0.0
           )}
@@ -90,9 +48,8 @@ function DashboardTilesCard() {
           icon={TipGivenIcon}
         />
 
-        {/* Tip Withdrawal */}
         <DashboardTile
-          amount={`AED ${TipWithdrawalAmount}`}
+          amount={formatMoney(withdrawalBalanceData, currency)}
           percentage="0.00"
           label="Tip Withdrawal"
           tooltipText="Total withdrawals"
@@ -100,14 +57,22 @@ function DashboardTilesCard() {
           icon={TipWithdrawIcon}
         />
 
-        {/* Tip Balance */}
         <DashboardTile
-          amount={`AED ${TipBalanceAmount}`}
+          amount={formatMoney(TipAppBalanceData, currency)}
           percentage="0.00"
           label="Tip Balance"
           tooltipText="Available tip balance"
           tippyBgColor="bg-success"
           icon={TipBlanceIcon}
+        />
+
+        <DashboardTile
+          amount={formatMoney(platformCommissionData, currency)}
+          percentage="0.00"
+          label="Platform Commission"
+          tooltipText="Total platform earnings from tips and withdrawals"
+          tippyBgColor="bg-success"
+          icon={TipGivenIcon}
         />
       </div>
     </div>

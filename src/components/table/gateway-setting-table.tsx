@@ -5,9 +5,12 @@ import SlideoverRegistry, {
 } from '../../pages/user-management/slideover-registry'
 import Label from '../common/label/active-banned-new-label'
 import Lucide from '../common/lucide'
-import { GatewayItem } from '../../types/gatewaytype'
+import { GatewayItem, isPaymentGateway } from '../../types/gatewaytype'
 import { GatewaySettingUpdate } from '../../api/gateway-setting-management/gateway-and-tip-setting-management'
 import { Dialog } from '../common/headless'
+import SharedDataContainer from '../../containers/sharedData'
+import Toast from '../../utils/notification'
+import { Icons, NotificationTypes } from '../../constants'
 
 interface GatewaySettingTableProps {
   headers: { key: number; label: string }[]
@@ -24,18 +27,39 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
   settingItems,
   handleClick,
 }) => {
+  const { setNotification } = SharedDataContainer.useContainer()
   const [deleteConfirmationModal, setErrorDialogOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleError = (message: string) => {
     setErrorMessage(message)
-    setErrorDialogOpen(true) 
+    setErrorDialogOpen(true)
   }
 
-  const { mutate, isLoading } = GatewaySettingUpdate(handleError)
+  const { mutate } = GatewaySettingUpdate(handleError)
 
-  const handleUpdate = (settingid: string, isActive: boolean) => {
-    mutate({ settingid: settingid, updatedData: { is_active: isActive } })
+  const handleUpdate = (item: GatewayItem, isActive: boolean) => {
+    mutate(
+      { settingid: item.id.toString(), updatedData: { is_active: isActive } },
+      {
+        onSuccess: () => {
+          const paymentGateway = isPaymentGateway(item.gateway_type)
+          const message = isActive
+            ? paymentGateway
+              ? `${item.gateway_name} is now the active payment gateway. Other gateways were deactivated automatically.`
+              : `${item.gateway_name} is now active. Other gateways were deactivated automatically.`
+            : `${item.gateway_name} has been deactivated.`
+
+          setNotification({
+            title: 'Success',
+            message,
+            icon: Icons.CHECKCIRCLE,
+            type: NotificationTypes.SUCCESS,
+          })
+          Toast()
+        },
+      }
+    )
   }
 
   return (
@@ -75,8 +99,12 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
                 <div className="flex justify-end whitespace-nowrap ">
                   {item.is_active ? (
                     <Label
-                      labledata={'Active'}
-                      lablestyle={'bg-[#03C50B] max-w-[115px] min-w-[115px]'}
+                      labledata={
+                        isPaymentGateway(item.gateway_type)
+                          ? 'Active (Payment)'
+                          : 'Active'
+                      }
+                      lablestyle={'bg-[#03C50B] min-w-[140px]'}
                     />
                   ) : (
                     <Label
@@ -113,13 +141,13 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
                     <Lucide
                       icon={'XCircle'}
                       className={`ml-3 h-5 w-5   ${'text-red-500'}`}
-                      onClick={() => handleUpdate(item.id.toString(), false)}
+                      onClick={() => handleUpdate(item, false)}
                     />
                   ) : (
                     <Lucide
                       icon={'CheckCircle'}
                       className={`ml-3 h-5 w-5   ${'text-green-500'}`}
-                      onClick={() => handleUpdate(item.id.toString(), true)}
+                      onClick={() => handleUpdate(item, true)}
                     />
                   )}
                 </div>
