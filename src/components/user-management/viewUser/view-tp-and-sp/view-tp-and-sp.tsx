@@ -33,7 +33,7 @@ import { Icons, NotificationTypes } from '../../../../constants'
 import LoadingIcon from '../../../common/loading-icon'
 // import { Tab,Menu } from '../../../common/headless'
 import Lucide from '../../../common/lucide'
-import PreviewImage from '../../../../assets/images/default-image.png'
+import UserAvatar from '../../../common/user-avatar'
 import { Tab } from '../../../common/headless'
 import { UseQueryResult } from 'react-query'
 import {
@@ -44,8 +44,9 @@ import { TipItem, OnboardingStatus } from '../../../../types/tpandsptype'
 import Separator from '../../../common/separator/separator'
 import permissionChecker from '../../../../hooks/permissonChecker'
 import { useCurrencyStore } from '../../../../stores/currencyStore'
-import { formatMoney } from '../../../../utils/formatMoney'
+import { formatMoney, getAmountValue } from '../../../../utils/formatMoney'
 import { maskAccountNumber } from '../../../../utils/escapeHtml'
+import dayjs from 'dayjs'
 
 interface ViewUserProps {
   userId: string
@@ -212,20 +213,38 @@ function ViewTpandSp(props: ViewUserProps) {
 
   const walletBalance =
     data?.financials?.balance ?? {
-      amount: data?.BalanceOriginal,
-      amountAED: data?.balance,
+      amount: data?.BalanceOriginal ?? data?.balance,
+      amountAED: data?.balanceAED,
+    }
+
+  const tipsReceived =
+    data?.financials?.totalTips ?? {
+      amount: data?.TotalTipsOriginal ?? data?.TotalTips,
+      amountAED: data?.TotalTipsAED,
     }
 
   const transferredAmount =
     data?.financials?.totalWithdrawal ?? {
-      amount: data?.TotalWithdrawalOriginal,
-      amountAED: data?.TotalWithdrawal,
+      amount: data?.TotalWithdrawalOriginal ?? data?.TotalWithdrawal,
+      amountAED: data?.TotalWithdrawalAED,
+    }
+
+  const tipsSentTotal =
+    data?.financials?.totalTipsGiven ?? {
+      amount: data?.TotalTipsGivenOriginal ?? data?.TotalTipsGiven,
+      amountAED: data?.TotalTipsGivenAED,
     }
 
   const tipsSentFromWallet =
-    data?.financials?.totalTipsGiven ?? {
-      amount: data?.TotalTipsGivenOriginal,
-      amountAED: data?.TotalTipsGiven,
+    data?.financials?.tipsGivenFromWallet ?? { amount: 0, amountAED: 0 }
+
+  const tipsSentFromCard =
+    data?.financials?.tipsGivenFromCard ?? { amount: 0, amountAED: 0 }
+
+  const pendingStripeFees =
+    data?.financials?.pendingStripeFees ?? {
+      amount: Number(data?.PendingStripeFees) || 0,
+      amountAED: 0,
     }
 
   const isServiceProvider = data?.Role === 'sp' || data?.Role === 'both'
@@ -246,7 +265,15 @@ function ViewTpandSp(props: ViewUserProps) {
     payoutNotStarted ? 'Not Provided Yet' : value || '—'
   const payoutsEnabled = !payoutNotStarted && Boolean(cardDetails.payoutsEnabled)
 
-  if (isError) {
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-white">
+        <LoadingIcon icon="oval" className="h-8 w-8" color="#1A2744" />
+      </div>
+    )
+  }
+
+  if (isError || !data) {
     const apiError = error as {
       userMessage?: string
       response?: { status?: number }
@@ -269,14 +296,10 @@ function ViewTpandSp(props: ViewUserProps) {
           <div className="ml-3 mr-4 flex flex-col items-center space-y-4 md:flex-row md:justify-between md:space-y-0">
             {/* User Info */}
             <div className="flex items-center">
-              <img
-                alt="profile page"
-                className="h-16 w-16 rounded-full  max-lg:mr-4 sm:h-20 sm:w-20 md:h-[65px] md:w-[65px] lg:h-[85px] lg:w-[85px]"
-                src={
-                  data?.ProfilePictureURL
-                    ? data.ProfilePictureURL
-                    : PreviewImage
-                }
+              <UserAvatar
+                src={data?.ProfilePictureURL}
+                alt={`${data?.FirstName || ''} ${data?.LastName || ''}`.trim() || 'User'}
+                className="mr-0 h-16 w-16 max-lg:mr-4 sm:h-20 sm:w-20 md:h-[65px] md:w-[65px] lg:h-[85px] lg:w-[85px]"
               />
               <div className="max-lg:mr-4 lg:ml-3">
                 <div className="gap-2 overflow-hidden font-medium max-lg:overflow-y-auto md:text-xl lg:flex lg:flex-row lg:text-lg">
@@ -311,7 +334,7 @@ function ViewTpandSp(props: ViewUserProps) {
                     </Button>
                   ) : data?.Status == 'new' ? (
                     <Button
-                      className=" w-40 bg-[#03C50B] px-6 py-2"
+                      className=" w-40 bg-[#2F9E44] px-6 py-2"
                       disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
@@ -326,7 +349,7 @@ function ViewTpandSp(props: ViewUserProps) {
                     </Button>
                   ) : data?.Status == 'banned' ? (
                     <Button
-                      className=" w-40 bg-[#03C50B] px-6  py-2 "
+                      className=" w-40 bg-[#2F9E44] px-6  py-2 "
                       disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
@@ -367,8 +390,17 @@ function ViewTpandSp(props: ViewUserProps) {
         <div className=" rounded-b-lg bg-white py-4">
           <Tab.Panel>
             <div className="ml-3 mr-4 grid grid-cols-1 gap-6 px-5 md:grid-cols-2 lg:grid-cols-3 ">
-              {/* Email */}
               <div className="text-left">
+                <div className="flex items-center">Email</div>
+                <div
+                  className={`text-small mt-1 leading-relaxed ${
+                    data?.Email ? 'text-black' : 'text-gray-400'
+                  }`}
+                >
+                  {data?.Email ? data.Email : 'Not Provided Yet'}
+                </div>
+              </div>
+              <div className="text-left lg:ps-[50px]">
                 <div className="flex items-center">Address</div>
                 <div
                   className={`text-small mt-1 leading-relaxed ${
@@ -387,7 +419,9 @@ function ViewTpandSp(props: ViewUserProps) {
                     data?.DateOfBirth ? 'text-black' : 'text-gray-400'
                   }`}
                 >
-                  {data?.DateOfBirth ? data.DateOfBirth : 'Not Provided Yet'}
+                  {data?.DateOfBirth
+                    ? dayjs(data.DateOfBirth).format('DD MMM YYYY')
+                    : 'Not Provided Yet'}
                 </div>
               </div>
 
@@ -567,7 +601,7 @@ function ViewTpandSp(props: ViewUserProps) {
                   </div>
                 </div>
 
-                <div className="mx-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="mx-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
@@ -586,37 +620,102 @@ function ViewTpandSp(props: ViewUserProps) {
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50">
                         <Lucide
                           icon="ArrowDownLeft"
-                          className="h-4 w-4 text-slate-600"
+                          className="h-4 w-4 text-emerald-600"
                         />
                       </div>
                       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Withdrawn from Wallet
+                        Tips Received
                       </p>
                     </div>
                     <p className="mt-3 text-2xl font-bold text-slate-900">
-                      {formatMoney(transferredAmount, currency)}
+                      {formatMoney(tipsReceived, currency)}
                     </p>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
                         <Lucide
-                          icon="Send"
+                          icon="Banknote"
                           className="h-4 w-4 text-slate-600"
                         />
                       </div>
                       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Tips Sent from Wallet
+                        Withdrawn
                       </p>
                     </div>
                     <p className="mt-3 text-2xl font-bold text-slate-900">
-                      {formatMoney(tipsSentFromWallet, currency)}
+                      {formatMoney(transferredAmount, currency)}
                     </p>
                   </div>
                 </div>
+
+                <div className="mx-5 mt-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4 shadow-sm">
+                  <p className="text-sm font-semibold text-slate-700">
+                    Tips Given
+                  </p>
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-slate-100 bg-white px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Lucide icon="Send" className="h-4 w-4 text-slate-500" />
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Total Given
+                        </p>
+                      </div>
+                      <p className="mt-2 text-xl font-bold text-slate-900">
+                        {formatMoney(tipsSentTotal, currency)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-white px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Lucide icon="Wallet" className="h-4 w-4 text-slate-500" />
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Via Wallet
+                        </p>
+                      </div>
+                      <p className="mt-2 text-xl font-bold text-slate-900">
+                        {formatMoney(tipsSentFromWallet, currency)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-white px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Lucide
+                          icon="CreditCard"
+                          className="h-4 w-4 text-slate-500"
+                        />
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Via Card
+                        </p>
+                      </div>
+                      <p className="mt-2 text-xl font-bold text-slate-900">
+                        {formatMoney(tipsSentFromCard, currency)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {(getAmountValue(pendingStripeFees, currency) ?? 0) > 0 ? (
+                  <div className="mx-5 mt-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-sm">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100">
+                          <Lucide
+                            icon="AlertCircle"
+                            className="h-4 w-4 text-amber-600"
+                          />
+                        </div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Pending Stripe Fees
+                        </p>
+                      </div>
+                      <p className="text-lg font-bold text-amber-800">
+                        {formatMoney(pendingStripeFees, currency)}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </>
             ) : (
               <></>

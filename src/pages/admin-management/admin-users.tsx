@@ -217,7 +217,7 @@ const AdminUserManagementPage = () => {
             onClick={() => {
               handleAddUserOnClick()
             }}
-            className="primary flex min-w-[100px] items-center gap-2.5 bg-black !font-medium text-white"
+            className="primary flex min-w-[100px] items-center gap-2.5 bg-primary !font-medium text-white"
           >
             Add User
           </Button>,
@@ -291,7 +291,7 @@ const AdminUserManagementPage = () => {
                 </button>
                 <button
                   onClick={toggleFilters}
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                  className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                 >
                   Save
                 </button>

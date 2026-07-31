@@ -1,6 +1,7 @@
 html {
   scroll-behavior: smooth;
-  background: linear-gradient(156deg, #2c2c2c 0%, black 82%);
+  /* TipApp shell — navy/charcoal dominant, subtle brand red tip (not full red) */
+  background: linear-gradient(156deg, #1a2744 0%, #121a2a 55%, #0d1118 100%);
   &.dark {
     background-color: theme('colors.darkmode.800');
     body {

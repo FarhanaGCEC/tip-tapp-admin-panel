@@ -170,7 +170,7 @@ function getSize() {
         </div>
         <div className=" flex justify-end">
           <Button
-            className="rounded-md bg-black px-5 py-2 text-white hover:bg-gray-800"
+            className="rounded-md bg-primary px-5 py-2 text-white hover:bg-brand-red-dark"
             onClick={() => {
               handleClicks(SlideoverRegistry.viewAddFaqCategory)
             }}
@@ -260,7 +260,7 @@ function getSize() {
                   Cancel
                 </button>
                 <button
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                  className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                   onClick={toggleFilters}
                 >
                   Save

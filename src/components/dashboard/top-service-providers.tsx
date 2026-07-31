@@ -6,7 +6,7 @@ import { GetTopServiceProviders } from '../../api/dashboard/dashboard'
 import StarRating from './star-rating'
 import Button from '../common/button'
 import { formatRating } from '../../hooks/formatter'
-import { ProfileImage } from '../../utils/userData'
+import { getProfilePictureUrl, DEFAULT_AVATAR } from '../../utils/profilePicture'
 import NoDataFound from '../../assets/images/NoDataFound.png'
 
 function TopServiceProviders() {
@@ -39,12 +39,12 @@ function TopServiceProviders() {
                   {provider ? (
                     <div className="flex items-center">
                       <img
-                        src={provider.profilePictureUrl?.trim() || ProfileImage}
+                        src={getProfilePictureUrl(provider.profilePictureUrl)}
                         alt={`${provider.firstName} ${provider.lastName}`}
                         className="mr-3 h-[55px] w-[55px] rounded-full object-cover"
                         onError={(e) => {
                           e.currentTarget.onerror = null
-                          e.currentTarget.src = ProfileImage
+                          e.currentTarget.src = DEFAULT_AVATAR
                         }}
                       />
                       <div>
@@ -78,7 +78,7 @@ function TopServiceProviders() {
 
           {topServiceProviders && topServiceProviders.length > 0 && (
             <Button
-              className="mt-[15px] w-full bg-black"
+              className="mt-[15px] w-full bg-primary hover:bg-brand-red-dark"
               onClick={handleViewAllClick}
             >
               <span className="text-white">View all</span>

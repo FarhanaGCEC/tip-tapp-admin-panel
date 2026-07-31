@@ -1,17 +1,11 @@
 /* eslint-disable react/function-component-definition */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react/prop-types */
-/* eslint-disable prefer-template */
-/* eslint-disable react/jsx-no-useless-fragment */
-/* eslint-disable react/jsx-curly-brace-presence */
-import { useState } from 'react'
 import Table from '../common/table'
 import SlideoverRegistry from '../../pages/user-management/slideover-registry'
 import { TipItem } from '../../types/tpandsptype'
-import Label from '../common/label/active-banned-new-label'
 import Lucide from '../common/lucide'
 import { useDeactiveUserAndActive } from '../../api/tp-and-sp-management/tp-sp-management'
 import StatusButton from '../common/button/statusBtn'
+import UserAvatar from '../common/user-avatar'
 
 interface TpAndSpManagemenTableProps {
   headers: { key: number; label: string }[]
@@ -41,6 +35,7 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
   const DeactiveAndActivehandle = (userid: string, typesatus: string) => {
     deactivateActivateUser({ userid, satustype: typesatus })
   }
+
   const Tdheader = headers
     .map((header) => {
       if (pending && header.label === 'STATUS') {
@@ -49,16 +44,21 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
       return header
     })
     .filter((header) => !(pending && header.label === 'STATUS'))
+
   return (
-    <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+    <Table cards>
       <Table.Thead variant="default">
         <Table.Tr>
           {Tdheader.map((header) => (
             <Table.Th
               key={header.key}
-              className={`whitespace-nowrap border-b-0  ${
-                header.label.toLowerCase() === 'status' ? ' px-10 ' : ''
-              }`}
+              className={
+                header.label.toLowerCase() === 'status' ||
+                header.label.toLowerCase() === 'action' ||
+                header.label.toLowerCase() === 'actions'
+                  ? 'text-center'
+                  : ''
+              }
             >
               {header.label}
             </Table.Th>
@@ -67,38 +67,41 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
       </Table.Thead>
       <Table.Tbody>
         {tipItems.map((item) => (
-          <Table.Tr className="intro-x h-[68px] drop-shadow-lg " key={item.id}>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.FirstName + ' ' + item.LastName || 'Not Provided Yet'}
+          <Table.Tr key={item.id}>
+            <Table.Td className="font-medium">
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  src={item.ProfilePictureURL}
+                  alt={`${item.FirstName || ''} ${item.LastName || ''}`.trim() || 'User'}
+                  className="h-9 w-9"
+                />
+                <span>
+                  {`${item.FirstName || ''} ${item.LastName || ''}`.trim() ||
+                    'Not Provided Yet'}
+                </span>
+              </div>
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+            <Table.Td className="max-w-[220px] truncate">
               {item.Email || 'Not Provided Yet'}
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Whatsapp || 'Not Provided Yet'}
-            </Table.Td>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Phone || 'Not Provided Yet'}
-            </Table.Td>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Country || 'no'}
-            </Table.Td>
+            <Table.Td>{item.Whatsapp || 'Not Provided Yet'}</Table.Td>
+            <Table.Td>{item.Phone || 'Not Provided Yet'}</Table.Td>
+            <Table.Td>{item.Country || 'N/A'}</Table.Td>
             {pending ? (
-              <>
-                <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                  {item.EmiratesId || 'Not Provided Yet'}
-                </Table.Td>
-              </>
+              <Table.Td>{item.EmiratesId || 'Not Provided Yet'}</Table.Td>
             ) : (
-              <Table.Td className=" border-b-0  bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <StatusButton status={item?.Status} />
+              <Table.Td>
+                <div className="flex justify-center">
+                  <StatusButton status={item?.Status} />
+                </div>
               </Table.Td>
             )}
-            <Table.Td className="cursor-pointer border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              <div className=" flex  flex-row  ">
-                <Lucide
-                  icon="Eye"
-                  className="ml-3 h-10 w-6 text-black"
+            <Table.Td>
+              <div className="flex items-center justify-center gap-1">
+                <button
+                  type="button"
+                  className="tipapp-table__action"
+                  aria-label="View user"
                   onClick={() =>
                     handleClick(
                       SlideoverRegistry.viewTpAndSpManagement,
@@ -106,23 +109,31 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
                       pending
                     )
                   }
-                />
+                >
+                  <Lucide icon="Eye" className="h-5 w-5" />
+                </button>
                 {pending ? (
                   <>
-                    <Lucide
-                      icon={'CheckCircle'}
-                      className="ml-3 h-10 w-5 text-green-500"
-                      onClick={() => {
+                    <button
+                      type="button"
+                      className="tipapp-table__action text-emerald-600"
+                      aria-label="Approve"
+                      onClick={() =>
                         DeactiveAndActivehandle(item.KeyCloakID, item.Status)
-                      }}
-                    />
-                    <Lucide
-                      icon={'XCircle'}
-                      className="ml-3 h-10 w-5 text-red-500"
-                      onClick={() => {
+                      }
+                    >
+                      <Lucide icon="CheckCircle" className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="tipapp-table__action text-red-500"
+                      aria-label="Reject"
+                      onClick={() =>
                         DeactiveAndActivehandle(item.KeyCloakID, 'active')
-                      }}
-                    />
+                      }
+                    >
+                      <Lucide icon="XCircle" className="h-5 w-5" />
+                    </button>
                   </>
                 ) : null}
               </div>

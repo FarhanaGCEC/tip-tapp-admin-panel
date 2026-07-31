@@ -1,3 +1,3 @@
-import defaultAvatar from '../assets/images/profile.svg'
+import { DEFAULT_AVATAR } from './profilePicture'
 
-export const ProfileImage = defaultAvatar
+export const ProfileImage = DEFAULT_AVATAR

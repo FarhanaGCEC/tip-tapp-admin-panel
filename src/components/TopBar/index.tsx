@@ -19,7 +19,7 @@ import Lucide from '../../components/common/lucide'
 import Breadcrumb from '../../base-components/Breadcrumb'
 import { FormInput } from '../common/form-elements/components'
 import { Menu, Popover } from '../common/headless'
-import PreviewImage from '../../../src/assets/images/tip-app-logo.png'
+import UserAvatar from '../common/user-avatar'
 import SocketClient from '../../hooks/SocketClient'
 import {
   useGetNotificationsList,
@@ -122,7 +122,9 @@ function Main() {
         <SocketClient email={user.Email} role={user.Role} />
         {/* BEGIN: Breadcrumb */}
         <Breadcrumb className="-intro-x mr-auto hidden sm:flex">
-          <Breadcrumb.Link to="/">TipApp</Breadcrumb.Link>
+          <Breadcrumb.Link to="/" className="text-brand-navy">
+            TipApp
+          </Breadcrumb.Link>
           <Breadcrumb.Link to={pathname} active>
             {breadcrumbLabel}
           </Breadcrumb.Link>
@@ -306,12 +308,13 @@ function Main() {
           </Popover>
           <Menu>
             <Menu.Button className="image-fit zoom-in intro-x block h-8 w-8 scale-110 overflow-hidden rounded-full shadow-lg">
-              <img
-                alt="Midone Tailwind HTML Admin Template"
-                src={user.ProfilePictureURL || PreviewImage}
+              <UserAvatar
+                src={user.ProfilePictureURL}
+                alt={`${user.FirstName || 'User'} ${user.LastName || ''}`.trim()}
+                className="h-full w-full"
               />
             </Menu.Button>
-            <Menu.Items className="relative mt-px w-56  before:absolute before:inset-0 before:z-[-1] before:block before:rounded-md before:bg-black ">
+            <Menu.Items className="relative mt-px w-56  before:absolute before:inset-0 before:z-[-1] before:block before:rounded-md before:bg-brand-navy ">
               <Menu.Header className="font-normal">
                 <div className="font-medium">
                   {`${user.FirstName || 'User'} ${user.LastName || ''}`}

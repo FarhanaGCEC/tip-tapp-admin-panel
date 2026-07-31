@@ -30,8 +30,8 @@ const DashboardTileSeconary: React.FC<DashboardTileProps> = ({
       >
         <div className="box  flex lg:h-full max-lg:h-[120px]   p-4">
           <div className="flex">
-            <div className=" bg-gray-100 p-2 max-lg:rounded-[50px] lg:rounded-full">
-              <img src={icon} className=" max-lg:h-16 max-lg:w-16" />
+            <div className="bg-primary/10 p-2 max-lg:rounded-[50px] lg:rounded-full">
+              <img src={icon} alt="" className="max-lg:h-16 max-lg:w-16 lg:h-16 lg:w-16" />
             </div>
             <div className="ml-auto">
               <Tippy

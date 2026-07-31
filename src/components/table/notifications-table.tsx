@@ -92,7 +92,7 @@ const NotificationsTable: React.FC<NotificationsTableProps> = ({
 
   const getStatusLabel = (isRead: boolean) => {
     return isRead ? (
-      <Label labledata="Read" lablestyle="bg-slate-400 text-slate-600" />
+      <Label labledata="Read" lablestyle="bg-slate-400" />
     ) : (
       <Label labledata="Unread" lablestyle="bg-blue-400 text-blue-600" />
     )
@@ -115,13 +115,13 @@ const NotificationsTable: React.FC<NotificationsTableProps> = ({
 
   return (
     <div className="intro-y col-span-12 overflow-auto lg:overflow-visible">
-      <Table className="border-spacing-y-[10px] border-slate-200 text-slate-500">
+      <Table cards className="border-slate-200">
         <Table.Thead variant="default">
           <Table.Tr className="border-b border-slate-200/60">
             {headers.map((header, headerKey) => (
               <Table.Th
                 key={headerKey}
-                className="whitespace-nowrap border-b-0 px-2.5 py-3.5 font-medium text-slate-700"
+                className="whitespace-nowrap px-2.5 py-3.5 font-medium text-slate-700"
               >
                 {header.label}
               </Table.Th>
@@ -138,7 +138,7 @@ const NotificationsTable: React.FC<NotificationsTableProps> = ({
                 'transition-colors hover:bg-slate-100',
               ])}
             >
-              <Table.Td className="whitespace-nowrap border-b-0 px-2.5 py-3.5">
+              <Table.Td className="whitespace-nowrap px-2.5 py-3.5">
                 <div className="flex items-center">
                   {!item.IsRead && (
                     <div className="mr-2 h-2 w-2 rounded-full bg-blue-500" />
@@ -147,7 +147,7 @@ const NotificationsTable: React.FC<NotificationsTableProps> = ({
                     className={clsx([
                       'font-medium',
                       item.IsRead
-                        ? 'text-slate-600'
+                        ? ''
                         : 'font-semibold text-slate-900',
                     ])}
                   >
@@ -155,20 +155,20 @@ const NotificationsTable: React.FC<NotificationsTableProps> = ({
                   </div>
                 </div>
               </Table.Td>
-              <Table.Td className="whitespace-nowrap border-b-0 px-2.5 py-3.5">
-                <div className="text-slate-600">
+              <Table.Td className="whitespace-nowrap px-2.5 py-3.5">
+                <div >
                   {truncate(item.Message, { length: 50 })}
                 </div>
               </Table.Td>
-              <Table.Td className="whitespace-nowrap border-b-0 px-2.5 py-3.5">
+              <Table.Td className="whitespace-nowrap px-2.5 py-3.5">
                 {getTypeLabel(item.NotificationType)}
               </Table.Td>
-              <Table.Td className="whitespace-nowrap border-b-0 px-2.5 py-3.5">
-                <div className="text-slate-600">
+              <Table.Td className="whitespace-nowrap px-2.5 py-3.5">
+                <div >
                   {getDateValue(item.NotificationDate)}
                 </div>
               </Table.Td>
-              <Table.Td className="whitespace-nowrap border-b-0 px-2.5 py-3.5">
+              <Table.Td className="whitespace-nowrap px-2.5 py-3.5">
                 <div className="flex items-center gap-2">
                   {getStatusLabel(item.IsRead)}
                   {!item.IsRead && (

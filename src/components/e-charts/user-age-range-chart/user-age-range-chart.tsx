@@ -211,7 +211,7 @@ function AgeDistributionChart() {
             <button
               className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
                 selectedUserType === 'tp'
-                  ? 'bg-black text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 text-black'
               }`}
               onClick={() => setSelectedUserType('tp')}
@@ -223,7 +223,7 @@ function AgeDistributionChart() {
             <button
               className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
                 selectedUserType === 'sp'
-                  ? 'bg-black text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 text-black'
               }`}
               onClick={() => setSelectedUserType('sp')}
@@ -236,7 +236,7 @@ function AgeDistributionChart() {
             <button
               className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
                 selectedUserType === 'both'
-                  ? 'bg-black text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 text-black'
               }`}
               onClick={() => setSelectedUserType('both')}

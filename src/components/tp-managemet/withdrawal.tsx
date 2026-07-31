@@ -189,7 +189,7 @@ const Withdrawal = () => {
                     Cancel
                   </button>
                   <button
-                    className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                    className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                     onClick={toggleFilters}
                   >
                     Apply

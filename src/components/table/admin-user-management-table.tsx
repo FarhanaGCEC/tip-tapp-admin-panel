@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
+import { truncate } from 'lodash'
 import Table from '../common/table'
-import SlideoverRegistry from '../../pages/user-management/slideover-registry'
-import Label from '../common/label/active-banned-new-label'
 import Lucide from '../common/lucide'
 import { UserDetailsItem } from '../../types/adminUserTypes'
-import { truncate } from 'lodash'
 import permissionChecker from '../../hooks/permissonChecker'
 import StatusButton from '../common/button/statusBtn'
 import ConfirmationModal from '../common/confirmation/ConfirmationModal'
+import UserAvatar from '../common/user-avatar'
 
 interface AdminManagementTableProps {
   headers: { key: number; label: string }[]
@@ -46,15 +45,15 @@ const AdminManagementTable: React.FC<AdminManagementTableProps> = ({
 
   return (
     <div>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards>
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
               <Table.Th
                 key={header.key}
-                className={`whitespace-nowrap border-b-0 ${
+                className={
                   header.key === 5 || header.key === 6 ? 'text-center' : ''
-                }`}
+                }
               >
                 {header.label}
               </Table.Th>
@@ -63,47 +62,63 @@ const AdminManagementTable: React.FC<AdminManagementTableProps> = ({
         </Table.Thead>
         <Table.Tbody>
           {Items.map((item) => (
-            <Table.Tr className="intro-x h-[68px] drop-shadow-lg" key={item.id}>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item.FirstName + ' ' + item.LastName}
+            <Table.Tr key={item.id}>
+              <Table.Td className="font-medium">
+                <div className="flex items-center gap-3">
+                  <UserAvatar
+                    src={item.ProfilePictureURL}
+                    alt={`${item.FirstName || ''} ${item.LastName || ''}`.trim() || 'User'}
+                    className="h-9 w-9"
+                  />
+                  <span>
+                    {`${item.FirstName || ''} ${item.LastName || ''}`.trim()}
+                  </span>
+                </div>
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {truncate(item.Email, { length: 25 }) || 'N/A'}
+              <Table.Td >
+                {truncate(item.Email, { length: 28 }) || 'N/A'}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item.Phone || 'N/A'}
-              </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td>{item.Phone || 'N/A'}</Table.Td>
+              <Table.Td>
                 {item?.role?.name === 'SUPER_ADMIN'
                   ? 'Administrator'
                   : item?.role?.name || 'N/A'}
               </Table.Td>
-              <Table.Td className="ml-4 border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md">
+              <Table.Td>
                 <div className="flex justify-center">
                   <StatusButton status={item?.Status} />
                 </div>
               </Table.Td>
-              <Table.Td className="cursor-pointer justify-center border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="flex justify-center gap-3">
-                  <Lucide
-                    icon="Eye"
-                    className="h-6 w-6 text-black"
+              <Table.Td>
+                <div className="flex items-center justify-center gap-1">
+                  <button
+                    type="button"
+                    className="tipapp-table__action"
+                    aria-label="View user"
                     onClick={() => handleViewOnClick(item.id.toString())}
-                  />
+                  >
+                    <Lucide icon="Eye" className="h-5 w-5" />
+                  </button>
                   {permissionChecker(
-                    <Lucide
-                      icon="Edit"
-                      className="h-6 w-6 text-black"
+                    <button
+                      type="button"
+                      className="tipapp-table__action"
+                      aria-label="Edit user"
                       onClick={() => handleEditOnClick(item.id.toString())}
-                    />,
+                    >
+                      <Lucide icon="Edit" className="h-5 w-5" />
+                    </button>,
                     'user_management.edit'
                   )}
                   {permissionChecker(
-                    <Lucide
-                      icon="Trash2"
-                      className="h-6 w-6 text-red-500"
+                    <button
+                      type="button"
+                      className="tipapp-table__action text-red-500"
+                      aria-label="Delete user"
                       onClick={() => handleDelete(item.KeyCloakID.toString())}
-                    />,
+                    >
+                      <Lucide icon="Trash2" className="h-5 w-5" />
+                    </button>,
                     'user_management.delete'
                   )}
                 </div>

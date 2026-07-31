@@ -32,8 +32,8 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
       >
         <div className="box h-full p-3">
           <div className="flex items-center justify-between">
-            <div className="rounded-full bg-gray-100 p-3">
-              <img src={icon} className="h-16 w-16" />
+            <div className="rounded-full bg-primary/10 p-3">
+              <img src={icon} alt="" className="h-16 w-16" />
             </div>
             <div>
               <Tippy

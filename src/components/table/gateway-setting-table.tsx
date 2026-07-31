@@ -64,13 +64,13 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
 
   return (
     <>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
               <Table.Th
                 key={header.key}
-                className={`whitespace-nowrap border-b-0 ${
+                className={`whitespace-nowrap ${
                   header.key === 3
                     ? ' pr-12 text-end'
                     : header.key === 4
@@ -85,18 +85,18 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
         </Table.Thead>
         <Table.Tbody>
           {settingItems.map((item) => (
-            <Table.Tr className="intro-x h-[68px] drop-shadow-lg" key={item.id}>
-              <Table.Td className="border-b-0 bg-white    shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="whitespace-nowrap   ">{item?.gateway_name}</div>
+            <Table.Tr key={item.id}>
+              <Table.Td >
+                <div className="whitespace-nowrap">{item?.gateway_name}</div>
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="whitespace-nowrap ">
+              <Table.Td >
+                <div className="whitespace-nowrap">
                   {item?.gateway_type?.charAt(0).toUpperCase() +
                     item?.gateway_type?.slice(1)}
                 </div>
               </Table.Td>
-              <Table.Td className=" border-b-0 bg-white text-center shadow-[20px_3px_20px_#0000000b]  first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="flex justify-end whitespace-nowrap ">
+              <Table.Td className="text-center">
+                <div className="flex justify-end whitespace-nowrap">
                   {item.is_active ? (
                     <Label
                       labledata={
@@ -104,7 +104,7 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
                           ? 'Active (Payment)'
                           : 'Active'
                       }
-                      lablestyle={'bg-[#03C50B] min-w-[140px]'}
+                      lablestyle={'bg-[#2F9E44] min-w-[140px]'}
                     />
                   ) : (
                     <Label
@@ -114,8 +114,8 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
                   )}
                 </div>
               </Table.Td>
-              <Table.Td className=" h-[68px]  cursor-pointer     items-center justify-center border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="  flex flex-row justify-end  pr-2 ">
+              <Table.Td className="cursor-pointer items-center justify-center">
+                <div className="flex flex-row justify-end pr-2">
                   <Lucide
                     icon="Eye"
                     className="ml-3 h-6 w-6 text-black"
@@ -170,7 +170,7 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
               className="mx-auto mt-3 h-16 w-16 text-danger"
             />
             <div className="mt-5 text-3xl">Error</div>
-            <div className="mt-2 text-slate-500">
+            <div className="mt-2">
               {errorMessage || 'An unexpected error occurred.'}
             </div>
           </div>

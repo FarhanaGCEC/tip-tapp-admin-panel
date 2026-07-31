@@ -16,6 +16,7 @@ import { useAppSelector } from '../../stores/hooks'
 import { FormattedMenu, linkTo, nestedMenu, enter, leave } from './side-menu'
 import Lucide from '../../components/common/lucide'
 import SideMenuTooltip from '../../components/SideMenuTooltip'
+import brandLogo from '../../assets/images/tipapp-brand-logo.png'
 
 function Main() {
   const location = useLocation()
@@ -38,8 +39,13 @@ function Main() {
             to="/"
             className="intro-x flex items-center pl-5 pt-4"
           >
-            <span className="ml-3 hidden text-lg text-white xl:block">
-              Store
+            <img
+              alt="TipApp"
+              className="h-10 w-10 rounded-lg object-cover shadow-md ring-1 ring-white/40"
+              src={brandLogo}
+            />
+            <span className="ml-3 hidden text-lg font-semibold text-white xl:block">
+              TipApp
             </span>
           </Link>
           <Devider type="div" className="my-6" />

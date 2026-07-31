@@ -1,5 +1,5 @@
-import Table from '../common/table'
 import date from 'date-and-time'
+import Table from '../common/table'
 import { WithdrawalItem } from '../../types/tips'
 import { useCurrencyStore } from '../../stores/currencyStore'
 import { formatMoney } from '../../utils/formatMoney'
@@ -16,21 +16,18 @@ const WithdrawalTable: React.FC<WithdrawalTableProps> = ({
   const currency = useCurrencyStore((state) => state.currency)
 
   return (
-    <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+    <Table cards>
       <Table.Thead variant="default">
         <Table.Tr>
           {headers.map((header) => (
             <Table.Th
               key={header.key}
-              className={`whitespace-nowrap border-b-0  ${
-                header.label === 'WITHDRAW DATE'
-                  ? ' pr-36 text-end '
-                  : header.label === 'SEVICE PROVIDER NAME'
-                  ? '    lg:ps-36'
-                  : header.label === 'AMOUNT'
-                  ? ' pr-5 text-end'
+              className={
+                header.label.toLowerCase().includes('amount') ||
+                header.label.toLowerCase().includes('date')
+                  ? 'text-end'
                   : ''
-              }`}
+              }
             >
               {header.label}
             </Table.Th>
@@ -39,20 +36,15 @@ const WithdrawalTable: React.FC<WithdrawalTableProps> = ({
       </Table.Thead>
       <Table.Tbody>
         {withdrawalItems.map((item) => (
-          <Table.Tr
-            className="intro-x  h-[68px] drop-shadow-lg"
-            key={item.WithdrawId}
-          >
-            <Table.Td className=" border-b-0 bg-white px-6  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.WithdrawId || 0}
+          <Table.Tr key={item.WithdrawId}>
+            <Table.Td className="font-medium">
+              #{item.WithdrawId || 0}
             </Table.Td>
-            <Table.Td className=" border-b-0 bg-white px-20   pr-44 text-end shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {date.format(new Date(item.DateCreate), 'DD/MM/YYYY')}
+            <Table.Td className="whitespace-nowrap text-end">
+              {date.format(new Date(item.DateCreate), 'DD MMM YYYY')}
             </Table.Td>
-            <Table.Td className="  border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b]   first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600 lg:ps-36">
-              {item.serviceProviderName || 'N/A'}
-            </Table.Td>
-            <Table.Td className="cursor-pointer  border-b-0 bg-white px-16 pr-5 text-end shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+            <Table.Td>{item.serviceProviderName || 'N/A'}</Table.Td>
+            <Table.Td className="text-end font-semibold">
               {formatMoney(item, currency)}
             </Table.Td>
           </Table.Tr>

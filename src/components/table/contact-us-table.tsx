@@ -57,13 +57,13 @@ function ContactUsTable({
 
   return (
     <div>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
               <Table.Th
                 key={header.key}
-                className={`whitespace-nowrap border-b-0 ${
+                className={`whitespace-nowrap ${
                   header.key === 5 || header.key === 6 ? 'text-center' : ''
                 }`}
               >
@@ -75,22 +75,21 @@ function ContactUsTable({
         <Table.Tbody>
           {contactMessages.map((message) => (
             <Table.Tr
-              className="intro-x h-[68px] drop-shadow-lg"
               key={message.id}
             >
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {message.name}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {truncate(message.email, { length: 25 })}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {truncate(message.message, { length: 50 })}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {formatDate(message.createdAt)}
               </Table.Td>
-              <Table.Td className="ml-4 border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md">
+              <Table.Td className="ml-4">
                 <div className="flex justify-center">
                   <span
                     className={`inline-flex rounded px-3 py-1 text-xs font-semibold ${
@@ -103,7 +102,7 @@ function ContactUsTable({
                   </span>
                 </div>
               </Table.Td>
-              <Table.Td className="cursor-pointer justify-center border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="cursor-pointer justify-center">
                 <div className="flex justify-center gap-3">
                   <Lucide
                     icon="Eye"

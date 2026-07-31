@@ -28,7 +28,7 @@ function DashboardTilesCard() {
   return (
     <div>
       <div className="intro-y block h-fit items-center sm:flex ">
-        <h2 className="mt-[20px] w-fit text-[19px] text-lg font-medium text-[#2D3748]">
+        <h2 className="mt-[20px] w-fit text-[19px] text-lg font-medium text-brand-navy">
           Tips Overview
         </h2>
       </div>

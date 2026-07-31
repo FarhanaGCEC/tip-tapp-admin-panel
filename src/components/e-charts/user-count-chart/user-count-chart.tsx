@@ -172,7 +172,7 @@ function UserCountChart() {
             <button
               className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
                 selectedUserType === 'Tippers'
-                  ? 'bg-black text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 text-black'
               }`}
               onClick={() => setSelectedUserType('Tippers')}
@@ -184,7 +184,7 @@ function UserCountChart() {
             <button
               className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
                 selectedUserType === 'ServiceProviders'
-                  ? 'bg-black text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 text-black'
               }`}
               onClick={() => setSelectedUserType('ServiceProviders')}
@@ -198,7 +198,7 @@ function UserCountChart() {
             <button
               className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
                 selectedUserType === 'Both'
-                  ? 'bg-black text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 text-black'
               }`}
               onClick={() => setSelectedUserType('Both')}

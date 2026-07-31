@@ -1,5 +1,5 @@
-import Table from '../common/table'
 import date from 'date-and-time'
+import Table from '../common/table'
 import { TipItem } from '../../types/tips'
 import { useCurrencyStore } from '../../stores/currencyStore'
 import { formatMoney } from '../../utils/formatMoney'
@@ -16,21 +16,13 @@ const TipManagementTable: React.FC<TipManagementTableProps> = ({
   const currency = useCurrencyStore((state) => state.currency)
 
   return (
-    <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+    <Table cards>
       <Table.Thead variant="default">
         <Table.Tr>
           {headers.map((header) => (
             <Table.Th
               key={header.key}
-              className={`whitespace-nowrap border-b-0 ${
-                header.key === 2 ||
-                header.key === 3 ||
-                header.key === 4 
-                  ? ' px-16 '
-                  : header.key === 5
-                  ? ' text-end  '
-                  : ''
-              }`}
+              className={header.label.toLowerCase().includes('amount') ? 'text-end' : ''}
             >
               {header.label}
             </Table.Th>
@@ -39,23 +31,16 @@ const TipManagementTable: React.FC<TipManagementTableProps> = ({
       </Table.Thead>
       <Table.Tbody>
         {tipItems.map((item) => (
-          <Table.Tr
-            className="intro-x h-[68px] drop-shadow-lg "
-            key={item.TipId}
-          >
-            <Table.Td className="w-[150px] border-b-0  bg-[#fff]  first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              {item.TipId}
+          <Table.Tr key={item.TipId}>
+            <Table.Td className="font-medium">
+              #{item.TipId}
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white px-16  first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              {date.format(new Date(item.createdAt), 'DD/MM/YYYY')}
+            <Table.Td className="whitespace-nowrap">
+              {date.format(new Date(item.createdAt), 'DD MMM YYYY')}
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white px-16  first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              {item.tipperName || 'N/A'}
-            </Table.Td>
-            <Table.Td className="border-b-0 bg-white px-16  first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              {item.serviceProviderName || 'N/A'}
-            </Table.Td>
-            <Table.Td className="cursor-pointer border-b-0  bg-white   text-end  first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
+            <Table.Td>{item.tipperName || 'N/A'}</Table.Td>
+            <Table.Td>{item.serviceProviderName || 'N/A'}</Table.Td>
+            <Table.Td className="text-end font-semibold">
               {formatMoney(item, currency)}
             </Table.Td>
           </Table.Tr>

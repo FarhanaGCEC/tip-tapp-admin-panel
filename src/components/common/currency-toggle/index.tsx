@@ -18,8 +18,8 @@ function CurrencyToggle() {
           className={clsx(
             'rounded px-2.5 py-1 text-xs font-medium transition-colors',
             currency === option
-              ? 'bg-black text-white'
-              : 'text-gray-500 hover:text-gray-900'
+              ? 'bg-primary text-white'
+              : 'text-gray-500 hover:text-brand-navy'
           )}
         >
           {option}

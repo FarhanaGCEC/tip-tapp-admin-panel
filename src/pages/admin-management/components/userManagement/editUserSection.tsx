@@ -10,7 +10,6 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import Button from '../../../../components/common/button'
 import InputElement from '../../../../components/common/form-elements/input-element'
-import Profile from '../../../../components/common/profile/profile'
 import {
   AlignmentTypes,
   NotificationTypes,
@@ -26,6 +25,7 @@ import { UpdateUserPayload } from '../../../../types/adminUserTypes'
 import CustomDropdown from '../../../../components/common/form-elements/custom-dropdown'
 import { useUploadImage } from '../../../../api/auth-management'
 import Separator from '../../../../components/common/separator/separator'
+import { getProfilePictureUrl } from '../../../../utils/profilePicture'
 
 const schema = yup
   .object({
@@ -200,15 +200,14 @@ function EditUserSection({ userId, roles }: { userId: string; roles: [] }) {
             type="button"
             className="relative flex flex-col items-center justify-center gap-[10px]"
           >
-            {data?.ProfilePictureURL ? (
-              <img
-                src={data.ProfilePictureURL}
-                alt="Uploaded profile"
-                className="h-[100px] w-[100px] rounded-full object-cover"
-              />
-            ) : (
-              <Profile />
-            )}
+            <img
+              src={getProfilePictureUrl(data?.ProfilePictureURL)}
+              alt={`${data?.FirstName || ''} ${data?.LastName || ''}`.trim() || 'User'}
+              className="h-[100px] w-[100px] rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/default-avatar.png'
+              }}
+            />
             <input
               type="file"
               accept="image/*"

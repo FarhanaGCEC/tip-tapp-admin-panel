@@ -59,6 +59,7 @@
    |
    */
 @import "./components/_global.css";
+@import "./components/_table.css";
 @import "./components/_zoom-in.css";
 @import "./components/_image-fit.css";
 @import "./components/_typing-dots.css";

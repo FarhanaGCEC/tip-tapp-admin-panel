@@ -60,14 +60,25 @@ export interface TipItem {
   EmiratesId: string
   balance?: number
   BalanceOriginal?: number
+  balanceAED?: number
+  TotalTips?: number
+  TotalTipsOriginal?: number
+  TotalTipsAED?: number
   TotalWithdrawal?: number
   TotalWithdrawalOriginal?: number
+  TotalWithdrawalAED?: number
   TotalTipsGiven?: number
   TotalTipsGivenOriginal?: number
+  TotalTipsGivenAED?: number
+  PendingStripeFees?: string | number
   financials?: {
     balance?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+    totalTips?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
     totalWithdrawal?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
     totalTipsGiven?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+    tipsGivenFromWallet?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+    tipsGivenFromCard?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
+    pendingStripeFees?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
   }
 }
 

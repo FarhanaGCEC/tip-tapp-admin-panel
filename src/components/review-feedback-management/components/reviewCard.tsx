@@ -75,7 +75,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         {!hidden ? (
           <div>
             <Button
-              className=" bg-black  px-10 py-2 text-white max-[600px]:px-4"
+              className=" bg-primary  px-10 py-2 text-white max-[600px]:px-4"
               disabled={isLoading}
               onClick={() => {
                 onHide(true)
@@ -86,7 +86,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
           </div>
         ) : (
           <Button
-            className=" bg-black  px-10 py-2 text-white max-[600px]:px-4"
+            className=" bg-primary  px-10 py-2 text-white max-[600px]:px-4"
             disabled={isLoading}
             onClick={() => {
               onHide(false)

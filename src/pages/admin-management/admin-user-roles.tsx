@@ -184,7 +184,7 @@ const AdminRoleManagementPage = () => {
             onClick={() => {
               handleAddRoleOnClick()
             }}
-            className="primary flex  min-w-[100px] items-center gap-2.5 bg-black !font-medium text-white"
+            className="primary flex  min-w-[100px] items-center gap-2.5 bg-primary !font-medium text-white"
           >
             Add Role
           </Button>,
