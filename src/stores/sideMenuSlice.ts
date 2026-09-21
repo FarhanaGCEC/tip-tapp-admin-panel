@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store'
 import { icons } from '../base-components/lucide'
 
-// Interfaces
 export interface Menu {
   icon: keyof typeof icons
   title: string
@@ -15,35 +14,42 @@ export interface SideMenuState {
   menu: Array<Menu | 'devider'>
 }
 
-const permissionsToken = localStorage.getItem('validationToken')
-let availablePermissons: { permissions: string[]; name?: string } = {
-  permissions: [],
-}
+type PermissionPayload = { permissions: string[]; name?: string }
 
-if (permissionsToken) {
+function readPermissionsFromToken(): PermissionPayload {
+  const permissionsToken = localStorage.getItem('validationToken')
+  if (!permissionsToken) {
+    return { permissions: [] }
+  }
+
   try {
     const tokenParts = permissionsToken.split('.')
-    if (tokenParts.length >= 2) {
-      const payload = tokenParts[1]
-      // Add padding if needed for Base64 decoding
-      const paddedPayload = payload + '='.repeat((4 - (payload.length % 4)) % 4)
-      availablePermissons = JSON.parse(atob(paddedPayload))
+    if (tokenParts.length < 2) {
+      return { permissions: [] }
     }
+    const payload = tokenParts[1]
+    const paddedPayload = payload + '='.repeat((4 - (payload.length % 4)) % 4)
+    return JSON.parse(atob(paddedPayload)) as PermissionPayload
   } catch (error) {
     console.warn('Failed to decode permissions token:', error)
-    availablePermissons = { permissions: [] }
+    return { permissions: [] }
   }
 }
 
-const hasPermission = (requiredPermission: string) => {
-  if (availablePermissons.name === 'SUPER_ADMIN') {
-    return true
+function createPermissionChecker(available: PermissionPayload) {
+  return (requiredPermission: string) => {
+    if (available.name === 'SUPER_ADMIN') {
+      return true
+    }
+    return available.permissions.includes(requiredPermission)
   }
-  return availablePermissons.permissions.includes(requiredPermission)
 }
 
-const initialState: SideMenuState = {
-  menu: [
+/** Build menu from current validationToken — call after login, not only at module load. */
+export function buildSideMenu(): Array<Menu | 'devider'> {
+  const hasPermission = createPermissionChecker(readPermissionsFromToken())
+
+  return [
     {
       icon: 'Home',
       title: 'Dashboard',
@@ -147,6 +153,11 @@ const initialState: SideMenuState = {
       pathname: '/newsletter-management',
     },
     {
+      icon: 'Car',
+      title: 'Share a Ride',
+      pathname: '/share-a-ride/add-trip',
+    },
+    {
       icon: 'FileText',
       title: 'Reports',
       pathname: '/reports',
@@ -169,14 +180,24 @@ const initialState: SideMenuState = {
           ],
         }
       : null,
-  ].filter((item) => item !== null) as (Menu | 'devider')[],
+  ].filter((item) => item !== null) as (Menu | 'devider')[]
+}
+
+const initialState: SideMenuState = {
+  menu: buildSideMenu(),
 }
 
 export const sideMenuSlice = createSlice({
   name: 'sideMenu',
   initialState,
-  reducers: {},
+  reducers: {
+    rebuildSideMenu(state) {
+      state.menu = buildSideMenu()
+    },
+  },
 })
+
+export const { rebuildSideMenu } = sideMenuSlice.actions
 
 export const selectSideMenu = (state: RootState) => state.sideMenu.menu
 

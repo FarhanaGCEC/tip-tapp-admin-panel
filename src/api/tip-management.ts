@@ -1,7 +1,12 @@
 /* eslint-disable no-useless-catch */
 import { UseQueryResult, useQuery } from 'react-query'
 import authFetch from './axiosinterceptor'
-import { GetTipsResponse, GetWithdrawalResponse } from '../types/tips'
+import {
+  GetTipsResponse,
+  GetWithdrawalResponse,
+  TipItem,
+  WithdrawalItem,
+} from '../types/tips'
 import { AmountResponse } from '../types/currency'
 
 export type PlatformLedgerResponse = {
@@ -172,3 +177,82 @@ export const GetPlatformLedger = (): UseQueryResult<PlatformLedgerResponse> => {
     },
   })
 }
+
+type TipListFilters = {
+  searchdata?: string
+  date?: string
+  status?: string
+  minAmount?: number
+  maxAmount?: number
+}
+
+/** Fetches all tip rows for Excel export (paginates until done). */
+export async function fetchAllTips(
+  filters: TipListFilters = {}
+): Promise<TipItem[]> {
+  const {
+    searchdata = '',
+    date = '',
+    status = '',
+    minAmount = 0,
+    maxAmount = 0,
+  } = filters
+  const pageSize = 100
+  let page = 1
+  let totalPages = 1
+  const items: TipItem[] = []
+
+  while (page <= totalPages) {
+    const response = await authFetch.get<GetTipsResponse>(
+      `/tip-management/tips?limit=${pageSize}&page=${page}${
+        searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
+      }${date ? `&date=${date}` : ''}${status ? `&status=${status}` : ''}${
+        minAmount ? `&minAmount=${minAmount}` : ''
+      }${maxAmount ? `&maxAmount=${maxAmount}` : ''}`
+    )
+    const payload = response?.data?.data
+    const pageItems = payload?.items ?? []
+    items.push(...pageItems)
+    totalPages = payload?.meta?.totalPages ?? 1
+    page += 1
+    if (pageItems.length === 0) break
+  }
+
+  return items
+}
+
+/** Fetches all withdrawal rows for Excel export (paginates until done). */
+export async function fetchAllWithdrawals(
+  filters: TipListFilters = {}
+): Promise<WithdrawalItem[]> {
+  const {
+    searchdata = '',
+    date = '',
+    status = '',
+    minAmount = 0,
+    maxAmount = 0,
+  } = filters
+  const pageSize = 100
+  let page = 1
+  let totalPages = 1
+  const items: WithdrawalItem[] = []
+
+  while (page <= totalPages) {
+    const response = await authFetch.get<GetWithdrawalResponse>(
+      `/invoices/withdraw?limit=${pageSize}&page=${page}${
+        searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
+      }${date ? `&date=${date}` : ''}${status ? `&status=${status}` : ''}${
+        minAmount ? `&minAmount=${minAmount}` : ''
+      }${maxAmount ? `&maxAmount=${maxAmount}` : ''}`
+    )
+    const payload = response?.data?.data
+    const pageItems = payload?.items ?? []
+    items.push(...pageItems)
+    totalPages = payload?.meta?.totalPages ?? 1
+    page += 1
+    if (pageItems.length === 0) break
+  }
+
+  return items
+}
+

@@ -1,18 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react/function-component-definition */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
-/* eslint-disable import/extensions */
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import ContactUsTable from '../components/table/contact-us-table'
-import ViewContactMessageModal from '../components/contact-management/view-contact-message-modal'
-import ReplyContactMessageModal from '../components/contact-management/reply-contact-message-modal'
-import { ContactMessage, ContactUsFilters } from '../types/contactUsTypes'
+import ContactChatPanel from '../components/contact-management/contact-chat-panel'
+import SlideoverPanel from '../components/slideover-panel'
+import { ContactUsFilters } from '../types/contactUsTypes'
 import {
   FormInput,
-  FormSelect,
 } from '../components/common/form-elements/components'
 import Button from '../components/common/button'
 import Lucide from '../components/common/lucide'
@@ -22,37 +16,43 @@ import SharedDataContainer from '../containers/sharedData'
 import { Icons, NotificationTypes } from '../constants'
 import {
   useGetContactMessages,
-  useGetContactMessageById,
   useReplyToContactMessage,
   useDeleteContactMessage,
 } from '../api/contact-us-management'
+import {
+  ContactThread,
+  groupContactThreads,
+} from '../utils/groupContactThreads'
 
 const ContactUsManagement: React.FC = () => {
-  const { setNotification } = SharedDataContainer.useContainer()
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
+  const { setNotification, handleSlider } = SharedDataContainer.useContainer()
+  const [selectedThread, setSelectedThread] = useState<ContactThread | null>(
     null
   )
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false)
 
-  // Filters and pagination
   const [filters, setFilters] = useState<ContactUsFilters>({
     page: 1,
-    limit: 10,
+    limit: 50,
     search: '',
     status: undefined,
     dateFrom: '',
     dateTo: '',
   })
 
-  // React Query hooks
   const { data: contactMessagesData, isLoading } =
     useGetContactMessages(filters)
 
-  const { data: selectedMessageData } = useGetContactMessageById(
-    selectedMessageId || '',
-    !!selectedMessageId
-  )
+  // Full conversation for selected person (by email search)
+  const conversationFilters: ContactUsFilters = {
+    page: 1,
+    limit: 100,
+    search: selectedThread?.email || '',
+  }
+  const { data: conversationData, isLoading: conversationLoading } =
+    useGetContactMessages(
+      conversationFilters,
+      Boolean(selectedThread?.email)
+    )
 
   const replyMutation = useReplyToContactMessage()
   const deleteMutation = useDeleteContactMessage()
@@ -60,41 +60,43 @@ const ContactUsManagement: React.FC = () => {
   const tableHeaders = [
     { key: 1, label: 'Name' },
     { key: 2, label: 'Email' },
-    { key: 3, label: 'Message' },
-    { key: 4, label: 'Date' },
-    { key: 5, label: 'Status' },
+    { key: 3, label: 'Phone' },
+    { key: 4, label: 'Last Message' },
+    { key: 5, label: 'Date' },
     { key: 6, label: 'Actions' },
   ]
 
-  // Extract data from React Query
   const contactMessages = contactMessagesData?.data?.items || []
+  const threads = useMemo(
+    () => groupContactThreads(contactMessages),
+    [contactMessages]
+  )
+
+  const conversationMessages = useMemo(() => {
+    if (!selectedThread) return []
+    const items = conversationData?.data?.items || []
+    const email = selectedThread.email.trim().toLowerCase()
+    const filtered = email
+      ? items.filter((m) => (m.email || '').trim().toLowerCase() === email)
+      : items
+    return filtered.length ? filtered : selectedThread.messages
+  }, [conversationData, selectedThread])
+
   const pagination = {
     totalItems: contactMessagesData?.data?.meta?.totalItems || 0,
     totalPages: contactMessagesData?.data?.meta?.totalPages || 0,
     currentPage: contactMessagesData?.data?.meta?.currentPage || 1,
-    itemsPerPage: contactMessagesData?.data?.meta?.itemsPerPage || 10,
+    itemsPerPage: contactMessagesData?.data?.meta?.itemsPerPage || 50,
   }
 
-  const selectedMessage = selectedMessageData?.data || null
-
-  const handleViewMessage = (messageId: string) => {
-    setSelectedMessageId(messageId)
-    setIsViewModalOpen(true)
+  const handleOpenChat = (thread: ContactThread) => {
+    setSelectedThread(thread)
+    handleSlider()
   }
 
-  const handleCloseViewModal = () => {
-    setIsViewModalOpen(false)
-    setSelectedMessageId(null)
-  }
-
-  const handleReplyMessage = (messageId: string) => {
-    setSelectedMessageId(messageId)
-    setIsReplyModalOpen(true)
-  }
-
-  const handleCloseReplyModal = () => {
-    setIsReplyModalOpen(false)
-    setSelectedMessageId(null)
+  const handleCloseChat = () => {
+    setSelectedThread(null)
+    handleSlider()
   }
 
   const handleSendReply = async (messageId: string, replyMessage: string) => {
@@ -107,8 +109,6 @@ const ContactUsManagement: React.FC = () => {
         type: NotificationTypes.SUCCESS,
       })
       Toast()
-      setIsReplyModalOpen(false)
-      setSelectedMessageId(null)
     } catch (error) {
       console.error('Error sending reply:', error)
       setNotification({
@@ -118,6 +118,7 @@ const ContactUsManagement: React.FC = () => {
         type: NotificationTypes.ERROR,
       })
       Toast()
+      throw error
     }
   }
 
@@ -144,24 +145,15 @@ const ContactUsManagement: React.FC = () => {
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev: ContactUsFilters) => ({
+    setFilters((prev) => ({
       ...prev,
       search: e.target.value,
       page: 1,
     }))
   }
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as 'pending' | 'replied' | ''
-    setFilters((prev: ContactUsFilters) => ({
-      ...prev,
-      status: value === '' ? undefined : value,
-      page: 1,
-    }))
-  }
-
   const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev: ContactUsFilters) => ({
+    setFilters((prev) => ({
       ...prev,
       dateFrom: e.target.value,
       page: 1,
@@ -169,7 +161,7 @@ const ContactUsManagement: React.FC = () => {
   }
 
   const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev: ContactUsFilters) => ({
+    setFilters((prev) => ({
       ...prev,
       dateTo: e.target.value,
       page: 1,
@@ -177,7 +169,7 @@ const ContactUsManagement: React.FC = () => {
   }
 
   const handlePageChange = (page: number) => {
-    setFilters((prev: ContactUsFilters) => ({ ...prev, page }))
+    setFilters((prev) => ({ ...prev, page }))
   }
 
   return (
@@ -187,27 +179,17 @@ const ContactUsManagement: React.FC = () => {
       </div>
 
       <div className="p-5">
-        {/* Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="flex-1">
             <FormInput
               type="text"
               className="box w-full"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email or phone..."
               value={filters.search || ''}
               onChange={handleSearchChange}
             />
           </div>
           <div className="flex gap-2">
-            <FormSelect
-              className="box w-32"
-              value={filters.status || ''}
-              onChange={handleStatusChange}
-            >
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="replied">Replied</option>
-            </FormSelect>
             <FormInput
               type="date"
               className="box w-40"
@@ -229,7 +211,6 @@ const ContactUsManagement: React.FC = () => {
           </div>
         </div>
 
-        {/* Table */}
         {isLoading ? (
           <div className="flex h-32 items-center justify-center">
             <Lucide icon="Loader" className="h-8 w-8 animate-spin" />
@@ -237,14 +218,12 @@ const ContactUsManagement: React.FC = () => {
         ) : (
           <ContactUsTable
             headers={tableHeaders}
-            contactMessages={contactMessages}
-            handleViewOnClick={handleViewMessage}
-            handleReplyOnClick={handleReplyMessage}
+            threads={threads}
+            handleOpenChat={handleOpenChat}
             handleDeleteOnClick={handleDeleteMessage}
           />
         )}
 
-        {/* Pagination */}
         {pagination.totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700">
@@ -279,19 +258,24 @@ const ContactUsManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Modals */}
-      <ViewContactMessageModal
-        isOpen={isViewModalOpen}
-        onClose={handleCloseViewModal}
-        contactMessage={selectedMessage}
-      />
-
-      <ReplyContactMessageModal
-        isOpen={isReplyModalOpen}
-        onClose={handleCloseReplyModal}
-        contactMessage={selectedMessage}
-        onReply={handleSendReply}
-      />
+      <SlideoverPanel
+        close
+        size="lg"
+        footer={null}
+        contentClassName="!flex !h-full !min-h-0 !flex-col !overflow-hidden !p-0"
+      >
+        {selectedThread ? (
+          <ContactChatPanel
+            thread={selectedThread}
+            messages={conversationMessages}
+            isLoading={conversationLoading && !!selectedThread.email}
+            onClose={handleCloseChat}
+            onSendReply={handleSendReply}
+          />
+        ) : (
+          <div />
+        )}
+      </SlideoverPanel>
     </div>
   )
 }

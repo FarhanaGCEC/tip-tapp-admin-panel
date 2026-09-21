@@ -13,7 +13,9 @@ interface SlideoverPanelProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | string
   children: ReactNode
   heading?: string
-  footer: ReactNode
+  footer?: ReactNode | null
+  /** Extra classes for Description (e.g. chat: no padding, full height) */
+  contentClassName?: string
 }
 
 function SlideoverPanel({
@@ -22,9 +24,11 @@ function SlideoverPanel({
   children,
   heading,
   footer,
+  contentClassName,
 }: SlideoverPanelProps) {
   const { handleSlider, slideOverPreview } = SharedDataContainer.useContainer()
   const { t } = useTranslation('pos')
+  const showFooter = footer !== null && footer !== undefined
 
   return (
     <div className="mt-5 grid grid-cols-12 gap-6">
@@ -49,10 +53,14 @@ function SlideoverPanel({
             ) : (
               ''
             )}
-            <Slideover.Description>
-              <div>{children}</div>
+            <Slideover.Description
+              className={contentClassName}
+            >
+              <div className={contentClassName?.includes('h-full') ? 'h-full' : undefined}>
+                {children}
+              </div>
             </Slideover.Description>
-            <Slideover.Footer>{footer}</Slideover.Footer>
+            {showFooter ? <Slideover.Footer>{footer}</Slideover.Footer> : null}
           </Slideover.Panel>
         </Slideover>
       </div>
@@ -66,4 +74,6 @@ SlideoverPanel.defaultProps = {
   close: false,
   size: 'md',
   heading: '',
+  footer: <div />,
+  contentClassName: '',
 }

@@ -49,22 +49,27 @@ const ViewContactMessageModal: React.FC<ViewContactMessageModalProps> = ({
                 </label>
                 <p className="text-sm text-gray-900">{contactMessage.email}</p>
               </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Phone
+                </label>
+                <p className="text-sm text-gray-900">
+                  {contactMessage['phone no'] || '-'}
+                </p>
+              </div>
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
-                Status
+                Action
               </label>
-              <span
-                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                  contactMessage.status === 'replied'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                {contactMessage.status === 'replied'
-                  ? 'Replied'
-                  : 'Not Replied'}
+              <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-800">
+                {(contactMessage.action || contactMessage.status || 'pending')
+                  .charAt(0)
+                  .toUpperCase() +
+                  (contactMessage.action || contactMessage.status || 'pending').slice(
+                    1
+                  )}
               </span>
             </div>
 
@@ -73,7 +78,7 @@ const ViewContactMessageModal: React.FC<ViewContactMessageModalProps> = ({
                 Date
               </label>
               <p className="text-sm text-gray-900">
-                {formatDate(contactMessage.createdAt)}
+                {formatDate(contactMessage.date || contactMessage.createdAt)}
               </p>
             </div>
 
@@ -97,10 +102,10 @@ const ViewContactMessageModal: React.FC<ViewContactMessageModalProps> = ({
                   {contactMessage.replies.map((reply) => (
                     <div key={reply.id} className="rounded-md bg-blue-50 p-4">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-900">
-                        {reply.message}
+                        {reply.replyMessage || reply.message || ''}
                       </p>
                       <p className="mt-2 text-xs text-gray-500">
-                        {formatDate(reply.createdAt)}
+                        {formatDate(reply.sentAt || reply.createdAt)}
                       </p>
                     </div>
                   ))}

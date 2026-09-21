@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Button from '../../components/common/button'
 import {
   FormInput,
@@ -6,13 +6,19 @@ import {
 } from '../../components/common/form-elements/components'
 import Lucide from '../../components/common/lucide'
 import FilterIcon from '../../assets/images/icons/filter-icon.svg'
+import DownloadFile from '../../assets/images/svg/download-table.svg'
 import Pagination from '../../components/pagination/pagination'
 import { TableHeadingsWithdrawal } from '../../constants/table-data'
-import { GetTips, GetWithdrawal } from '../../api/tip-management'
+import { GetWithdrawal, fetchAllWithdrawals } from '../../api/tip-management'
 import WithdrawalTable from '../../components/table/withdrawal-management-table'
 import NoDataFound from '../../assets/images/NoDataFound.png'
+import { downloadWithdrawalsExcel } from '../../utils/exportTipManagementExcel'
+import SharedDataContainer from '../../containers/sharedData'
+import Toast from '../../utils/notification'
+import { Icons, NotificationTypes } from '../../constants'
 
 const Withdrawal = () => {
+  const { setNotification } = SharedDataContainer.useContainer()
   const [searchName, setSearchName] = useState<string>('')
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
@@ -23,6 +29,7 @@ const Withdrawal = () => {
   const [MaxAmountWithdrawal, setMaxAmount] = useState<number>(0)
   const [MinAmountWithdrawal, setMinAmount] = useState<number>(0)
   const [showFilters, setShowFilters] = useState<boolean>(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const {
     data: withdrawalData,
@@ -74,28 +81,58 @@ const Withdrawal = () => {
     setCurrentPage(1)
   }
 
-  const handleFilters = () => {
-    setCurrentPage(1)
-
-    toggleFilters()
-  }
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDate(event.target.value)
   }
 
-  const handleClearFilters = () => {
-    setDate('')
-    setStatus('')
-    setCurrentPage(1)
-
-    toggleFilters()
-  }
   const cleantoggleFilters = () => {
     setMaxAmount(0)
     setMinAmount(0)
     settipdate('')
     toggleFilters()
   }
+
+  const handleDownloadExcel = async () => {
+    try {
+      setIsExporting(true)
+      const items = await fetchAllWithdrawals({
+        searchdata: query,
+        date: tipdate,
+        status,
+        minAmount: MinAmountWithdrawal,
+        maxAmount: MaxAmountWithdrawal,
+      })
+      if (!items.length) {
+        setNotification({
+          title: '',
+          message: 'No withdrawal data available to download.',
+          icon: Icons.XCIRCLE,
+          type: NotificationTypes.ERROR,
+        })
+        Toast()
+        return
+      }
+      downloadWithdrawalsExcel(items)
+      setNotification({
+        title: 'Downloaded',
+        message: `Excel file ready (${items.length} rows).`,
+        icon: Icons.CHECKCIRCLE,
+        type: NotificationTypes.SUCCESS,
+      })
+      Toast()
+    } catch {
+      setNotification({
+        title: '',
+        message: 'Failed to download Excel. Please try again.',
+        icon: Icons.XCIRCLE,
+        type: NotificationTypes.ERROR,
+      })
+      Toast()
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const totalPages = withdrawalData?.data?.meta?.totalPages ?? 0
   const withdrawalItems = withdrawalData?.data?.items || []
 
@@ -124,6 +161,16 @@ const Withdrawal = () => {
         <div className=" flex justify-end">
           <div className="relative">
             <div className="flex items-center gap-3">
+              <Button
+                className="!box flex items-center gap-2.5 !font-medium text-black dark:text-slate-300"
+                onClick={handleDownloadExcel}
+                disabled={isExporting}
+              >
+                <img src={DownloadFile} alt="Download" />
+                <span className="hidden sm:block">
+                  {isExporting ? 'Downloading...' : 'Download Excel'}
+                </span>
+              </Button>
               <Button
                 className="!box mr-2 flex items-center gap-2.5 !font-medium text-black dark:text-slate-300"
                 onClick={toggleFilters}

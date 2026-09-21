@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Button from '../../components/common/button'
 import {
   FormInput,
@@ -6,13 +6,19 @@ import {
 } from '../../components/common/form-elements/components'
 import Lucide from '../../components/common/lucide'
 import FilterIcon from '../../assets/images/icons/filter-icon.svg'
+import DownloadFile from '../../assets/images/svg/download-table.svg'
 import Pagination from '../../components/pagination/pagination'
 import { TipHeadings } from '../../constants/table-data'
-import { GetTips, GetWithdrawal } from '../../api/tip-management'
+import { GetTips, fetchAllTips } from '../../api/tip-management'
 import TipManagementTable from '../../components/table/tip-management-table'
 import NoDataFound from '../../assets/images/NoDataFound.png'
+import { downloadTipsExcel } from '../../utils/exportTipManagementExcel'
+import SharedDataContainer from '../../containers/sharedData'
+import Toast from '../../utils/notification'
+import { Icons, NotificationTypes } from '../../constants'
 
 const Tips = () => {
+  const { setNotification } = SharedDataContainer.useContainer()
   const [searchName, setSearchName] = useState<string>('')
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
@@ -23,6 +29,7 @@ const Tips = () => {
   const [MinAmountTips, setMinAmountTip] = useState<number>(0)
   const [tipdate, settipdate] = useState<string>('')
   const [refresh, setRefresh] = useState<boolean>(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const { data, isSuccess, isLoading, refetch } = GetTips(
     query,
@@ -36,8 +43,6 @@ const Tips = () => {
 
   const [showFilters, setShowFilters] = useState<boolean>(false)
   const [tips, settips] = useState<boolean>(true)
-  const [withdraw, setwithdraw] = useState<boolean>(false)
-  const [sliderSize, setSliderSize] = useState<string>('xl')
 
   let typingTimeout: NodeJS.Timeout
 
@@ -60,15 +65,6 @@ const Tips = () => {
     setShowFilters(!showFilters)
     setRefresh(!refresh)
   }
-  const handletable = (type: string) => {
-    if (type === 'withdraw') {
-      settips(false)
-      setwithdraw(true)
-    } else if (type === 'tip') {
-      setwithdraw(false)
-      settips(true)
-    }
-  }
 
   const handlePageClick = (event: { selected: number }) => {
     setCurrentPage(event.selected + 1)
@@ -81,27 +77,52 @@ const Tips = () => {
     setCurrentPage(1)
   }
 
-  const handleFilters = () => {
-    setCurrentPage(1)
-    refetch()
-    toggleFilters()
-  }
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDate(event.target.value)
-  }
-
-  const handleClearFilters = () => {
-    setDate('')
-    setStatus('')
-    setCurrentPage(1)
-    refetch()
-    toggleFilters()
-  }
   const cleantoggleFilters = () => {
     setMaxAmountTip(0)
     setMinAmountTip(0)
     settipdate('')
     toggleFilters()
+  }
+
+  const handleDownloadExcel = async () => {
+    try {
+      setIsExporting(true)
+      const items = await fetchAllTips({
+        searchdata: query,
+        date: tipdate,
+        status,
+        minAmount: MinAmountTips,
+        maxAmount: MaxAmountTips,
+      })
+      if (!items.length) {
+        setNotification({
+          title: '',
+          message: 'No tip data available to download.',
+          icon: Icons.XCIRCLE,
+          type: NotificationTypes.ERROR,
+        })
+        Toast()
+        return
+      }
+      downloadTipsExcel(items)
+      setNotification({
+        title: 'Downloaded',
+        message: `Excel file ready (${items.length} rows).`,
+        icon: Icons.CHECKCIRCLE,
+        type: NotificationTypes.SUCCESS,
+      })
+      Toast()
+    } catch {
+      setNotification({
+        title: '',
+        message: 'Failed to download Excel. Please try again.',
+        icon: Icons.XCIRCLE,
+        type: NotificationTypes.ERROR,
+      })
+      Toast()
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   const totalPages = data?.data?.meta?.totalPages ?? 0
@@ -130,6 +151,16 @@ const Tips = () => {
         <div className=" flex justify-end">
           <div className="relative">
             <div className="flex items-center gap-3">
+              <Button
+                className="!box flex items-center gap-2.5 !font-medium text-black dark:text-slate-300"
+                onClick={handleDownloadExcel}
+                disabled={isExporting}
+              >
+                <img src={DownloadFile} alt="Download" />
+                <span className="hidden sm:block">
+                  {isExporting ? 'Downloading...' : 'Download Excel'}
+                </span>
+              </Button>
               <Button
                 className="!box flex items-center gap-2.5 !font-medium text-black dark:text-slate-300"
                 onClick={toggleFilters}
@@ -191,12 +222,14 @@ const Tips = () => {
 
                 <div className="flex justify-between">
                   <button
+                    type="button"
                     className="rounded-md bg-gray-100 px-4 py-2 text-gray-500 hover:bg-gray-200"
                     onClick={cleantoggleFilters}
                   >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                     onClick={toggleFilters}
                   >

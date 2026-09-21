@@ -52,6 +52,7 @@ const breadcrumbMap: { [key: string]: string } = {
   '/newsletter-management': 'Newsletter Management',
   '/manage-faqs': 'FAQs',
   '/manage-faq-categories': 'FAQ Categories',
+  '/share-a-ride/add-trip': 'Create Hitch Ride',
 }
 
 function Main() {

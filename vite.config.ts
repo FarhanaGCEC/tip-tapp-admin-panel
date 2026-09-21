@@ -19,7 +19,7 @@ export default defineConfig({
         name: 'TipApp Admin',
         short_name: 'TipApp',
         description: 'TipApp admin dashboard — the tipping app',
-        theme_color: '#9E2A2B',
+        theme_color: '#e80102 ',
         background_color: '#ffffff',
         icons: [
           {

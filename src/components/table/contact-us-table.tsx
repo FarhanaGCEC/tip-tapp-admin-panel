@@ -4,23 +4,21 @@ import React, { useState } from 'react'
 import { truncate } from 'lodash'
 import Table from '../common/table'
 import Lucide from '../common/lucide'
-import { ContactMessage } from '../../types/contactUsTypes'
 import permissionChecker from '../../hooks/permissonChecker'
 import ConfirmationModal from '../common/confirmation/ConfirmationModal'
+import { ContactThread } from '../../utils/groupContactThreads'
 
 interface ContactUsTableProps {
   headers: { key: number; label: string }[]
-  contactMessages: ContactMessage[]
-  handleViewOnClick: (messageId: string) => void
-  handleReplyOnClick: (messageId: string) => void
+  threads: ContactThread[]
+  handleOpenChat: (thread: ContactThread) => void
   handleDeleteOnClick: (messageId: string) => void
 }
 
 function ContactUsTable({
   headers,
-  contactMessages,
-  handleViewOnClick,
-  handleReplyOnClick,
+  threads,
+  handleOpenChat,
   handleDeleteOnClick,
 }: ContactUsTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -64,7 +62,7 @@ function ContactUsTable({
               <Table.Th
                 key={header.key}
                 className={`whitespace-nowrap ${
-                  header.key === 5 || header.key === 6 ? 'text-center' : ''
+                  header.label.toLowerCase() === 'actions' ? 'text-center' : ''
                 }`}
               >
                 {header.label}
@@ -73,55 +71,61 @@ function ContactUsTable({
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {contactMessages.map((message) => (
+          {threads.map((thread) => (
             <Table.Tr
-              key={message.id}
+              key={thread.key}
+              className="cursor-pointer"
+              onClick={() => handleOpenChat(thread)}
             >
-              <Table.Td >
-                {message.name}
-              </Table.Td>
-              <Table.Td >
-                {truncate(message.email, { length: 25 })}
-              </Table.Td>
-              <Table.Td >
-                {truncate(message.message, { length: 50 })}
-              </Table.Td>
-              <Table.Td >
-                {formatDate(message.createdAt)}
-              </Table.Td>
-              <Table.Td className="ml-4">
-                <div className="flex justify-center">
-                  <span
-                    className={`inline-flex rounded px-3 py-1 text-xs font-semibold ${
-                      message.status === 'replied'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {message.status === 'replied' ? 'Replied' : 'Not Replied'}
-                  </span>
+              <Table.Td className="font-medium">
+                <div className="flex items-center gap-2">
+                  <span>{thread.name}</span>
+                  {thread.messageCount > 1 ? (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                      {thread.messageCount}
+                    </span>
+                  ) : null}
                 </div>
               </Table.Td>
-              <Table.Td className="cursor-pointer justify-center">
+              <Table.Td>
+                {truncate(thread.email, { length: 28 })}
+              </Table.Td>
+              <Table.Td>{thread.phone || '-'}</Table.Td>
+              <Table.Td>
+                {truncate(thread.lastMessage.message, { length: 50 })}
+              </Table.Td>
+              <Table.Td>
+                {formatDate(
+                  thread.lastMessage.date || thread.lastMessage.createdAt
+                )}
+              </Table.Td>
+              <Table.Td
+                className="cursor-pointer justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="flex justify-center gap-3">
-                  <Lucide
-                    icon="Eye"
-                    className="h-6 w-6 text-black"
-                    onClick={() => handleViewOnClick(message.id.toString())}
-                  />
-                  {message.status !== 'replied' && (
+                  <button
+                    type="button"
+                    className="tipapp-table__action"
+                    aria-label="Open chat"
+                    onClick={() => handleOpenChat(thread)}
+                  >
                     <Lucide
                       icon="MessageSquare"
-                      className="h-6 w-6 text-blue-500"
-                      onClick={() => handleReplyOnClick(message.id.toString())}
+                      className="h-5 w-5 text-brand-navy"
                     />
-                  )}
+                  </button>
                   {permissionChecker(
-                    <Lucide
-                      icon="Trash2"
-                      className="h-6 w-6 text-red-500"
-                      onClick={() => handleDelete(message.id.toString())}
-                    />,
+                    <button
+                      type="button"
+                      className="tipapp-table__action"
+                      aria-label="Delete last message"
+                      onClick={() =>
+                        handleDelete(thread.lastMessage.id.toString())
+                      }
+                    >
+                      <Lucide icon="Trash2" className="h-5 w-5 text-red-500" />
+                    </button>,
                     'support_management.delete'
                   )}
                 </div>

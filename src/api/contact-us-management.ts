@@ -8,7 +8,7 @@ import {
   useQueryClient,
 } from 'react-query'
 import authFetch from './axiosinterceptor'
-import { ContactMessage } from '../types/contactUsTypes'
+import { ContactMessage, ContactMessageAction } from '../types/contactUsTypes'
 
 // Response types
 interface GetContactMessagesResponse {
@@ -27,14 +27,15 @@ interface ContactUsQueryParams {
   page?: number
   limit?: number
   search?: string
-  status?: 'pending' | 'replied'
+  status?: ContactMessageAction
   dateFrom?: string
   dateTo?: string
 }
 
 // Get all contact messages with pagination and filters
 export const useGetContactMessages = (
-  params: ContactUsQueryParams
+  params: ContactUsQueryParams,
+  enabled = true
 ): UseQueryResult<GetContactMessagesResponse> => {
   return useQuery({
     queryKey: [
@@ -64,6 +65,7 @@ export const useGetContactMessages = (
         throw error
       }
     },
+    enabled,
     onSuccess: () => {},
     onError: (error) => {
       console.error('Fetch error:', error)
@@ -138,7 +140,7 @@ export const useUpdateContactMessageStatus = () => {
       status,
     }: {
       messageId: string
-      status: 'pending' | 'replied'
+      status: ContactMessageAction
     }) => {
       try {
         const response = await authFetch.patch(

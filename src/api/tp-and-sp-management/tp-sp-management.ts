@@ -6,7 +6,11 @@ import {
   useMutation,
 } from 'react-query'
 import authFetch from '../axiosinterceptor'
-import { GetPending, GetTpAndspiResponse } from '../../types/tpandsptype'
+import {
+  GetTpAndspiResponse,
+  GetPending,
+  TipItem,
+} from '../../types/tpandsptype'
 import {
   isAuthErrorStatus,
   isValidNumericUserId,
@@ -128,3 +132,64 @@ export const ServiceProviderPending = (
     },
   })
 }
+
+/** Fetches all tipper/SP rows for Excel export (paginates until done). */
+export async function fetchAllTpSpUsers(params: {
+  roletype: 'tp' | 'sp'
+  searchdata?: string
+  active?: string
+  dates?: string
+}): Promise<TipItem[]> {
+  const { roletype, searchdata = '', active = '', dates = '' } = params
+  const pageSize = 100
+  let page = 1
+  let totalPages = 1
+  const items: TipItem[] = []
+
+  while (page <= totalPages) {
+    const response = await authFetch.get<GetTpAndspiResponse>(
+      `/user-details?limit=${pageSize}&page=${page}${
+        active ? `&status=${active}` : ''
+      }&role=${roletype}${
+        searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
+      }${dates ? `&date=${dates}` : ''}`
+    )
+    const payload = response?.data?.data
+    const pageItems = payload?.items ?? []
+    items.push(...pageItems)
+    totalPages = payload?.meta?.totalPages ?? 1
+    page += 1
+
+    if (pageItems.length === 0) break
+  }
+
+  return items
+}
+
+/** Fetches all pending SP rows for Excel export. */
+export async function fetchAllPendingSpUsers(
+  searchdata = ''
+): Promise<TipItem[]> {
+  const pageSize = 100
+  let page = 1
+  let totalPages = 1
+  const items: TipItem[] = []
+
+  while (page <= totalPages) {
+    const response = await authFetch.get<GetPending>(
+      `/user-details/pending?limit=${pageSize}&page=${page}${
+        searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
+      }`
+    )
+    const payload = response?.data?.data
+    const pageItems = payload?.items ?? []
+    items.push(...pageItems)
+    totalPages = payload?.meta?.totalPages ?? 1
+    page += 1
+
+    if (pageItems.length === 0) break
+  }
+
+  return items
+}
+

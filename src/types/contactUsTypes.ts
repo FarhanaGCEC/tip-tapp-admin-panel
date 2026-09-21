@@ -1,9 +1,19 @@
+export type ContactMessageAction =
+  | 'pending'
+  | 'process'
+  | 'approved'
+  | 'rejected'
+  | 'complete'
+
 export interface ContactMessage {
   id: number
   name: string
   email: string
+  'phone no': string | null
   message: string
-  status: 'pending' | 'replied'
+  date: string
+  action: ContactMessageAction
+  status: ContactMessageAction
   userId: string | null
   createdAt: string
   updatedAt: string
@@ -13,9 +23,11 @@ export interface ContactMessage {
 
 export interface ContactReply {
   id: number
-  message: string
+  replyMessage?: string
+  message?: string
+  sentAt?: string
   createdAt: string
-  updatedAt: string
+  updatedAt?: string
 }
 
 export interface ContactMessagesResponse {
@@ -37,7 +49,7 @@ export interface ContactUsFilters {
   page?: number
   limit?: number
   search?: string
-  status?: 'pending' | 'replied'
+  status?: ContactMessageAction
   dateFrom?: string
   dateTo?: string
 }

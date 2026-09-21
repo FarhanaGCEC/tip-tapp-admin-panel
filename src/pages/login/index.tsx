@@ -18,6 +18,8 @@ import Toast from '../../utils/notification'
 import SharedDataContainer from '../../containers/sharedData'
 import { Icons, NotificationTypes } from '../../constants'
 import { useLogin } from '../../api/auth-management'
+import { useAppDispatch } from '../../stores/hooks'
+import { rebuildSideMenu } from '../../stores/sideMenuSlice'
 
 const inputClassName = clsx(
   'login__input block w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[15px] text-brand-navy shadow-none',
@@ -28,6 +30,7 @@ const inputClassName = clsx(
 
 function Main() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -93,13 +96,15 @@ function Main() {
       localStorage.setItem('jwtToken', data?.access_token)
       localStorage.setItem('validationToken', data?.validation_token)
       localStorage.setItem('user', JSON.stringify(data?.user))
+      // Menu was built at app start before login — rebuild with fresh permissions
+      dispatch(rebuildSideMenu())
 
       sucessHandlerLogin(email, 'Successfully Login')
     }
     if (isError) {
       errorHandler('Please Check Your Login Credentials.')
     }
-  }, [isSuccess, isError, data])
+  }, [isSuccess, isError, data, dispatch, email])
 
   const UserLogin = async () => {
     setIsLoading(true)
