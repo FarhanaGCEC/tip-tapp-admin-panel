@@ -30,20 +30,15 @@ export const useUploadImage = () => {
     mutationFn: async (data: FormData) => {
       const response: AxiosResponse<UploadResponse> = await authFetch.post(
         '/upload',
-        data,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        data
       )
       return response.data
     },
 
-    onError: (error) => {
+    onError: (error: { userMessage?: string; message?: string }) => {
       console.error(
         'Image upload error:',
-        error.response?.data?.message || error.message
+        error.userMessage || error.message || 'Upload failed'
       )
     },
   })

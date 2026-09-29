@@ -17,7 +17,7 @@ import Toast from '../../utils/notification'
 import { Icons, NotificationTypes } from '../../constants'
 import StatusButton from '../common/button/statusBtn'
 import ConfirmationModal from '../common/confirmation/ConfirmationModal'
-import Table from '../../base-components/Table'
+import Table from '../common/table'
 import Rating from '../rating/Rating'
 import SlideoverRegistry from '../../pages/user-management/slideover-registry'
 import { FAQ } from '../../types/faqs'
@@ -99,7 +99,7 @@ const FAQManagementTable: React.FC<FAQManagementTableProps> = ({
 
   return (
     <>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
@@ -107,10 +107,10 @@ const FAQManagementTable: React.FC<FAQManagementTableProps> = ({
                 key={header.key}
                 className={`${
                   header.key == 4
-                    ? 'whitespace-nowrap border-b-0 text-center'
+                    ? 'whitespace-nowrap text-center'
                     : header.key == 5
-                    ? ' border-b-0 pr-5 text-end'
-                    : 'whitespace-nowrap border-b-0'
+                    ? ' pr-5 text-end'
+                    : 'whitespace-nowrap'
                 }`}
               >
                 {header.label}
@@ -121,23 +121,22 @@ const FAQManagementTable: React.FC<FAQManagementTableProps> = ({
         <Table.Tbody>
           {footerItems.map((item) => (
             <Table.Tr
-              className="intro-x h-[68px] drop-shadow-lg "
               key={item.id}
             >
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {getDateValue(item.createdAt)}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.title}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.faqCategory.name}
               </Table.Td>
-              <Table.Td className="flex items-center justify-center  border-b-0 bg-white  py-6 shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="flex items-center justify-center py-6">
                 <StatusButton status={item?.status} />
               </Table.Td>
 
-              <Table.Td className="cursor-pointer border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="cursor-pointer">
                 <div className="flex items-center justify-end gap-3 text-right">
                   <Lucide
                     icon="Eye"
@@ -151,7 +150,7 @@ const FAQManagementTable: React.FC<FAQManagementTableProps> = ({
                   />
                   {/* <Lucide
                     icon="Edit"
-                    className="h-5 w-5 "
+                    className="h-5 w-5"
                     onClick={() =>
                       handleClick(
                         {
@@ -164,7 +163,7 @@ const FAQManagementTable: React.FC<FAQManagementTableProps> = ({
                   /> */}
                   <Lucide
                     icon={'Trash2'}
-                    className="h-6 w-6 text-red-500 "
+                    className="h-6 w-6 text-red-500"
                     onClick={() => handleDelete(item.id.toString())}
                   />
                 </div>

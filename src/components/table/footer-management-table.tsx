@@ -9,7 +9,7 @@ import Lucide from '../common/lucide'
 
 import EditPencil from '../../assets/images/svg/edit-pencil.svg'
 import EditFooterManagementDetails from '../slider/footer-management/edit-footer-management'
-import Table from '../../base-components/Table'
+import Table from '../common/table'
 import ViewFooterManagementDetails from '../slider/footer-management/view-footer-management'
 import SlideoverRegistry from '../../pages/pos/slideover-registry'
 
@@ -47,7 +47,7 @@ const FooterManagementTable: React.FC<FooterManagementTableProps> = ({
   }
   return (
     <>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
@@ -55,10 +55,10 @@ const FooterManagementTable: React.FC<FooterManagementTableProps> = ({
                 key={header.key}
                 className={`${
                   header.key == 3
-                    ? 'whitespace-nowrap border-b-0 text-center'
+                    ? 'whitespace-nowrap text-center'
                     : header.key == 4
-                    ? ' border-b-0 pr-6 text-end'
-                    : 'whitespace-nowrap border-b-0'
+                    ? ' pr-6 text-end'
+                    : 'whitespace-nowrap'
                 }`}
               >
                 {header.label}
@@ -69,23 +69,22 @@ const FooterManagementTable: React.FC<FooterManagementTableProps> = ({
         <Table.Tbody>
           {footerItems.map((item) => (
             <Table.Tr
-              className="intro-x h-[68px] drop-shadow-lg "
               key={item.id}
             >
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {getDateValue(item.updatedAt)}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.name}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white text-center shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="text-center">
                 Admin
               </Table.Td>
-              <Table.Td className="cursor-pointer border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="flex items-center justify-end  gap-3  ">
+              <Table.Td className="cursor-pointer">
+                <div className="flex items-center justify-end gap-3">
                   <Lucide
                     icon="Eye"
-                    className=" h-6 w-6 text-black"
+                    className="h-6 w-6 text-black"
                     onClick={() =>
                       handleClick(
                         {
@@ -98,7 +97,7 @@ const FooterManagementTable: React.FC<FooterManagementTableProps> = ({
                   />
                   <Lucide
                     icon="Edit"
-                    className=" h-6 w-6 text-black"
+                    className="h-6 w-6 text-black"
                     onClick={() =>
                       handleClick(
                         {

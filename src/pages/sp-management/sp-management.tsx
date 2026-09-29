@@ -20,6 +20,8 @@ import SlideoverPanel from '../../components/slideover-panel'
 import {
   GetTpAndSpDetails,
   ServiceProviderPending,
+  fetchAllTpSpUsers,
+  fetchAllPendingSpUsers,
 } from '../../api/tp-and-sp-management/tp-sp-management'
 import Pagination from '../../components/pagination/pagination'
 import { TableHeadingSP } from '../../constants/table-data'
@@ -28,6 +30,9 @@ import DownloadFile from '../../assets/images/svg/download-table.svg'
 import SelectElement from '../../components/common/form-elements/select-element-secondary'
 import ToggleButtonSecondary from '../../components/common/toggle-button/toggle-button-secondary'
 import NoDataFound from '../../assets/images/NoDataFound.png'
+import { downloadUsersExcel } from '../../utils/exportUsersExcel'
+import Toast from '../../utils/notification'
+import { Icons, NotificationTypes } from '../../constants'
 
 interface FormContent {
   title: string
@@ -35,7 +40,7 @@ interface FormContent {
 }
 
 const SpManagementPage = () => {
-  const { handleSlider } = SharedDataContainer.useContainer()
+  const { handleSlider, setNotification } = SharedDataContainer.useContainer()
   const [searchName, setSearchName] = useState<string>('')
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
@@ -48,6 +53,7 @@ const SpManagementPage = () => {
   const [dates, setdates] = useState('')
   const [takedates, setTakedates] = useState('')
   const [activeordeactive, setactiveordeactive] = useState<string>('')
+  const [isExporting, setIsExporting] = useState(false)
   const { data, isSuccess, isLoading } = GetTpAndSpDetails(
     query,
     'sp',
@@ -76,10 +82,10 @@ const SpManagementPage = () => {
   })
 
   let typingTimeout: NodeJS.Timeout
- function getSize() {
-   const screenSize = window.innerWidth
-   return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
- }
+  function getSize() {
+    const screenSize = window.innerWidth
+    return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
+  }
   const handleClick = (
     { title, component }: FormContent,
     userId: string,
@@ -102,7 +108,7 @@ const SpManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setQuery(value)
+      setQuery(value.toLowerCase())
     }, 750)
   }
 
@@ -113,7 +119,7 @@ const SpManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setserchpending(value)
+      setserchpending(value.toLowerCase())
     }, 750)
   }
 
@@ -195,7 +201,6 @@ const SpManagementPage = () => {
     setCurrentPage(1)
   }, [query, temparayStore, dates])
 
- 
   const cleantoggleFilters = () => {
     setdates('')
     setTakedates('')
@@ -203,6 +208,55 @@ const SpManagementPage = () => {
     setactiveordeactive('')
     toggleFilters()
   }
+
+  const handleDownloadExcel = async () => {
+    try {
+      setIsExporting(true)
+      const items = pending
+        ? await fetchAllPendingSpUsers(serchpending)
+        : await fetchAllTpSpUsers({
+            roletype: 'sp',
+            searchdata: query,
+            active: activeordeactive,
+            dates,
+          })
+
+      if (!items.length) {
+        setNotification({
+          title: '',
+          message: 'No service provider data available to download.',
+          icon: Icons.XCIRCLE,
+          type: NotificationTypes.ERROR,
+        })
+        Toast()
+        return
+      }
+
+      downloadUsersExcel(items, {
+        filename: pending ? 'tipapp-pending-service-providers' : 'tipapp-service-providers',
+        sheetName: pending ? 'Pending SPs' : 'Service Providers',
+        includeEmiratesId: pending,
+      })
+      setNotification({
+        title: 'Downloaded',
+        message: `Excel file ready (${items.length} rows).`,
+        icon: Icons.CHECKCIRCLE,
+        type: NotificationTypes.SUCCESS,
+      })
+      Toast()
+    } catch {
+      setNotification({
+        title: '',
+        message: 'Failed to download Excel. Please try again.',
+        icon: Icons.XCIRCLE,
+        type: NotificationTypes.ERROR,
+      })
+      Toast()
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const totalPages = data?.data?.meta?.totalPages ?? 0
   const totalPagesPending = pendingdata?.data?.meta?.totalPages ?? 0
 
@@ -264,11 +318,14 @@ const SpManagementPage = () => {
         <div className="relative">
           <div className="flex items-center gap-3">
             <Button
-              className="!box  hidden items-center gap-2.5 !font-medium text-black dark:text-slate-300"
-              onClick={toggleFilters}
+              className="!box flex items-center gap-2.5 !font-medium text-black dark:text-slate-300"
+              onClick={handleDownloadExcel}
+              disabled={isExporting}
             >
-              <img src={DownloadFile} alt="Filter Icon" />
-              <span className="hidden sm:block">Download</span>
+              <img src={DownloadFile} alt="Download" />
+              <span className="hidden sm:block">
+                {isExporting ? 'Downloading...' : 'Download Excel'}
+              </span>
             </Button>
             <Button
               className="!box flex items-center gap-2.5 !font-medium text-black dark:text-slate-300"
@@ -317,7 +374,7 @@ const SpManagementPage = () => {
                   Cancel
                 </Button>
                 <Button
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                  className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                   onClick={ActiveAndDeactiveSelect}
                 >
                   Apply

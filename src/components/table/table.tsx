@@ -36,7 +36,7 @@ function BasicTable({
           </h2>
         </div>
         <div className="mb-8 mt-3 flex items-center justify-between sm:ml-auto sm:mt-0">
-          <div className="relative  flex sm:mt-0 sm:w-auto">
+          <div className="relative flex sm:mt-0 sm:w-auto">
             <FormInput
               type="text"
               className="box custom-input w-40 sm:w-64"
@@ -56,12 +56,12 @@ function BasicTable({
         </div>
 
         <div className="intro-y mt-8 overflow-auto sm:mt-0 lg:overflow-visible">
-          <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+          <Table cards className="sm:mt-2">
             <Table.Thead variant="default">
               <Table.Tr>
                 {columns.map((heading, index) => (
                   <Table.Th
-                    className="whitespace-nowrap border-b-0"
+                    className="whitespace-nowrap"
                     key={index}
                   >
                     {heading.label}
@@ -72,10 +72,9 @@ function BasicTable({
             <Table.Tbody>
               {data.map((row, rowIndex) => (
                 <Table.Tr
-                  className="intro-x h-[68px] drop-shadow-lg"
                   key={rowIndex}
                 >
-                  <Table.Td className="w-40 border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td className="w-40">
                     <div className="flex">
                       <div className="image-fit zoom-in h-10 w-10 rounded-full">
                         <Tippy
@@ -88,24 +87,24 @@ function BasicTable({
                       </div>
                     </div>
                   </Table.Td>
-                  <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td >
                     <a href="" className="whitespace-nowrap font-medium">
                       {row.sku}
                     </a>
                   </Table.Td>
-                  <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td >
                     {row.productname}
                   </Table.Td>
-                  <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td >
                     {row.location}
                   </Table.Td>
-                  <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td >
                     {row.alertqty}
                   </Table.Td>
-                  <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td >
                     {row.currentstock}
                   </Table.Td>
-                  <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+                  <Table.Td >
                     {row.reorderstock}
                   </Table.Td>
                 </Table.Tr>
@@ -120,10 +119,10 @@ function BasicTable({
         </div>
 
         {/* <div className="intro-y mt-3 flex flex-wrap items-center justify-between sm:flex-row sm:flex-nowrap">
-          <div className="flex items-center gap-3.5 ">
+          <div className="flex items-center gap-3.5">
             <div className="hidden sm:mr-auto sm:block">
               Rows per page
-              <FormSelect className=" w-15 dark:[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)] m-2">
+              <FormSelect className="w-15 dark:[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)] m-2">
                 <option>10</option>
                 <option>25</option>
                 <option>50</option>
@@ -131,7 +130,7 @@ function BasicTable({
               </FormSelect>
             </div>
             <span className="hidden sm:block">|</span>
-            <div className="mx-auto hidden text-slate-500 md:block">
+            <div className="mx-auto hidden md:block">
               Showing 1 - 10 of 150
             </div>
           </div>

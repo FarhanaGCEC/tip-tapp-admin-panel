@@ -26,15 +26,42 @@ interface ViewUserProps {
   reviewId: string
 }
 function ViewFeedback(props: ViewUserProps) {
-  const { handleSlider } = SharedDataContainer.useContainer()
-  const {
-    data,
-  }: UseQueryResult<OneReviewItem> = GetOneReviewFeedback(props.reviewId)
+  const { setNotification, handleSlider } = SharedDataContainer.useContainer()
+  const { data, refetch }: UseQueryResult<OneReviewItem> = GetOneReviewFeedback(
+    props.reviewId
+  )
 
-  const { mutate: hideComment } = useUpdateReviewFeedback()
+  const { mutate: hideComment, isLoading: isUpdatingStatus } =
+    useUpdateReviewFeedback()
 
   const handleHide = (hide: boolean) => {
-    hideComment({ reviewId: props.reviewId, data: { IsHidden: hide } })
+    hideComment(
+      { reviewId: props.reviewId, data: { IsHidden: hide } },
+      {
+        onSuccess: () => {
+          const action = hide ? 'hidden' : 'unhidden'
+          setNotification({
+            title: 'Success',
+            message: `Feedback ${action} successfully`,
+            icon: Icons.CHECKCIRCLE,
+            type: NotificationTypes.SUCCESS,
+          })
+          Toast()
+          refetch() // Refresh the review data
+        },
+        onError: (error: any) => {
+          setNotification({
+            title: 'Error',
+            message:
+              error?.response?.data?.message ||
+              'Failed to update feedback status',
+            icon: Icons.XCIRCLE,
+            type: NotificationTypes.ERROR,
+          })
+          Toast()
+        },
+      }
+    )
   }
 
   return (
@@ -48,6 +75,7 @@ function ViewFeedback(props: ViewUserProps) {
         hidden={data?.IsHidden}
         onCancel={() => handleSlider()}
         onHide={handleHide}
+        isLoading={isUpdatingStatus}
       />
     </div>
   )

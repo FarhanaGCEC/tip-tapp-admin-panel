@@ -61,22 +61,22 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan 20.40.54.151 >> ~/.ssh/known_hosts
+          ssh-keyscan 172.188.19.124 >> ~/.ssh/known_hosts
 
       - name: Transfer deployment.zip to server
         run: |
-          rsync -avz deployment-devadmin.zip tipapp@20.40.54.151:/home/tipapp/deployments-admin/ || { echo 'Failed to transfer file'; exit 1; }
+          rsync -avz deployment-devadmin.zip tipapp@172.188.19.124:/home/tipapp/deployments-admin/ || { echo 'Failed to transfer file'; exit 1; }
 
       - name: Verify file transfer
         run: |
-          ssh tipapp@20.40.54.151 << 'EOF'
+          ssh tipapp@172.188.19.124 << 'EOF'
             echo "Listing contents of /home/tipapp/deployments-admin/"
             ls -l /home/tipapp/deployments-admin/
           EOF
 
       - name: Clean server directory and extract deployment.zip
         run: |
-          ssh tipapp@20.40.54.151 << 'EOF'
+          ssh tipapp@172.188.19.124 << 'EOF'
             echo "Checking for deployment-devadmin.zip"
             if [ -f /home/tipapp/deployments-admin/deployment-devadmin.zip ]; then
               echo "File found, extracting..."

@@ -81,6 +81,7 @@ export const useUpdateReviewFeedback = () => {
         'get_one_review_feedback',
         variables.reviewId,
       ])
+      queryClient.invalidateQueries(['get_review_feedback_details_and_search'])
     },
     onError: (error) => {
       console.error('Fetch error:', error)

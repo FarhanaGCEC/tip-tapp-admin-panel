@@ -6,7 +6,6 @@ interface Meta {
   currentPage: number
 }
 
-
 export interface GetReviewFeedbackResponse {
   data: {
     items: ReviewFeedbackItem[]
@@ -15,28 +14,27 @@ export interface GetReviewFeedbackResponse {
   message: string
 }
 
-
 export interface ReviewFeedbackItem {
   TipId: number
   tipperName: string
   serviceProviderName: string
   createdAt: string
   rating: number
+  status: boolean
 }
 
-
 export interface OneReviewItem {
-  TipperName: string,
-  TipperprofilePictureURL : string,
-  Rating : number,
-  Review : string,
-  Comment : string,
-  IsHidden : boolean
+  TipperName: string
+  TipperprofilePictureURL: string
+  Rating: number
+  Review: string
+  Comment: string
+  IsHidden: boolean
 }
 
 export interface UpdateFeedbackResponse {
-  data : ReviewFeedbackItem
-  message : string
+  data: ReviewFeedbackItem
+  message: string
 }
 
 export interface OneFAQCategory {

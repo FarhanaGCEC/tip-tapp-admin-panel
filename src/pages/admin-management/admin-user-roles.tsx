@@ -25,10 +25,7 @@ import RoleManagementTable from '../../components/table/admin-role-management-ta
 import ViewRoleSection from './components/roleManagement/viewRoleSection'
 import AddRoleSection from './components/roleManagement/addRoleSection'
 import EditRoleSection from './components/roleManagement/editRoleSection'
-import {
-  useDeleteRole,
-  useGetRoles,
-} from '../../api/admin-role-management'
+import { useDeleteRole, useGetRoles } from '../../api/admin-role-management'
 import permissionChecker from '../../hooks/permissonChecker'
 import NoDataFound from '../../assets/images/NoDataFound.png'
 
@@ -64,7 +61,7 @@ const AdminRoleManagementPage = () => {
 
   const handleViewRoleOnClick = (roleId: number) => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: 'View Role Details',
       children: <ViewRoleSection roleId={roleId} />,
@@ -75,7 +72,7 @@ const AdminRoleManagementPage = () => {
 
   const handleAddRoleOnClick = () => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: 'Add Role Details',
       children: <AddRoleSection />,
@@ -86,7 +83,7 @@ const AdminRoleManagementPage = () => {
 
   const handleEditRoleOnClick = (roleId: number) => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: 'Edit Role Details',
       children: <EditRoleSection roleId={roleId} />,
@@ -129,28 +126,24 @@ const AdminRoleManagementPage = () => {
     deleteRole(roleId)
   }
 
-    function getSize() {
-      const screenSize = window.innerWidth
-      return screenSize > 1000
-        ? 'xl'
-        : screenSize > 768
-        ? 'lg'
-        : 'sm'
+  function getSize() {
+    const screenSize = window.innerWidth
+    return screenSize > 1000 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
+  }
+  useEffect(() => {
+    function handleResize() {
+      const newSize = getSize()
+      setSliderSize(newSize)
     }
-   useEffect(() => {
-     function handleResize() {
-       const newSize = getSize()
-       setSliderSize(newSize)
-     }
 
-     // Add the resize event listener
-     window.addEventListener('resize', handleResize)
+    // Add the resize event listener
+    window.addEventListener('resize', handleResize)
 
-     // Clean up the listener on component unmount
-     return () => {
-       window.removeEventListener('resize', handleResize)
-     }
-   }, [])
+    // Clean up the listener on component unmount
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   const searchRoleData = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
@@ -159,7 +152,7 @@ const AdminRoleManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setQuery(value)
+      setQuery(value.toLowerCase())
     }, 750)
   }
 
@@ -191,7 +184,7 @@ const AdminRoleManagementPage = () => {
             onClick={() => {
               handleAddRoleOnClick()
             }}
-            className="primary flex  min-w-[100px] items-center gap-2.5 bg-black !font-medium text-white"
+            className="primary flex  min-w-[100px] items-center gap-2.5 bg-primary !font-medium text-white"
           >
             Add Role
           </Button>,

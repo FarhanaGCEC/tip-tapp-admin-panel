@@ -29,7 +29,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({
       <button
         className={`w-full rounded-md px-4 py-2 transition-colors ${
           selected === 'email'
-            ? 'bg-black text-white shadow-sm'
+            ? 'bg-primary text-white shadow-sm'
             : 'text-gray-500 hover:text-gray-900'
         }`}
         onClick={() => handleClick('email')}
@@ -41,7 +41,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({
       <button
         className={`w-full rounded-md px-4 py-2 transition-colors ${
           selected === 'inApp'
-            ? 'bg-black text-white shadow-sm'
+            ? 'bg-primary text-white shadow-sm'
             : 'text-gray-500 hover:text-gray-900'
         }`}
         onClick={() => handleClick('inApp')}

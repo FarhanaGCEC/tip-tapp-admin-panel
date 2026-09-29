@@ -12,6 +12,7 @@ interface ReviewCardProps {
   hidden?: boolean
   onCancel: () => void
   onHide: (hide: boolean) => void
+  isLoading?: boolean
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({
@@ -23,11 +24,12 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   hidden,
   onCancel,
   onHide,
+  isLoading = false,
 }) => {
   return (
     <div className="relative mx-auto rounded-lg bg-white  shadow-md">
       <div className="items-center justify-between md:flex">
-        <div className="ml-6  mr-5 mt-3 max-lg:py-2 flex-1 items-center justify-start    lg:flex">
+        <div className="ml-6  mr-5 mt-3 flex-1 items-center justify-start max-lg:py-2    lg:flex">
           <div className="ml-2 mt-4 flex-none content-center sm:mt-0 sm:h-24 sm:w-24 ">
             <img
               alt="profile page"
@@ -66,28 +68,31 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         <Button
           onClick={onCancel}
           className=" bg-[#EDF2F6]  px-10 py-2 max-[600px]:px-4 "
+          disabled={isLoading}
         >
           Cancel
         </Button>
         {!hidden ? (
           <div>
             <Button
-              className=" bg-black  px-10 py-2 text-white max-[600px]:px-4"
+              className=" bg-primary  px-10 py-2 text-white max-[600px]:px-4"
+              disabled={isLoading}
               onClick={() => {
                 onHide(true)
               }}
             >
-              Hide
+              {isLoading ? 'Hiding...' : 'Hide'}
             </Button>
           </div>
         ) : (
           <Button
-            className=" bg-black  px-10 py-2 text-white max-[600px]:px-4"
+            className=" bg-primary  px-10 py-2 text-white max-[600px]:px-4"
+            disabled={isLoading}
             onClick={() => {
               onHide(false)
             }}
           >
-            Unhide
+            {isLoading ? 'Unhiding...' : 'Unhide'}
           </Button>
         )}
       </div>

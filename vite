@@ -1,0 +1,10 @@
+
+✔ Console Ninja extension is connected to Vite, see https://tinyurl.com/2vt8jxzw
+^C^C^C^Cfailed to load config from /Users/sachithwickramaseakara/Documents/parallax/tipapp-fe-admin/vite.config.ts
+error when starting dev server:
+Error: The service was stopped: write EPIPE
+    at /Users/sachithwickramaseakara/Documents/parallax/tipapp-fe-admin/node_modules/esbuild/lib/main.js:1122:25
+    at responseCallbacks.<computed> (/Users/sachithwickramaseakara/Documents/parallax/tipapp-fe-admin/node_modules/esbuild/lib/main.js:680:9)
+    at afterClose (/Users/sachithwickramaseakara/Documents/parallax/tipapp-fe-admin/node_modules/esbuild/lib/main.js:670:28)
+    at /Users/sachithwickramaseakara/Documents/parallax/tipapp-fe-admin/node_modules/esbuild/lib/main.js:2061:11
+    at onwriteError (node:internal/streams/writable:603:3)

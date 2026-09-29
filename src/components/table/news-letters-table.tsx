@@ -11,7 +11,7 @@ import Label from '../common/label/active-banned-new-label'
 import ViewNewsLettersDetails from '../slider/news-letters/view-newsletters'
 import StatusButton from '../common/button/statusBtn'
 import SlideoverRegistry from '../../pages/user-management/slideover-registry'
-import Table from '../../base-components/Table'
+import Table from '../common/table'
 import EditFooterManagementDetails from '../slider/footer-management/edit-footer-management'
 import { DateTime } from 'luxon'
 
@@ -59,7 +59,7 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
 
   return (
     <>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
@@ -67,12 +67,12 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
                 key={header.key}
                 className={`${
                   header.key == 3
-                    ? 'whitespace-nowrap border-b-0  '
+                    ? 'whitespace-nowrap  '
+                    : header.key == 4
+                    ? ' whitespace-nowrap pr-24 text-center '
                     : header.key == 5
-                    ? ' whitespace-nowrap border-b-0 pr-24 text-center '
-                    : header.key == 6
-                    ? ' border-b-0  text-right '
-                    : 'whitespace-nowrap border-b-0'
+                    ? '  text-right '
+                    : 'whitespace-nowrap'
                 }`}
               >
                 {header.label}
@@ -83,13 +83,12 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
         <Table.Tbody>
           {newsletterItems.data.map((item: any) => (
             <Table.Tr
-              className="intro-x h-[68px] drop-shadow-lg "
               key={item.id}
             >
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-               
-                {item.createdAt
-                  ? DateTime.fromISO(item.createdAt)
+              <Table.Td >
+                {/* Create Date - using dateTime field */}
+                {item.dateTime
+                  ? DateTime.fromISO(item.dateTime)
                       .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone) // Set to user's local timezone
                       .toLocaleString({
                         year: 'numeric',
@@ -98,25 +97,38 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
                         hour: 'numeric',
                         minute: '2-digit',
                         hour12: true,
-                      }) 
+                      })
                   : '-'}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item.sentAt ? getDateValue(item.sentAt) : '-'}
+              <Table.Td >
+                {/* Received Date - using sentAt field with meaningful text for null */}
+                {item.sentAt
+                  ? DateTime.fromISO(item.sentAt)
+                      .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+                      .toLocaleString({
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })
+                  : 'Not Received'}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.title.length > 20
                   ? `${item.title.slice(0, 20)} .....`
                   : item.title}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white text-center shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="text-center">
+                {/* Status column - showing status from API */}
                 <StatusButton status={item.status} />
               </Table.Td>
-              <Table.Td className="cursor-pointer border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="flex items-center justify-end    ">
+              <Table.Td className="cursor-pointer">
+                <div className="flex items-center justify-end">
                   {/* <Lucide
                     icon="Eye"
-                    className=" h-6 w-6 text-black"
+                    className="h-6 w-6 text-black"
                     onClick={() =>
                       handleClick(
                         {
@@ -129,7 +141,7 @@ const NewsLettersTable: React.FC<NewsLettersTableProps> = ({
                   /> */}
                   <Lucide
                     icon="Edit"
-                    className=" h-6 w-6 text-black"
+                    className="h-6 w-6 text-black"
                     onClick={() =>
                       handleClick(SlideoverRegistry.EditNewsLettes, item.id)
                     }

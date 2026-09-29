@@ -1,16 +1,24 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react/no-array-index-key */
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GetTopTippersThisWeek } from '../../api/dashboard/dashboard'
 import Button from '../common/button'
-import { formatAmount } from '../../hooks/formatter'
-import { ProfileImage } from '../../utils/userData'
+import { getProfilePictureUrl, DEFAULT_AVATAR } from '../../utils/profilePicture'
 import NoDataFound from '../../assets/images/NoDataFound.png'
+import { useCurrencyStore } from '../../stores/currencyStore'
+import { formatMoney } from '../../utils/formatMoney'
 
 function TopTippers() {
   const topTippers = GetTopTippersThisWeek()
+  const currency = useCurrencyStore((state) => state.currency)
+  const navigate = useNavigate()
 
   useEffect(() => {}, [topTippers])
+
+  const handleViewAllClick = () => {
+    navigate('/manage-finances')
+  }
 
   return (
     <div>
@@ -32,14 +40,18 @@ function TopTippers() {
                   {tipper ? (
                     <div className="flex items-center">
                       <img
-                        src={tipper.profilePictureUrl || ProfileImage}
+                        src={getProfilePictureUrl(tipper.profilePictureUrl)}
                         alt={`${tipper.firstName} ${tipper.lastName}`}
                         className="mr-3 h-[55px] w-[55px] rounded-[30px] object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = DEFAULT_AVATAR
+                        }}
                       />
                       <div>
                         <p className="text-base font-semibold capitalize">{`${tipper.firstName} ${tipper.lastName}`}</p>
                         <p className="text-sm text-gray-500">
-                          AED {formatAmount(tipper.totalTipAmount) || 0.0}
+                          {formatMoney(tipper, currency)}
                         </p>
                       </div>
                     </div>
@@ -47,7 +59,7 @@ function TopTippers() {
                     <div className="flex items-center"></div>
                   )}
                   {tipper && (
-                    <div className="flex h-[29px] w-[78px] items-center justify-center rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                    <div className="flex h-[29px] w-[78px] items-center justify-center rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white">
                       {`${tipper.tipCount || 0} Tips`}
                     </div>
                   )}
@@ -66,7 +78,10 @@ function TopTippers() {
           )}
 
           {topTippers?.data && topTippers.data.length > 0 && (
-            <Button className="mt-[15px] h-[40px] w-full bg-black">
+            <Button
+              className="mt-[15px] h-[40px] w-full bg-primary hover:bg-brand-red-dark"
+              onClick={handleViewAllClick}
+            >
               <span className="text-white">View all</span>
             </Button>
           )}

@@ -22,7 +22,8 @@ import {
 } from '../../../../api/admin-user-management'
 import Button from '../../../../components/common/button'
 import { TipItem } from '../../../../types/tpandsptype'
-import PreviewImage from '../../../../assets/images/default-image.png'
+import UserAvatar from '../../../../components/common/user-avatar'
+import LoadingIcon from '../../../../components/common/loading-icon'
 import SharedDataContainer from '../../../../containers/sharedData'
 import Separator from '../../../../components/common/separator/separator'
 
@@ -78,6 +79,22 @@ function ViewUserSection(props: ViewUserProps) {
 
   const { handleSlider } = SharedDataContainer.useContainer()
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-white">
+        <LoadingIcon icon="oval" className="h-8 w-8" color="#1A2744" />
+      </div>
+    )
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="rounded-lg bg-white p-8 text-center text-slate-600">
+        Unable to load user details. Please try again.
+      </div>
+    )
+  }
+
   return (
     <form className="validate-form" onSubmit={handleSubmit(onSubmit)}>
       <Tab.Group>
@@ -86,14 +103,10 @@ function ViewUserSection(props: ViewUserProps) {
           <div className="ml-3 mr-2 flex flex-col items-center space-y-4 md:flex-row md:justify-between md:space-y-0 ">
             {/* User Info */}
             <div className="flex items-center">
-              <img
-                alt="profile page"
-                className="h-16 w-16 rounded-full  max-lg:mr-4 sm:h-20 sm:w-20 md:h-[65px] md:w-[65px] lg:h-[85px] lg:w-[85px]"
-                src={
-                  data?.ProfilePictureURL
-                    ? data.ProfilePictureURL
-                    : PreviewImage
-                }
+              <UserAvatar
+                src={data?.ProfilePictureURL}
+                alt={`${data?.FirstName || ''} ${data?.LastName || ''}`.trim() || 'User'}
+                className="mr-0 h-16 w-16 max-lg:mr-4 sm:h-20 sm:w-20 md:h-[65px] md:w-[65px] lg:h-[85px] lg:w-[85px]"
               />
               <div className="max-lg:mr-4 lg:ml-3">
                 <div className="gap-2 overflow-hidden font-medium max-lg:overflow-y-auto md:text-xl lg:flex lg:flex-row lg:text-lg">

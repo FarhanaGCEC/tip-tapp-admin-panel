@@ -7,17 +7,22 @@ import {
 import Lucide from '../../components/common/lucide'
 import FilterIcon from '../../assets/images/icons/filter-icon.svg'
 import SharedDataContainer from '../../containers/sharedData'
-import SlideoverPanel from '../../components/slideover-panel'
-import { GetReportDetails } from '../../api/report/report-management'
+import {
+  fetchAllReportItems,
+  GetReportDetails,
+} from '../../api/report/report-management'
 import Pagination from '../../components/pagination/pagination'
 import { TableHeadingReport } from '../../constants/table-data'
 import ReportTable from '../../components/table/report-table'
 import DownloadFile from '../../assets/images/svg/download-table.svg'
 import SelectElement from '../../components/common/form-elements/select-element-secondary'
 import NoDataFound from '../../assets/images/NoDataFound.png'
+import { downloadReportExcel } from '../../utils/exportReportExcel'
+import Toast from '../../utils/notification'
+import { Icons, NotificationTypes } from '../../constants'
 
 const ReportPage = () => {
-  const { handleSlider } = SharedDataContainer.useContainer()
+  const { setNotification } = SharedDataContainer.useContainer()
   const [searchName, setSearchName] = useState<string>('')
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
@@ -31,17 +36,8 @@ const ReportPage = () => {
     dates
   )
   const [showFilters, setShowFilters] = useState<boolean>(false)
-  const [sliderSize, setSliderSize] = useState<string>('100px')
+  const [isExporting, setIsExporting] = useState(false)
   const [temparayStore, settemparayStore] = useState('')
-  const [sliderContent, setSliderContent] = useState<{
-    header: string
-    children: ReactElement
-    footer: ReactElement
-  }>({
-    header: '',
-    children: <div />,
-    footer: <div />,
-  })
 
   let typingTimeout: NodeJS.Timeout
 
@@ -56,7 +52,6 @@ const ReportPage = () => {
       setQuery(value)
     }, 750)
   }
-    
 
   const [Prefixtype] = useState([
     { id: 0, name: 'All' },
@@ -95,8 +90,43 @@ const ReportPage = () => {
     setShowFilters(!showFilters)
   }
 
+  const handleDownloadExcel = async () => {
+    try {
+      setIsExporting(true)
+      const items = await fetchAllReportItems(query, dates)
+      if (!items.length) {
+        setNotification({
+          title: '',
+          message: 'No report data available to download.',
+          icon: Icons.XCIRCLE,
+          type: NotificationTypes.ERROR,
+        })
+        Toast()
+        return
+      }
+      downloadReportExcel(items)
+      setNotification({
+        title: 'Downloaded',
+        message: `Excel file ready (${items.length} rows).`,
+        icon: Icons.CHECKCIRCLE,
+        type: NotificationTypes.SUCCESS,
+      })
+      Toast()
+    } catch {
+      setNotification({
+        title: '',
+        message: 'Failed to download Excel report. Please try again.',
+        icon: Icons.XCIRCLE,
+        type: NotificationTypes.ERROR,
+      })
+      Toast()
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   useEffect(() => {
-    setCurrentPage(1);
+    setCurrentPage(1)
   }, [query, dates])
 
   const handlePageClick = (event: { selected: number }) => {
@@ -122,7 +152,7 @@ const ReportPage = () => {
   return (
     <div className="col-span-12 mt-6">
       <div className="intro-y mb-8 block h-10 items-center sm:flex">
-        <h2 className="mr-5 truncate text-[19px] text-lg font-medium text-[#2D3748]">
+        <h2 className="mr-5 truncate text-[19px] text-lg font-medium text-brand-navy">
           Finance Details Report
         </h2>
       </div>
@@ -143,17 +173,20 @@ const ReportPage = () => {
         <div className="relative">
           <div className="flex items-center gap-3">
             <Button
-              className="!box mr-2 hidden items-center gap-2.5 !font-medium text-black dark:text-slate-300"
-              onClick={toggleFilters}
+              className="!box mr-2 flex items-center gap-2.5 !font-medium text-brand-navy dark:text-slate-300"
+              onClick={handleDownloadExcel}
+              disabled={isExporting || isLoading}
             >
-              <img src={DownloadFile} alt="Filter Icon" />
-              <span className="hidden sm:block">Download</span>
+              <img src={DownloadFile} alt="" className="h-4 w-4" />
+              <span className="hidden sm:block">
+                {isExporting ? 'Downloading...' : 'Download Excel'}
+              </span>
             </Button>
             <Button
-              className="!box mr-2  hidden items-center gap-2.5 !font-medium text-black dark:text-slate-300"
+              className="!box mr-2 flex items-center gap-2.5 !font-medium text-brand-navy dark:text-slate-300"
               onClick={toggleFilters}
             >
-              <img src={FilterIcon} alt="Filter Icon" />
+              <img src={FilterIcon} alt="" />
               <span className="hidden sm:block">Filters</span>
             </Button>
           </div>
@@ -166,7 +199,7 @@ const ReportPage = () => {
                 </label>
                 <FormInput
                   type="date"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Enter Date"
                   onChange={(e) => {
                     setdates(e.target.value)
@@ -176,7 +209,7 @@ const ReportPage = () => {
 
               <div className="mb-6 py-5">
                 <SelectElement
-                  label={'Status'}
+                  label="Status"
                   options={Prefixtype}
                   value={temparayStore}
                   onChange={ActiveAndDeactiveSelect}
@@ -191,10 +224,10 @@ const ReportPage = () => {
                   Cancel
                 </Button>
                 <Button
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                  className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                   onClick={toggleFilters}
                 >
-                  Save
+                  Apply
                 </Button>
               </div>
             </div>
@@ -211,12 +244,10 @@ const ReportPage = () => {
           />
         ) : (
           <div className="flex flex-col gap-3">
-            {' '}
             <div className="mb-3 flex min-h-[400px] w-full flex-col items-center justify-center rounded-lg border-b-0 bg-white shadow-lg">
-              {' '}
-              <img src={NoDataFound} alt="No Data" className="w-1/5" />{' '}
-              <span className="text-[#2D3748]">No Data found ......</span>{' '}
-            </div>{' '}
+              <img src={NoDataFound} alt="No Data" className="w-1/5" />
+              <span className="text-brand-navy">No Data found ......</span>
+            </div>
           </div>
         )}
       </div>

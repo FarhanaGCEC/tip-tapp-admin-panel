@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import * as echarts from 'echarts'
 import { GetAgeByRole } from '../../../api/dashboard/dashboard'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
+import Tippy from '../../common/tippy'
 
 interface AgeGroupData {
   '18-30': number
@@ -18,8 +19,14 @@ interface AgeDistributionData {
 
 function AgeDistributionChart() {
   const { data: ageDistribution, isLoading, error } = GetAgeByRole()
-  const chartRef = useRef(null)
+  const chartRef = useRef<HTMLDivElement>(null)
   const [selectedUserType, setSelectedUserType] = useState('both')
+  const [isChartReady, setIsChartReady] = useState(false)
+
+  // Set chart ready state when component mounts
+  useEffect(() => {
+    setIsChartReady(true)
+  }, [])
 
   const calculateTotalAndPercentages = (data: { [x: string]: any }) => {
     if (!data)
@@ -42,9 +49,21 @@ function AgeDistributionChart() {
   useEffect(() => {
     let myChart: echarts.ECharts
 
-    if (!isLoading && ageDistribution) {
+    if (!isLoading && ageDistribution && chartRef.current && isChartReady) {
       const chartDom = chartRef.current
-      myChart = echarts.init(chartDom)
+
+      // Validate DOM element before initialization
+      if (!chartDom || !chartDom.offsetParent) {
+        console.warn('Chart DOM element is not ready for initialization')
+        return
+      }
+
+      try {
+        myChart = echarts.init(chartDom)
+      } catch (error) {
+        console.error('Failed to initialize chart:', error)
+        return
+      }
 
       let data: AgeGroupData = {
         '18-30': 0,
@@ -135,7 +154,14 @@ function AgeDistributionChart() {
         window.removeEventListener('resize', handleResize)
       }
     }
-  }, [ageDistribution, isLoading, selectedUserType])
+
+    // Cleanup function for when component unmounts
+    return () => {
+      if (myChart) {
+        myChart.dispose()
+      }
+    }
+  }, [ageDistribution, isLoading, selectedUserType, isChartReady])
   if (
     !ageDistribution ||
     Object.values(ageDistribution as AgeDistributionData).every(
@@ -181,44 +207,52 @@ function AgeDistributionChart() {
 
       <div className="mt-[19px] flex w-full flex-col items-center rounded-xl bg-white py-4">
         <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
-          <button
-            className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-              selectedUserType === 'tp'
-                ? 'bg-black text-white'
-                : 'bg-gray-200 text-black'
-            }`}
-            onClick={() => setSelectedUserType('tp')}
-          >
-            Tipper
-          </button>
-          <button
-            className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-              selectedUserType === 'sp'
-                ? 'bg-black text-white'
-                : 'bg-gray-200 text-black'
-            }`}
-            onClick={() => setSelectedUserType('sp')}
-          >
-            <span className="hidden 2xl:block">Service Provider</span>
-            <span className="block 2xl:hidden">SP</span>
-          </button>
-          <button
-            className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-              selectedUserType === 'both'
-                ? 'bg-black text-white'
-                : 'bg-gray-200 text-black'
-            }`}
-            onClick={() => setSelectedUserType('both')}
-          >
-            Both
-          </button>
+          <Tippy content="Users who can give tips to service providers">
+            <button
+              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
+                selectedUserType === 'tp'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-200 text-black'
+              }`}
+              onClick={() => setSelectedUserType('tp')}
+            >
+              Tipper
+            </button>
+          </Tippy>
+          <Tippy content="Users who can receive tips from tippers">
+            <button
+              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
+                selectedUserType === 'sp'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-200 text-black'
+              }`}
+              onClick={() => setSelectedUserType('sp')}
+            >
+              <span className="hidden 2xl:block">Service Provider</span>
+              <span className="block 2xl:hidden">SP</span>
+            </button>
+          </Tippy>
+          <Tippy content="Users who can both give and receive tips (dual role)">
+            <button
+              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
+                selectedUserType === 'both'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-200 text-black'
+              }`}
+              onClick={() => setSelectedUserType('both')}
+            >
+              Dual Role
+            </button>
+          </Tippy>
         </div>
 
-        <div
-          ref={chartRef}
-          className="w-full"
-          style={{ height: '410px' }}
-        ></div>
+        <div ref={chartRef} className="w-full" style={{ height: '410px' }}>
+          {isLoading && (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-gray-500">Loading chart...</div>
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-col items-start">
           <div className="flex items-center gap-2">

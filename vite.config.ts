@@ -16,18 +16,19 @@ export default defineConfig({
         'robots.txt',
       ],
       manifest: {
-        name: 'Tipapp',
-        short_name: 'Tipapp',
-        description: 'Tipapp frontend',
-        theme_color: '#ffffff',
+        name: 'TipApp Admin',
+        short_name: 'TipApp',
+        description: 'TipApp admin dashboard — the tipping app',
+        theme_color: '#e80102 ',
+        background_color: '#ffffff',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'tipapp-brand-logo.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'tipapp-brand-logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

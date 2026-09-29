@@ -20,7 +20,7 @@ const ToggleButtonSecondary: React.FC<ToggleButtonProps> = ({
       <button
         className={`w-full rounded-md px-4 py-2 transition-colors ${
           togglestyle
-            ? 'bg-black text-white shadow-sm'
+            ? 'bg-primary text-white shadow-sm'
             : 'text-gray-500 hover:text-gray-900'
         }`}
         onClick={onclick}
@@ -30,7 +30,7 @@ const ToggleButtonSecondary: React.FC<ToggleButtonProps> = ({
         {title && (
           <span
             className={`ml-2 rounded-full px-2 text-xs ${
-              togglestyle ? 'bg-black text-white' : 'bg-white'
+              togglestyle ? 'bg-primary text-white' : 'bg-white'
             }`}
           >
             {title}

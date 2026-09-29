@@ -51,7 +51,7 @@ const NewsLettersManagement = () => {
   const [pageSize, setPageSize] = useState<number>(10)
   const [addedDate, setAddedDate] = useState<string>('')
   const [sentDate, setSentDate] = useState<string>('')
-  const { data,refetch, isSuccess, isLoading } = useGetNewsletters(
+  const { data, refetch, isSuccess, isLoading } = useGetNewsletters(
     currentPage,
     pageSize,
     search,
@@ -74,7 +74,7 @@ const NewsLettersManagement = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setSearch(value)
+      setSearch(value.toLowerCase())
     }, 750)
   }
 
@@ -93,7 +93,7 @@ const NewsLettersManagement = () => {
     userletterId: number
   ) => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: title,
       children: component({ userletterId }),
@@ -104,7 +104,7 @@ const NewsLettersManagement = () => {
 
   const AddNewNewsletterSlider = (formContent: addNewsletterFormContent) => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: formContent.title,
       children: formContent.component({ content: {} }),
@@ -112,12 +112,10 @@ const NewsLettersManagement = () => {
     })
     setSliderSize(size)
   }
-  
 
   const toggleFilters = () => {
-     setRefresh(!refresh)
+    setRefresh(!refresh)
     setShowFilters(!showFilters)
-   
   }
 
   const handlePageSizeChange = (
@@ -131,33 +129,32 @@ const NewsLettersManagement = () => {
     setCurrentPage(event.selected + 1)
   }
 
-   function getSize() {
-     const screenSize = window.innerWidth
-     return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
-   }
-   useEffect(() => {
-     function handleResize() {
-       const newSize = getSize()
-       setSliderSize(newSize)
-     }
+  function getSize() {
+    const screenSize = window.innerWidth
+    return screenSize > 1200 ? 'xl' : screenSize > 768 ? 'lg' : 'sm'
+  }
+  useEffect(() => {
+    function handleResize() {
+      const newSize = getSize()
+      setSliderSize(newSize)
+    }
 
-     // Add the resize event listener
-     window.addEventListener('resize', handleResize)
+    // Add the resize event listener
+    window.addEventListener('resize', handleResize)
 
-     // Clean up the listener on component unmount
-     return () => {
-       window.removeEventListener('resize', handleResize)
-     }
-   }, [])
+    // Clean up the listener on component unmount
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
-const CleanSaveData = ()=>{
-  setAddedDate('')
-  setSentDate('')
-   setStatus('')
-   setRefresh(!refresh)
+  const CleanSaveData = () => {
+    setAddedDate('')
+    setSentDate('')
+    setStatus('')
+    setRefresh(!refresh)
     setShowFilters(!showFilters)
-}
-  
+  }
 
   return (
     <div className="col-span-12 mt-6">
@@ -217,7 +214,7 @@ const CleanSaveData = ()=>{
             <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg bg-white p-4 shadow-lg">
               <div className="mb-6">
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Added Date
+                  Create Date
                 </label>
                 <FormInput
                   type="date"
@@ -229,7 +226,7 @@ const CleanSaveData = ()=>{
                   }}
                 />
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Send Date
+                  Received Date
                 </label>
                 <FormInput
                   type="date"
@@ -254,7 +251,7 @@ const CleanSaveData = ()=>{
                     All
                   </option>
                   <option value="sent" className="text-gray-700">
-                    Recieved
+                    Sent
                   </option>
                   <option value="in-progress" className="text-gray-700">
                     In Progress
@@ -269,7 +266,7 @@ const CleanSaveData = ()=>{
                     Cancel
                   </button>
                   <button
-                    className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                    className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                     onClick={toggleFilters}
                   >
                     Save

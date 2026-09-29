@@ -1,4 +1,4 @@
-import { TomSettings, RecursivePartial } from 'tom-select/src/types/index'
+import { TomSettings, RecursivePartial } from '../../../../../types/tom-select'
 import TomSelect from 'tom-select'
 import _ from 'lodash'
 
@@ -94,10 +94,10 @@ const updateValue = (
       !getOptions(clonedEl.previousElementSibling?.children).filter(
         (optionEl) =>
           optionEl instanceof HTMLOptionElement &&
-          optionEl.value === option.value
+          optionEl.value === (option as any).value
       ).length
     ) {
-      clonedEl.TomSelect.removeOption(option.value)
+      clonedEl.TomSelect.removeOption((option as any).value)
     }
   })
 
@@ -110,7 +110,7 @@ const updateValue = (
     [
       ...Array.from(originalEl.classList),
       ...Array.from(clonedEl.classList).filter(
-        (className) => initialClassNames?.indexOf(className) === -1
+        (className) => initialClassNames?.indexOf(className as string) === -1
       ),
     ].join(' ')
   )
@@ -119,7 +119,7 @@ const updateValue = (
     [
       ...Array.from(originalEl.classList),
       ...Array.from(clonedEl.TomSelect.wrapper.classList).filter(
-        (className) => initialClassNames?.indexOf(className) === -1
+        (className) => initialClassNames?.indexOf(className as string) === -1
       ),
     ].join(' ')
   )

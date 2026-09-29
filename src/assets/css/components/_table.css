@@ -1,0 +1,122 @@
+/* TipApp tables — flat navy header + zebra rows (no card shadows) */
+
+.tipapp-table-wrap {
+  margin-top: 0.5rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  -webkit-overflow-scrolling: touch;
+}
+
+.tipapp-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.tipapp-table__head {
+  background-color: #1a2744;
+}
+
+.tipapp-table__th {
+  border: none !important;
+  background-color: #1a2744 !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  white-space: nowrap;
+  padding: 14px 18px !important;
+  vertical-align: middle;
+}
+
+.tipapp-table__th:first-child {
+  padding-left: 22px !important;
+}
+
+.tipapp-table__th:last-child {
+  padding-right: 22px !important;
+}
+
+.tipapp-table__row {
+  height: auto;
+  transition: background-color 0.12s ease;
+}
+
+/* Zebra: odd = light gray, even = white */
+.tipapp-table__body .tipapp-table__row:nth-child(odd) .tipapp-table__td {
+  background-color: #e9edf0 !important;
+}
+
+.tipapp-table__body .tipapp-table__row:nth-child(even) .tipapp-table__td {
+  background-color: #ffffff !important;
+}
+
+.tipapp-table__body .tipapp-table__row:hover .tipapp-table__td {
+  background-color: #dde5ea !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.tipapp-table__td {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 14px 18px !important;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #111827 !important;
+  vertical-align: middle;
+}
+
+.tipapp-table__td:first-child {
+  padding-left: 22px !important;
+  border-radius: 0 !important;
+}
+
+.tipapp-table__td:last-child {
+  padding-right: 22px !important;
+  border-radius: 0 !important;
+}
+
+.tipapp-table__td .tipapp-table__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: #1a2744;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+}
+
+.tipapp-table__td .tipapp-table__action:hover {
+  background-color: rgba(26, 39, 68, 0.1);
+  color: #e80102 ;
+}
+
+.dark .tipapp-table-wrap {
+  background: theme('colors.darkmode.700');
+}
+
+.dark .tipapp-table__head,
+.dark .tipapp-table__th {
+  background-color: #0f1a2e !important;
+}
+
+.dark .tipapp-table__body .tipapp-table__row:nth-child(odd) .tipapp-table__td {
+  background-color: theme('colors.darkmode.600') !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .tipapp-table__body .tipapp-table__row:nth-child(even) .tipapp-table__td {
+  background-color: theme('colors.darkmode.700') !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .tipapp-table__body .tipapp-table__row:hover .tipapp-table__td {
+  background-color: theme('colors.darkmode.500') !important;
+}

@@ -11,28 +11,34 @@ interface TableProps
   hover?: boolean
   striped?: boolean
   sm?: boolean
+  /** Flat navy-header + zebra TipApp list layout */
+  cards?: boolean
 }
 
 const tableContext = createContext<{
   dark: TableProps['dark']
   bordered: TableProps['bordered']
-  // hover: TableProps['hover']
+  hover: TableProps['hover']
   striped: TableProps['striped']
   sm: TableProps['sm']
+  cards: TableProps['cards']
 }>({
   dark: false,
   bordered: false,
-  // hover: false,
+  hover: true,
   striped: false,
   sm: false,
+  cards: false,
 })
+
 function Table({
   className,
   dark,
   bordered,
-  hover,
+  hover = true,
   striped,
   sm,
+  cards,
   ...props
 }: TableProps) {
   return (
@@ -41,21 +47,30 @@ function Table({
       value={{
         dark,
         bordered,
-        // hover,
+        hover,
         striped,
         sm,
+        cards,
       }}
     >
-      <table
+      <div
         className={twMerge([
-          'w-full text-left',
-          dark && 'bg-dark text-white dark:bg-black/30',
-          className,
+          'w-full overflow-x-auto',
+          cards && 'tipapp-table-wrap',
         ])}
-        {...props}
       >
-        {props.children}
-      </table>
+        <table
+          className={twMerge([
+            'w-full text-left',
+            dark && 'bg-dark text-white dark:bg-black/30',
+            cards && 'tipapp-table',
+            className,
+          ])}
+          {...props}
+        >
+          {props.children}
+        </table>
+      </div>
     </tableContext.Provider>
   )
 }
@@ -63,7 +78,7 @@ function Table({
 interface TheadProps
   extends React.PropsWithChildren,
     React.ComponentPropsWithoutRef<'thead'> {
-  variant: 'default' | 'light' | 'dark'
+  variant?: 'default' | 'light' | 'dark'
 }
 
 const theadContext = createContext<{
@@ -71,18 +86,21 @@ const theadContext = createContext<{
 }>({
   variant: 'default',
 })
-Table.Thead = function Thead({ className, ...props }: TheadProps) {
+
+Table.Thead = function Thead({ className, variant = 'default', ...props }: TheadProps) {
+  const table = useContext(tableContext)
   return (
     <theadContext.Provider
       // eslint-disable-next-line react/jsx-no-constructed-context-values
       value={{
-        variant: props.variant,
+        variant,
       }}
     >
       <thead
         className={twMerge([
-          props.variant === 'light' && 'bg-slate-200/60 dark:bg-slate-200',
-          props.variant === 'dark' && 'bg-dark text-white dark:bg-black/30',
+          variant === 'light' && 'bg-slate-200/60 dark:bg-slate-200',
+          variant === 'dark' && 'bg-dark text-white dark:bg-black/30',
+          table.cards && 'tipapp-table__head',
           className,
         ])}
         {...props}
@@ -98,7 +116,11 @@ type TbodyProps = React.PropsWithChildren<
 >
 
 Table.Tbody = function Tbody({ className, ...props }: TbodyProps) {
-  return <thead className={className}>{props.children}</thead>
+  return (
+    <tbody className={twMerge(['tipapp-table__body', className])} {...props}>
+      {props.children}
+    </tbody>
+  )
 }
 
 type TrProps = React.PropsWithChildren & React.ComponentPropsWithoutRef<'tr'>
@@ -108,10 +130,12 @@ Table.Tr = function Tr({ className, ...props }: TrProps) {
   return (
     <tr
       className={twMerge([
-        // table.hover &&
-        //   '[&:hover_td]:bg-slate-100 [&:hover_td]:dark:bg-darkmode-300 [&:hover_td]:dark:bg-opacity-50',
+        table.hover &&
+          !table.cards &&
+          '[&:hover_td]:bg-slate-50 [&:hover_td]:dark:bg-darkmode-300/50',
         table.striped &&
           '[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50',
+        table.cards && 'tipapp-table__row',
         className,
       ])}
       {...props}
@@ -129,13 +153,14 @@ Table.Th = function Th({ className, ...props }: ThProps) {
   return (
     <th
       className={twMerge([
-        'border-b-2 px-5 py-3 font-medium dark:border-darkmode-300 ',
-        thead.variant === 'light' && 'border-b-0 text-slate-700',
-        thead.variant === 'dark' && 'border-b-0',
+        !table.cards &&
+          'border-b-2 border-slate-200/80 px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500 dark:border-darkmode-300',
+        !table.cards && thead.variant === 'light' && 'border-b-0 text-slate-700',
+        !table.cards && thead.variant === 'dark' && 'border-b-0 text-white',
         table.dark && 'border-slate-600 dark:border-darkmode-300',
         table.bordered && 'border-l border-r border-t',
-        table.sm && 'px-4 py-2',
-        'text-left',
+        table.sm && 'px-4 py-2.5',
+        table.cards && 'tipapp-table__th text-left',
         className,
       ])}
       {...props}
@@ -152,10 +177,12 @@ Table.Td = function Td({ className, ...props }: TdProps) {
   return (
     <td
       className={twMerge([
-        'border-b px-5 py-3 dark:border-darkmode-300 text-left', 
+        !table.cards &&
+          'border-b border-slate-100 px-5 py-3.5 text-left text-sm text-slate-700 dark:border-darkmode-300',
         table.dark && 'border-slate-600 dark:border-darkmode-300',
         table.bordered && 'border-l border-r border-t',
-        table.sm && 'px-4 py-2',
+        table.sm && 'px-4 py-2.5',
+        table.cards && 'tipapp-table__td text-left',
         className,
       ])}
       {...props}
@@ -165,7 +192,6 @@ Table.Td = function Td({ className, ...props }: TdProps) {
   )
 }
 
-
 export default Table
 
 Table.defaultProps = {
@@ -173,5 +199,6 @@ Table.defaultProps = {
   bordered: false,
   hover: true,
   striped: false,
-  sm: true,
+  sm: false,
+  cards: false,
 }

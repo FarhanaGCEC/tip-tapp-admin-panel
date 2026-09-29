@@ -45,13 +45,13 @@ const RoleManagementTable: React.FC<RoleManagementTableProps> = ({
 
   return (
     <div>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
               <Table.Th
                 key={header.key}
-                className={`whitespace-nowrap border-b-0 ${
+                className={`whitespace-nowrap ${
                   header.label === 'ACTIONS'
                     ? 'w-[40px] text-center'
                     : header.key === 3
@@ -67,16 +67,15 @@ const RoleManagementTable: React.FC<RoleManagementTableProps> = ({
         <Table.Tbody>
           {Items.map((item) => (
             <Table.Tr
-              className="intro-x  h-[68px] drop-shadow-lg"
               key={item.id}
             >
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                {item.name}
+              <Table.Td >
+                {item.name === 'SUPER_ADMIN' ? 'Administrator' : item.name}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.userCount}
               </Table.Td>
-              <Table.Td className="cursor-pointer justify-end border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="cursor-pointer justify-end">
                 <div className="mr-3 flex justify-end gap-3">
                   <Lucide
                     icon="Eye"

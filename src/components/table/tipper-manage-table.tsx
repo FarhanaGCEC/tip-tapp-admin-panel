@@ -1,9 +1,9 @@
 import Table from '../common/table'
 import SlideoverRegistry from '../../pages/user-management/slideover-registry'
 import { TipItem } from '../../types/tpandsptype'
-import Label from '../common/label/active-banned-new-label'
 import Lucide from '../common/lucide'
 import StatusButton from '../common/button/statusBtn'
+import UserAvatar from '../common/user-avatar'
 
 interface TpAndSpManagemenTableProps {
   headers: { key: number; label: string }[]
@@ -19,8 +19,6 @@ interface TpAndSpManagemenTableProps {
     userId: string,
     Ispending: boolean
   ) => void
-
-  //pending: boolean
 }
 
 const TPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
@@ -29,16 +27,19 @@ const TPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
   handleClick,
 }) => {
   return (
-    <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+    <Table cards>
       <Table.Thead variant="default">
         <Table.Tr>
           {headers.map((header) => (
             <Table.Th
               key={header.key}
-              //  className="whitespace-nowrap border-b-0 "
-              className={`whitespace-nowrap border-b-0    ${
-                header.label.toLowerCase() === 'status' ? ' px-10 ' : ''
-              }`}
+              className={
+                header.label.toLowerCase() === 'status' ||
+                header.label.toLowerCase() === 'action' ||
+                header.label.toLowerCase() === 'actions'
+                  ? 'text-center'
+                  : ''
+              }
             >
               {header.label}
             </Table.Th>
@@ -47,41 +48,47 @@ const TPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
       </Table.Thead>
       <Table.Tbody>
         {tipItems.map((item) => (
-          <Table.Tr
-            className="intro-x  h-[68px] drop-shadow-lg"
-            key={item.id}
-          >
-            <Table.Td className="border-b-0  bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.FirstName + ' ' + item.LastName || 'Not Provided Yet'}
+          <Table.Tr key={item.id}>
+            <Table.Td className="font-medium">
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  src={item.ProfilePictureURL}
+                  alt={`${item.FirstName || ''} ${item.LastName || ''}`.trim() || 'User'}
+                  className="h-9 w-9"
+                />
+                <span>
+                  {`${item.FirstName || ''} ${item.LastName || ''}`.trim() ||
+                    'Not Provided Yet'}
+                </span>
+              </div>
             </Table.Td>
-            <Table.Td className=" border-b-0  bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+            <Table.Td className="max-w-[220px] truncate">
               {item.Email || 'Not Provided Yet'}
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Whatsapp || 'Not Provided Yet'}
+            <Table.Td>{item.Whatsapp || 'Not Provided Yet'}</Table.Td>
+            <Table.Td>{item.Phone || 'Not Provided Yet'}</Table.Td>
+            <Table.Td>{item.Country || 'Not Provided Yet'}</Table.Td>
+            <Table.Td>
+              <div className="flex justify-center">
+                <StatusButton status={item?.Status} />
+              </div>
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Phone || 'Not Provided Yet'}
-            </Table.Td>
-            <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              {item.Country || 'Not Provided Yet'}
-            </Table.Td>
-            <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_9.6px_-2px_#0000001a] first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              <StatusButton status={item?.Status} />
-            </Table.Td>
-            <Table.Td className="flex h-[68px] cursor-pointer    border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-              <div className=" mt-2  flex flex-row   ">
-                <Lucide
-                  icon="Eye"
-                  className="ml-3 h-10 w-6 text-black"
+            <Table.Td>
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  className="tipapp-table__action"
+                  aria-label="View user"
                   onClick={() =>
                     handleClick(
                       SlideoverRegistry.viewTpAndSpManagement,
-                      item.KeyCloakID,
+                      item.id.toString(),
                       false
                     )
                   }
-                />
+                >
+                  <Lucide icon="Eye" className="h-5 w-5" />
+                </button>
               </div>
             </Table.Td>
           </Table.Tr>

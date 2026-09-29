@@ -1,37 +1,65 @@
-/* eslint-disable react/function-component-definition */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/jsx-no-useless-fragment */
-// src/components/SocketClient.tsx
-import React, { useState, useEffect } from 'react';
-import io, { Socket } from 'socket.io-client';
+import React, { useEffect, useRef } from 'react'
+import { io, Socket } from 'socket.io-client'
 import SharedDataContainer from '../containers/sharedData'
-import Toast from '../utils/notification';
+import Toast from '../utils/notification'
 
 interface Notification {
-  message: string;
+  message: string
 }
 
 interface SocketClientProps {
-  email: string;
-  role: string;
+  email: string
+  role: string
 }
 
+/**
+ * Realtime notifications. Socket.IO retries forever by default — when the
+ * socket host is down that floods Network with polling requests. Cap retries.
+ */
 const SocketClient: React.FC<SocketClientProps> = ({ email, role }) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-
   const { setNotification } = SharedDataContainer.useContainer()
+  const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
-    const newSocket = io(`${import.meta.env.VITE_SOCKET_API}`, {
+    const socketUrl = import.meta.env.VITE_SOCKET_API
+    if (!socketUrl || !email) {
+      return undefined
+    }
+
+    // Avoid duplicate connections (e.g. React Strict Mode remount)
+    if (socketRef.current?.connected) {
+      return undefined
+    }
+
+    const newSocket = io(socketUrl, {
       query: { email, role },
-    });
-    setSocket(newSocket);
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 15000,
+      timeout: 10000,
+      autoConnect: true,
+    })
+
+    socketRef.current = newSocket
 
     newSocket.on('connect', () => {
-    });
+      console.info('[socket] connected')
+    })
+
+    newSocket.on('connect_error', (err) => {
+      console.warn('[socket] connect_error:', err.message)
+    })
+
+    newSocket.on('reconnect_failed', () => {
+      console.warn(
+        '[socket] gave up after max reconnection attempts — check VITE_SOCKET_API'
+      )
+      newSocket.disconnect()
+    })
 
     newSocket.on('notification', (data: Notification) => {
       setNotification({
@@ -40,16 +68,16 @@ const SocketClient: React.FC<SocketClientProps> = ({ email, role }) => {
         type: 'success',
       })
       Toast()
-    });
+    })
 
     return () => {
-      newSocket.disconnect();
-    };
-  }, [email, role]);
+      newSocket.removeAllListeners()
+      newSocket.disconnect()
+      socketRef.current = null
+    }
+  }, [email, role])
 
-  return (
-    <></>
-  );
-};
+  return null
+}
 
-export default SocketClient;
+export default SocketClient

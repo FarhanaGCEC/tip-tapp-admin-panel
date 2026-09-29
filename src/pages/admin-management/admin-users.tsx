@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable react/jsx-curly-brace-presence */
 /* eslint-disable react/jsx-boolean-value */
 /* eslint-disable radix */
@@ -50,10 +51,10 @@ const AdminUserManagementPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [query, setQuery] = useState<string>('')
-  const [role, setRole] = useState<number>()
+  const [role, setRole] = useState<number | undefined>()
   const [status, setStatus] = useState<string>('')
   const { data, refetch, isSuccess, isLoading, isError, error } =
-    useGetUserDetails(query, 'staff', role ?? 0, status, currentPage, pageSize)
+    useGetUserDetails(query, 'staff', status, currentPage, pageSize, role)
   const { data: roles } = useGetAllRoles()
   const [showFilters, setShowFilters] = useState<boolean>(false)
   const [sliderSize, setSliderSize] = useState<string>('xl')
@@ -72,7 +73,7 @@ const AdminUserManagementPage = () => {
 
   const handleViewUserOnClick = (userId: string) => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: 'View User Details',
       children: <ViewUserSection userId={userId} />,
@@ -83,7 +84,7 @@ const AdminUserManagementPage = () => {
 
   const handleAddUserOnClick = () => {
     handleSlider()
-      const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: 'Add User Details',
       children: <AddUserSection roles={roles} />,
@@ -91,13 +92,19 @@ const AdminUserManagementPage = () => {
     })
     setSliderSize(size)
   }
- function getSize() {
-   const screenSize = window.innerWidth
-   return screenSize > 1200 ? 'xl' : screenSize > 1020 ? 'lg' : screenSize > 768 ? 'lg'  : 'sm'
- }
+  function getSize() {
+    const screenSize = window.innerWidth
+    return screenSize > 1200
+      ? 'xl'
+      : screenSize > 1020
+      ? 'lg'
+      : screenSize > 768
+      ? 'lg'
+      : 'sm'
+  }
   const handleEditUserOnClick = (userId: string) => {
     handleSlider()
-     const size = getSize()
+    const size = getSize()
     setSliderContent({
       header: 'Edit User Details',
       children: <EditUserSection roles={roles} userId={userId} />,
@@ -161,7 +168,7 @@ const AdminUserManagementPage = () => {
     if (typingTimeout) clearTimeout(typingTimeout)
 
     typingTimeout = setTimeout(() => {
-      setQuery(value)
+      setQuery(value.toLowerCase())
     }, 750)
   }
 
@@ -210,7 +217,7 @@ const AdminUserManagementPage = () => {
             onClick={() => {
               handleAddUserOnClick()
             }}
-            className="primary flex min-w-[100px] items-center gap-2.5 bg-black !font-medium text-white"
+            className="primary flex min-w-[100px] items-center gap-2.5 bg-primary !font-medium text-white"
           >
             Add User
           </Button>,
@@ -284,7 +291,7 @@ const AdminUserManagementPage = () => {
                 </button>
                 <button
                   onClick={toggleFilters}
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                  className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                 >
                   Save
                 </button>

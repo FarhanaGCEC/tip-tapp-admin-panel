@@ -7,7 +7,7 @@
 /* eslint-disable import/no-cycle */
 /* eslint-disable react/require-default-props */
 import { createRef, useEffect, useRef, useMemo } from 'react'
-import { TomSettings, RecursivePartial } from 'tom-select/src/types/index'
+import { TomSettings, RecursivePartial } from '../../../types/tom-select'
 import TomSelectPlugin from 'tom-select'
 
 import clsx from 'clsx'

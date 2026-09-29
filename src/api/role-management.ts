@@ -95,7 +95,7 @@ export const useGetUserById = (userparameid: string): UseQueryResult<any> => {
     queryFn: async () => {
       try {
         const response = await authFetch.get(
-          `/user-details/keycloak-test/${userparameid}`
+          `/user-details/admin/${userparameid}`
         )
         return response.data.data
       } catch (error) {
@@ -109,11 +109,10 @@ export const useGetUserById = (userparameid: string): UseQueryResult<any> => {
   })
 }
 
-export const useDeactiveUserAndActive = (userid: string, satustype: string) => {
+export const useDeactiveUserAndActive = () => {
   const queryClient = useQueryClient()
-  return useQuery({
-    queryKey: ['get_user_deactive', userid, satustype],
-    queryFn: async () => {
+  return useMutation(
+    async ({ userid, satustype }: { userid: string; satustype: string }) => {
       try {
         let response
 
@@ -130,12 +129,14 @@ export const useDeactiveUserAndActive = (userid: string, satustype: string) => {
         throw error
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['get_user_by_id'])
-      queryClient.invalidateQueries(['get_all_users_and_search_users'])
-    },
-    onError: (error: any) => {
-      console.error('Fetch error:', error)
-    },
-  })
+    {
+      onSuccess: (data: any, variables: any) => {
+        queryClient.invalidateQueries(['get_user_by_id'])
+        queryClient.invalidateQueries(['get_all_users_and_search_users'])
+      },
+      onError: (error: any) => {
+        console.error('Fetch error:', error)
+      },
+    }
+  )
 }

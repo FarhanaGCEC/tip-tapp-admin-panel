@@ -26,7 +26,7 @@ import Pagination from '../../components/pagination/pagination'
 import { TableHeadingsGatewaySetting } from '../../constants/table-data'
 import GatewaySettingTable from '../../components/table/gateway-setting-table'
 import SlideoverRegistry from '../user-management/slideover-registry'
-import { GetGatewaySettingDetails } from '../../api/gateway-setting-management/gateway-and-tip-setting-management'
+import { GetGatewaySettingDetails, GetActivePaymentGateway } from '../../api/gateway-setting-management/gateway-and-tip-setting-management'
 import SelectElement from '../../components/common/form-elements/select-element-secondary'
 import NoDataFound from '../../assets/images/NoDataFound.png'
 
@@ -52,6 +52,8 @@ const GatewaySettingPage = () => {
     currentPage,
     pageSize
   )
+  const { data: activePaymentData } = GetActivePaymentGateway()
+  const activePaymentGateway = activePaymentData?.data ?? null
   const [showFilters, setShowFilters] = useState<boolean>(false)
   const [sliderSize, setSliderSize] = useState<string>('xl')
   const [sliderContent, setSliderContent] = useState<{
@@ -166,7 +168,7 @@ const GatewaySettingPage = () => {
         </div>
         <div className=' flex justify-end'>
           <Button
-            className="rounded-md bg-black px-5 py-2 text-white hover:bg-gray-800"
+            className="rounded-md bg-primary px-5 py-2 text-white hover:bg-brand-red-dark"
             onClick={() => {
               handleClicks(SlideoverRegistry.viewGatewaySettingAdd)
             }}
@@ -175,6 +177,42 @@ const GatewaySettingPage = () => {
           </Button>
         </div>
       </div>
+
+      <div className="intro-y mb-6 space-y-3">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-800">
+                Active payment gateway
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Only one Stripe or PayPal gateway can be active for payments.
+                Activating any gateway here deactivates all others except tip
+                platform settings (managed under Tip Settings).
+              </p>
+            </div>
+            {activePaymentGateway ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+                {activePaymentGateway.gateway_name} (
+                {activePaymentGateway.gateway_type.charAt(0).toUpperCase() +
+                  activePaymentGateway.gateway_type.slice(1)}
+                )
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
+                None configured
+              </span>
+            )}
+          </div>
+        </div>
+        <p className="px-1 text-xs text-slate-500">
+          Stripe tip payments currently use server environment keys (
+          <code className="rounded bg-slate-100 px-1">STRIPE_API_KEY</code>
+          ), not the credentials saved in this panel. PayPal reads active config
+          from the database when its module is used.
+        </p>
+      </div>
+
       <div className="mb-8 mt-3 flex items-center justify-between sm:ml-auto sm:mt-0">
         <div className="relative flex sm:mt-0 sm:w-auto">
           <FormInput
@@ -223,7 +261,7 @@ const GatewaySettingPage = () => {
                   Cancel
                 </Button>
                 <Button
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                  className="rounded-md bg-primary px-4 py-2 text-white hover:bg-brand-red-dark"
                   onClick={ActiveAndDeactiveSelect}
                 >
                   Save

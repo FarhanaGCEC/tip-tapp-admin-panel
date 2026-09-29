@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable jsx-a11y/heading-has-content */
 /* eslint-disable import/no-useless-path-segments */
 /* eslint-disable jsx-a11y/anchor-is-valid */
@@ -46,8 +50,6 @@ function GatewaySettingView(props: ViewUserProps) {
   const posApi = PosApi.useAPI()
   const { setNotification, handleSlider } = SharedDataContainer.useContainer()
   const [isloading, setIsLoading] = useState<boolean>(false)
-  const [useridparam, setuseridparame] = useState('')
-  const [userStatus, setuserStatus] = useState('')
   const {
     data,
     isSuccess,
@@ -56,11 +58,7 @@ function GatewaySettingView(props: ViewUserProps) {
     error,
     refetch,
   }: UseQueryResult<GatewayItem> = GatewaySettingFindOne(props.userId)
-  const {
-    data: userData,
-    isLoading: isFetchingUserData,
-    isError: isFetchingUserError,
-  } = useDeactiveUserAndActive(useridparam, userStatus)
+  const { mutate: deactivateActivateUser } = useDeactiveUserAndActive()
   const { t } = useTranslation('pos')
 
   const schema = yup
@@ -141,8 +139,7 @@ function GatewaySettingView(props: ViewUserProps) {
   )
 
   const DeactiveAndActivehandle = (userid: string, typesatus: string) => {
-    setuseridparame(userid)
-    setuserStatus(typesatus)
+    deactivateActivateUser({ userid, satustype: typesatus })
   }
 
   return (

@@ -10,22 +10,27 @@ import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import TopBar from '../../components/TopBar'
-import { selectSideMenu } from '../../stores/sideMenuSlice'
-import { useAppSelector } from '../../stores/hooks'
+import { selectSideMenu, rebuildSideMenu } from '../../stores/sideMenuSlice'
+import { useAppDispatch, useAppSelector } from '../../stores/hooks'
 import { FormattedMenu, linkTo, nestedMenu, enter, leave } from '../side-menu/side-menu'
 import Lucide from '../../components/common/lucide'
 // import DarkModeSwitcher from '../../components/dark-mode-switcher'
 // import MainColorSwitcher from '../../components/MainColorSwitcher'
 import SideMenuTooltip from '../../components/SideMenuTooltip'
-import logoUrl from '../../assets/images/tip-app-logo.png'
+import logoUrl from '../../assets/images/tipapp-brand-logo.png'
 
 function Main() {
   const location = useLocation()
+  const dispatch = useAppDispatch()
   const [formattedMenu, setFormattedMenu] = useState<
     Array<FormattedMenu | 'devider'>
   >([])
   const sideMenuStore = useAppSelector(selectSideMenu)
   const sideMenu = () => nestedMenu(sideMenuStore, location)
+
+  useEffect(() => {
+    dispatch(rebuildSideMenu())
+  }, [dispatch])
 
   useEffect(() => {
     setFormattedMenu(sideMenu())
@@ -42,17 +47,12 @@ function Main() {
             className="intro-x flex items-center pl-5 pt-4"
           >
             <img
-              alt="Midone Tailwind HTML Admin Template"
-              className="w-[41px] h-[50px]"
+              alt="TipApp"
+              className="h-10 w-10 rounded-lg object-cover shadow-md ring-1 ring-white/40"
               src={logoUrl}
             />
-            {/* <img
-              alt="Midone Tailwind HTML Admin Template"
-              className="w-6"
-              src={logoUrl}
-            /> */}
-            <span className="ml-3 hidden text-lg font-normal text-[#fff] xl:block">
-              Tip App
+            <span className="ml-3 hidden text-lg font-semibold tracking-tight text-white xl:block">
+              TipApp
             </span>
           </Link>
           <Devider type="div" className="my-6" />

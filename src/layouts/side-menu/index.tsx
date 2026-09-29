@@ -11,19 +11,26 @@ import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import TopBar from '../../components/TopBar'
-import { selectSideMenu } from '../../stores/sideMenuSlice'
-import { useAppSelector } from '../../stores/hooks'
+import { selectSideMenu, rebuildSideMenu } from '../../stores/sideMenuSlice'
+import { useAppDispatch, useAppSelector } from '../../stores/hooks'
 import { FormattedMenu, linkTo, nestedMenu, enter, leave } from './side-menu'
 import Lucide from '../../components/common/lucide'
 import SideMenuTooltip from '../../components/SideMenuTooltip'
+import brandLogo from '../../assets/images/tipapp-brand-logo.png'
 
 function Main() {
   const location = useLocation()
+  const dispatch = useAppDispatch()
   const [formattedMenu, setFormattedMenu] = useState<
     Array<FormattedMenu | 'devider'>
   >([])
   const sideMenuStore = useAppSelector(selectSideMenu)
   const sideMenu = () => nestedMenu(sideMenuStore, location)
+
+  // Ensure menu matches validationToken after login (without needing a hard refresh)
+  useEffect(() => {
+    dispatch(rebuildSideMenu())
+  }, [dispatch])
 
   useEffect(() => {
     setFormattedMenu(sideMenu())
@@ -38,8 +45,13 @@ function Main() {
             to="/"
             className="intro-x flex items-center pl-5 pt-4"
           >
-            <span className="ml-3 hidden text-lg text-white xl:block">
-              Store
+            <img
+              alt="TipApp"
+              className="h-10 w-10 rounded-lg object-cover shadow-md ring-1 ring-white/40"
+              src={brandLogo}
+            />
+            <span className="ml-3 hidden text-lg font-semibold text-white xl:block">
+              TipApp
             </span>
           </Link>
           <Devider type="div" className="my-6" />

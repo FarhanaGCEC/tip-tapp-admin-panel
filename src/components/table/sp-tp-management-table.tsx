@@ -3,7 +3,7 @@ import SlideoverRegistry from '../../pages/user-management/slideover-registry'
 import { TipItem } from '../../types/tpandsptype'
 import Label from '../common/label/active-banned-new-label'
 import actionEye from '../../assets/images/svg/actions.svg'
-import { truncate } from 'lodash'
+import UserAvatar from '../common/user-avatar'
 
 interface TpAndSpManagemenTableProps {
   headers: { key: number; label: string }[]
@@ -25,11 +25,11 @@ const TpAndSpManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
   handleClick,
 }) => {
   return (
-    <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
-      <Table.Thead variant="default" className="">
+    <Table cards className="sm:mt-2">
+      <Table.Thead variant="default">
         <Table.Tr>
           {headers.map((header) => (
-            <Table.Th key={header.key} className="mb-[30px] w-full border-b-0">
+            <Table.Th key={header.key} className="mb-[30px] w-full">
               <span
                 className={`flex w-full text-center ${
                   header.label === 'STATUS'
@@ -45,40 +45,45 @@ const TpAndSpManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
       </Table.Thead>
       <Table.Tbody>
         {tipItems.map((item) => (
-          <Table.Tr className="intro-x h-[68px] drop-shadow-lg" key={item.id}>
-            <Table.Td className="bg-white  border-b-0 shadow-[20px_3px_9.6px_-2px_#0000001a] first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
-              <a href="#" className="whitespace-nowrap font-medium">
-                {`${item.FirstName + ' ' + item.LastName}`}
-              </a>
+          <Table.Tr key={item.id}>
+            <Table.Td>
+              <div className="flex items-center gap-3 whitespace-nowrap font-medium">
+                <UserAvatar
+                  src={item.ProfilePictureURL}
+                  alt={`${item.FirstName || ''} ${item.LastName || ''}`.trim() || 'User'}
+                  className="h-9 w-9"
+                />
+                <span>{`${item.FirstName || ''} ${item.LastName || ''}`.trim()}</span>
+              </div>
             </Table.Td>
-            <Table.Td className="bg-white border-b-0 shadow-[20px_3px_9.6px_-2px_#0000001a] first:rounded-l-lg last:rounded-r-lg dark:bg-darkmode-600">
+            <Table.Td >
               {item.Email || 'no'}
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+            <Table.Td >
               {item.Phone || 'N/A'}
             </Table.Td>
-            <Table.Td className="min-w-[180px] border-b-0  bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+            <Table.Td className="min-w-[180px]">
               {item.Country || 'no'}
             </Table.Td>
-            <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md ">
+            <Table.Td >
               <Label
                 labledata={item.Status === 'active' ? 'Active' : 'Inactive'}
                 lablestyle={`${
                   item.Status === 'active'
-                    ? 'bg-[#03C50B]'
+                    ? 'bg-[#2F9E44]'
                     : item.Status === 'new'
                     ? 'bg-yellow-400'
                     : 'bg-[#D70000]'
                 } min-w-[115px]`}
               />
             </Table.Td>
-            <Table.Td className="cursor-pointer border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+            <Table.Td className="cursor-pointer">
               <div
                 className="flex cursor-pointer justify-center duration-300 hover:scale-90"
                 onClick={() =>
                   handleClick(
                     SlideoverRegistry.viewTpAndSpManagement,
-                    item.KeyCloakID
+                    item.id.toString()
                   )
                 }
               >

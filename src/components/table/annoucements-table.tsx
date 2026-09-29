@@ -124,13 +124,13 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
 
   return (
     <>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
               <Table.Th
                 key={header.key}
-                className={`whitespace-nowrap border-b-0 ${
+                className={`whitespace-nowrap ${
                   header.key === 6 || header.key === 7 ? 'text-center' : ''
                 }`}
               >
@@ -142,10 +142,9 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
         <Table.Tbody>
           {newsletterItems.map((item) => (
             <Table.Tr
-              className="intro-x  h-[68px] drop-shadow-lg"
               key={item.id}
             >
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.NotificationDate
                   ? DateTime.fromISO(item.NotificationDate)
                       .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone) // Set to user's local timezone
@@ -159,7 +158,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
                       })
                   : '-'}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.sentAt && item?.status === 'sent'
                   ? new Date(item.sentAt).toLocaleString(undefined, {
                       year: 'numeric',
@@ -171,12 +170,12 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
                     })
                   : '-'}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.Title.length > 20
                   ? `${item.Title.slice(0, 20)} .....`
                   : item.Title}
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td >
                 {item.UserType
                   ? item.UserType === 'tp'
                     ? 'Tipper'
@@ -191,7 +190,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
                     : '-'
                   : 'All'}
               </Table.Td>
-              <Table.Td className="ml-4 border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md">
+              <Table.Td className="ml-4">
                 {item.NotificationType
                   ? item.NotificationType.toLowerCase() === 'email'
                     ? 'Email'
@@ -200,16 +199,16 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
                     : toTitleCase(item.NotificationType)
                   : '-'}
               </Table.Td>
-              <Table.Td className="ml-4 border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md ">
+              <Table.Td className="ml-4">
                 <div className="flex justify-center">
                   <StatusButton status={item?.status} />
                 </div>
               </Table.Td>
-              <Table.Td className=" cursor-pointer justify-center border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
+              <Table.Td className="cursor-pointer justify-center">
                 <div className="flex justify-center gap-3">
                   <Lucide
                     icon="Eye"
-                    className=" h-6 w-6 text-black"
+                    className="h-6 w-6 text-black"
                     onClick={() => {
                       handleClick(
                         {
@@ -232,7 +231,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
                   />
                   <Lucide
                     icon="Edit"
-                    className=" h-6 w-6 text-black"
+                    className="h-6 w-6 text-black"
                     onClick={() =>
                       handleClick(
                         {
@@ -256,7 +255,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
                   />
                   <Lucide
                     icon={'Trash2'}
-                    className=" h-6 w-6 text-red-500"
+                    className="h-6 w-6 text-red-500"
                     onClick={() => {
                       // mutate(item.id)
                       handleDelete(item.id)

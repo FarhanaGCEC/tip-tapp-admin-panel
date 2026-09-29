@@ -9,6 +9,17 @@ export interface GatewayItem {
   credential: Credential
 }
 
+export const PAYMENT_GATEWAY_TYPES = ['stripe', 'paypal'] as const
+
+export type PaymentGatewayType = (typeof PAYMENT_GATEWAY_TYPES)[number]
+
+export function isPaymentGateway(gatewayType?: string): boolean {
+  if (!gatewayType) return false
+  return PAYMENT_GATEWAY_TYPES.includes(
+    gatewayType.toLowerCase() as PaymentGatewayType
+  )
+}
+
 interface Meta {
   totalItems: number
   itemCount: number
@@ -22,6 +33,11 @@ export interface GetGatewayResponse {
     items: GatewayItem[]
     meta: Meta
   }
+  message: string
+}
+
+export interface ActivePaymentGatewayResponse {
+  data: GatewayItem | null
   message: string
 }
 

@@ -5,9 +5,12 @@ import SlideoverRegistry, {
 } from '../../pages/user-management/slideover-registry'
 import Label from '../common/label/active-banned-new-label'
 import Lucide from '../common/lucide'
-import { GatewayItem } from '../../types/gatewaytype'
+import { GatewayItem, isPaymentGateway } from '../../types/gatewaytype'
 import { GatewaySettingUpdate } from '../../api/gateway-setting-management/gateway-and-tip-setting-management'
 import { Dialog } from '../common/headless'
+import SharedDataContainer from '../../containers/sharedData'
+import Toast from '../../utils/notification'
+import { Icons, NotificationTypes } from '../../constants'
 
 interface GatewaySettingTableProps {
   headers: { key: number; label: string }[]
@@ -24,29 +27,50 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
   settingItems,
   handleClick,
 }) => {
+  const { setNotification } = SharedDataContainer.useContainer()
   const [deleteConfirmationModal, setErrorDialogOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleError = (message: string) => {
     setErrorMessage(message)
-    setErrorDialogOpen(true) 
+    setErrorDialogOpen(true)
   }
 
-  const { mutate, isLoading } = GatewaySettingUpdate(handleError)
+  const { mutate } = GatewaySettingUpdate(handleError)
 
-  const handleUpdate = (settingid: string, isActive: boolean) => {
-    mutate({ settingid: settingid, updatedData: { is_active: isActive } })
+  const handleUpdate = (item: GatewayItem, isActive: boolean) => {
+    mutate(
+      { settingid: item.id.toString(), updatedData: { is_active: isActive } },
+      {
+        onSuccess: () => {
+          const paymentGateway = isPaymentGateway(item.gateway_type)
+          const message = isActive
+            ? paymentGateway
+              ? `${item.gateway_name} is now the active payment gateway. Other gateways were deactivated automatically.`
+              : `${item.gateway_name} is now active. Other gateways were deactivated automatically.`
+            : `${item.gateway_name} has been deactivated.`
+
+          setNotification({
+            title: 'Success',
+            message,
+            icon: Icons.CHECKCIRCLE,
+            type: NotificationTypes.SUCCESS,
+          })
+          Toast()
+        },
+      }
+    )
   }
 
   return (
     <>
-      <Table className="border-separate border-spacing-y-[10px] sm:mt-2">
+      <Table cards className="sm:mt-2">
         <Table.Thead variant="default">
           <Table.Tr>
             {headers.map((header) => (
               <Table.Th
                 key={header.key}
-                className={`whitespace-nowrap border-b-0 ${
+                className={`whitespace-nowrap ${
                   header.key === 3
                     ? ' pr-12 text-end'
                     : header.key === 4
@@ -61,22 +85,26 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
         </Table.Thead>
         <Table.Tbody>
           {settingItems.map((item) => (
-            <Table.Tr className="intro-x h-[68px] drop-shadow-lg" key={item.id}>
-              <Table.Td className="border-b-0 bg-white    shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="whitespace-nowrap   ">{item?.gateway_name}</div>
+            <Table.Tr key={item.id}>
+              <Table.Td >
+                <div className="whitespace-nowrap">{item?.gateway_name}</div>
               </Table.Td>
-              <Table.Td className="border-b-0 bg-white  shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="whitespace-nowrap ">
+              <Table.Td >
+                <div className="whitespace-nowrap">
                   {item?.gateway_type?.charAt(0).toUpperCase() +
                     item?.gateway_type?.slice(1)}
                 </div>
               </Table.Td>
-              <Table.Td className=" border-b-0 bg-white text-center shadow-[20px_3px_20px_#0000000b]  first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="flex justify-end whitespace-nowrap ">
+              <Table.Td className="text-center">
+                <div className="flex justify-end whitespace-nowrap">
                   {item.is_active ? (
                     <Label
-                      labledata={'Active'}
-                      lablestyle={'bg-[#03C50B] max-w-[115px] min-w-[115px]'}
+                      labledata={
+                        isPaymentGateway(item.gateway_type)
+                          ? 'Active (Payment)'
+                          : 'Active'
+                      }
+                      lablestyle={'bg-[#2F9E44] min-w-[140px]'}
                     />
                   ) : (
                     <Label
@@ -86,8 +114,8 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
                   )}
                 </div>
               </Table.Td>
-              <Table.Td className=" h-[68px]  cursor-pointer     items-center justify-center border-b-0 bg-white shadow-[20px_3px_20px_#0000000b] first:rounded-l-md last:rounded-r-md dark:bg-darkmode-600">
-                <div className="  flex flex-row justify-end  pr-2 ">
+              <Table.Td className="cursor-pointer items-center justify-center">
+                <div className="flex flex-row justify-end pr-2">
                   <Lucide
                     icon="Eye"
                     className="ml-3 h-6 w-6 text-black"
@@ -113,13 +141,13 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
                     <Lucide
                       icon={'XCircle'}
                       className={`ml-3 h-5 w-5   ${'text-red-500'}`}
-                      onClick={() => handleUpdate(item.id.toString(), false)}
+                      onClick={() => handleUpdate(item, false)}
                     />
                   ) : (
                     <Lucide
                       icon={'CheckCircle'}
                       className={`ml-3 h-5 w-5   ${'text-green-500'}`}
-                      onClick={() => handleUpdate(item.id.toString(), true)}
+                      onClick={() => handleUpdate(item, true)}
                     />
                   )}
                 </div>
@@ -142,7 +170,7 @@ const GatewaySettingTable: React.FC<GatewaySettingTableProps> = ({
               className="mx-auto mt-3 h-16 w-16 text-danger"
             />
             <div className="mt-5 text-3xl">Error</div>
-            <div className="mt-2 text-slate-500">
+            <div className="mt-2">
               {errorMessage || 'An unexpected error occurred.'}
             </div>
           </div>

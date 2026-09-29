@@ -193,6 +193,9 @@ import FAQManagement from '../pages/faq-management'
 import FAQCategoryManagement from '../pages/faq-category-management'
 import ReportPage from '../pages/report/report'
 import Annoucements from '../pages/annoucements'
+import Notifications from '../pages/notifications'
+import ContactUsManagement from '../pages/contact-us-management'
+import AddTripPage from '../pages/share-a-ride/add-trip'
 
 function Router() {
   const { error, pos } = RouteRegistry
@@ -249,6 +252,18 @@ function Router() {
         {
           path: 'annoucements',
           element: <Annoucements />,
+        },
+        {
+          path: 'notifications',
+          element: <Notifications />,
+        },
+        {
+          path: 'contact-us-management',
+          element: <ContactUsManagement />,
+        },
+        {
+          path: 'share-a-ride/add-trip',
+          element: <AddTripPage />,
         },
         {
           path: 'contact-management/suppliers',
