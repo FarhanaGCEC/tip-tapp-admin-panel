@@ -132,7 +132,7 @@ function Main() {
         }
       `}</style>
 
-      {/* Soft right-side atmosphere */}
+      
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_20%,rgba(158,42,43,0.06),transparent_45%),radial-gradient(ellipse_at_90%_80%,rgba(26,39,68,0.05),transparent_40%)]"
