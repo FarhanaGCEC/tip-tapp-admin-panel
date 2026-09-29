@@ -2,7 +2,6 @@ import clsx from 'clsx'
 import {
   FieldError,
   FieldErrorsImpl,
-  FieldValues,
   Merge,
   UseFormRegister,
 } from 'react-hook-form'
@@ -21,7 +20,9 @@ interface TextareaProps {
   label?: string
   name?: string
   placeholder?: string
-  register: UseFormRegister<FieldValues>
+  // `any` so a typed form's register function stays assignable here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  register: UseFormRegister<any>
   disabled?: boolean
   formTextareaSize?: 'sm' | 'lg'
   rounded?: boolean
