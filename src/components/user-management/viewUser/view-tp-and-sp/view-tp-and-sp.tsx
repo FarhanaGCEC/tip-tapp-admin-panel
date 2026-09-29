@@ -293,33 +293,28 @@ function ViewTpandSp(props: ViewUserProps) {
       <Tab.Group>
         <div className="intro-y rounded-t-lg bg-white p-3 px-5 ">
           {/* Profile Section */}
-          <div className="ml-3 mr-4 flex flex-col items-center space-y-4 md:flex-row md:justify-between md:space-y-0">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* User Info */}
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
               <UserAvatar
                 src={data?.ProfilePictureURL}
                 alt={`${data?.FirstName || ''} ${data?.LastName || ''}`.trim() || 'User'}
-                className="mr-0 h-16 w-16 max-lg:mr-4 sm:h-20 sm:w-20 md:h-[65px] md:w-[65px] lg:h-[85px] lg:w-[85px]"
+                className="h-16 w-16 sm:h-20 sm:w-20"
               />
-              <div className="max-lg:mr-4 lg:ml-3">
-                <div className="gap-2 overflow-hidden font-medium max-lg:overflow-y-auto md:text-xl lg:flex lg:flex-row lg:text-lg">
-                  <div className="truncate whitespace-nowrap md:block">
-                    {data?.FirstName ? data.FirstName : 'Name'}
-                  </div>
-                  <div className="whitespace-nowrap">
-                    {data?.LastName ? data.LastName : 'provide'}
-                  </div>
+              <div className="min-w-0">
+                <div className="truncate text-lg font-medium text-slate-900">
+                  {`${data?.FirstName || 'Name'} ${data?.LastName || ''}`.trim()}
                 </div>
               </div>
             </div>
 
             {/* Action Button */}
-            <div className="flex justify-center md:justify-end ">
+            <div className="flex shrink-0 justify-center sm:justify-end">
               {permissionChecker(
                 <>
                   {data?.Status == 'active' ? (
                     <Button
-                      className=" w-40 bg-[#D70000] "
+                      className="w-40 bg-[#D70000]"
                       disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
@@ -328,13 +323,13 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">
+                      <span className="text-white sm:block">
                         {isUpdatingStatus ? 'Deactivating...' : 'Deactivate'}
                       </span>
                     </Button>
                   ) : data?.Status == 'new' ? (
                     <Button
-                      className=" w-40 bg-[#2F9E44] px-6 py-2"
+                      className="w-40 bg-[#2F9E44] px-6 py-2"
                       disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
@@ -343,13 +338,13 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">
+                      <span className="text-white sm:block">
                         {isUpdatingStatus ? 'Activating...' : 'Activate'}
                       </span>
                     </Button>
                   ) : data?.Status == 'banned' ? (
                     <Button
-                      className=" w-40 bg-[#2F9E44] px-6  py-2 "
+                      className="w-40 bg-[#2F9E44] px-6 py-2"
                       disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
@@ -358,13 +353,13 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">
+                      <span className="text-white sm:block">
                         {isUpdatingStatus ? 'Activating...' : 'Activate'}
                       </span>
                     </Button>
                   ) : (
                     <Button
-                      className=" w-40 bg-[#D70000] px-5 py-1"
+                      className="w-40 bg-[#D70000] px-5 py-1"
                       disabled={isUpdatingStatus}
                       onClick={() => {
                         DeactiveAndActivehandle(
@@ -373,7 +368,7 @@ function ViewTpandSp(props: ViewUserProps) {
                         )
                       }}
                     >
-                      <span className=" text-white sm:block">
+                      <span className="text-white sm:block">
                         {isUpdatingStatus ? 'Deactivating...' : 'Deactivate'}
                       </span>
                     </Button>
@@ -387,101 +382,153 @@ function ViewTpandSp(props: ViewUserProps) {
 
         <Separator />
 
-        <div className=" rounded-b-lg bg-white py-4">
+        <div className="rounded-b-lg bg-white py-4">
           <Tab.Panel>
-            <div className="ml-3 mr-4 grid grid-cols-1 gap-6 px-5 md:grid-cols-2 lg:grid-cols-3 ">
-              <div className="text-left">
-                <div className="flex items-center">Email</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.Email ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.Email ? data.Email : 'Not Provided Yet'}
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 px-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="Mail" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Email
+                  </p>
+                  <p
+                    className={`mt-1 break-words text-sm leading-relaxed ${
+                      data?.Email ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.Email || 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-              <div className="text-left lg:ps-[50px]">
-                <div className="flex items-center">Address</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.Address ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.Address ? data.Address : 'Not Provided Yet'}
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="MapPin" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Address
+                  </p>
+                  <p
+                    className={`mt-1 break-words text-sm leading-relaxed ${
+                      data?.Address ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.Address || 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-
-              {/* Phone */}
-              <div className="text-left lg:ps-[50px]">
-                <div className="flex items-center">Date of Birth</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.DateOfBirth ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.DateOfBirth
-                    ? dayjs(data.DateOfBirth).format('DD MMM YYYY')
-                    : 'Not Provided Yet'}
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="Calendar" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Date of Birth
+                  </p>
+                  <p
+                    className={`mt-1 text-sm leading-relaxed ${
+                      data?.DateOfBirth ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.DateOfBirth
+                      ? dayjs(data.DateOfBirth).format('DD MMM YYYY')
+                      : 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-
-              {/* Whatsapp */}
-              <div className=" text-left lg:ps-20">
-                <div className="flex items-center ">Phone</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.Phone ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.Phone ? data.Phone : 'Not Provided Yet'}
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="Phone" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Phone
+                  </p>
+                  <p
+                    className={`mt-1 text-sm leading-relaxed ${
+                      data?.Phone ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.Phone || 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-              <div className="text-left">
-                <div className="flex items-center">WhatsApp</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.Whatsapp ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.Whatsapp ? data.Whatsapp : 'Not Provided Yet'}
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide
+                    icon="MessageCircle"
+                    className="h-4 w-4 text-slate-600"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    WhatsApp
+                  </p>
+                  <p
+                    className={`mt-1 text-sm leading-relaxed ${
+                      data?.Whatsapp ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.Whatsapp || 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-              <div className="text-left lg:ps-[50px]">
-                <div className="flex items-center">Country</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.Country ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.Country ? data.Country : 'Not Provided Yet'}
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="Globe" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Country
+                  </p>
+                  <p
+                    className={`mt-1 text-sm leading-relaxed ${
+                      data?.Country ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.Country || 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-              <div className="text-left lg:ps-20">
-                <div className="flex items-center">City</div>
-                <div
-                  className={`text-small mt-1 leading-relaxed ${
-                    data?.City ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {data?.City ? data.City : 'Not Provided Yet'}
+              <div className="flex min-w-0 gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="Building2" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    City
+                  </p>
+                  <p
+                    className={`mt-1 text-sm leading-relaxed ${
+                      data?.City ? 'text-slate-900' : 'text-slate-400'
+                    }`}
+                  >
+                    {data?.City || 'Not Provided Yet'}
+                  </p>
                 </div>
               </div>
-              <div className="text-left">
-                <div className="flex items-center">Bio</div>
-
-                <div
-                  className="text-small  mt-1 leading-relaxed "
-                  style={{ maxWidth: '300px', wordWrap: 'break-word' }}
-                >
-                  {truncatedBio}
-                  {bio !== 'Not Provided Yet' && bio.length > 20 && (
-                    <button
-                      onClick={toggleExpanded}
-                      className="mt-1 text-[#959499] hover:underline"
-                    >
-                      {isExpanded ? 'See Less' : 'See More'}
-                    </button>
-                  )}
+              <div className="flex min-w-0 gap-3 sm:col-span-2 lg:col-span-2">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                  <Lucide icon="FileText" className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Bio
+                  </p>
+                  <div className="mt-1 text-sm leading-relaxed text-slate-900">
+                    <p className="break-words">{truncatedBio}</p>
+                    {bio !== 'Not Provided Yet' && bio.length > 20 && (
+                      <button
+                        type="button"
+                        onClick={toggleExpanded}
+                        className="mt-1 text-sm text-slate-500 hover:underline"
+                      >
+                        {isExpanded ? 'See Less' : 'See More'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -497,15 +544,15 @@ function ViewTpandSp(props: ViewUserProps) {
                 </div>
 
                 <div className="mx-5 rounded-xl border border-slate-200 bg-slate-50/70 p-5 shadow-sm">
-                  <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                  <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                         <Lucide
                           icon="CreditCard"
                           className="h-5 w-5 text-slate-600"
                         />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                           Onboarding Status
                         </p>
@@ -517,19 +564,19 @@ function ViewTpandSp(props: ViewUserProps) {
                       </div>
                     </div>
                     {cardDetails.onboardingStatusLabel ? (
-                      <p className="text-sm leading-relaxed text-slate-500 sm:max-w-xs sm:text-right">
+                      <p className="text-sm leading-relaxed text-slate-500 sm:max-w-[280px] sm:text-right">
                         {cardDetails.onboardingStatusLabel}
                       </p>
                     ) : null}
                   </div>
 
-                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div className="rounded-lg border border-slate-100 bg-white px-4 py-3">
                       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                         Bank Name
                       </p>
                       <p
-                        className={`mt-1.5 text-sm font-semibold ${
+                        className={`mt-1.5 break-words text-sm font-semibold ${
                           cardDetails.bankName && !payoutNotStarted
                             ? 'text-slate-900'
                             : 'text-slate-400'
@@ -575,7 +622,7 @@ function ViewTpandSp(props: ViewUserProps) {
                       </span>
                     </div>
                     {cardDetails.accountHolderName ? (
-                      <div className="rounded-lg border border-slate-100 bg-white px-4 py-3">
+                      <div className="rounded-lg border border-slate-100 bg-white px-4 py-3 sm:col-span-3">
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                           Account Holder
                         </p>
