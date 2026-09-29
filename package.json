@@ -79,6 +79,7 @@
     "@types/ckeditor__ckeditor5-build-classic": "^29.0.1",
     "@types/lodash": "^4.14.188",
     "@types/luxon": "^3.4.2",
+    "@types/node": "26.0.0",
     "@types/react": "^18.0.22",
     "@types/react-beautiful-dnd": "^13.1.6",
     "@types/react-dom": "^18.0.7",
@@ -107,5 +108,8 @@
     "typescript": "^4.6.4",
     "vite": "^3.2.0",
     "vite-plugin-pwa": "^0.13.1"
+  },
+  "overrides": {
+    "@types/node": "26.0.0"
   }
 }
