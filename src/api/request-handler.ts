@@ -6,9 +6,10 @@ import {
   isJwtExpired,
   isValidationTokenExpired,
 } from '../utils/authSession'
+import { API_BASE_URL } from './api-origin'
 
 const axiosInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: API_BASE_URL,
   withCredentials: false,
   headers: {
     Accept: 'application/json',
