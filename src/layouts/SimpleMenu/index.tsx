@@ -17,7 +17,7 @@ import Lucide from '../../components/common/lucide'
 // import DarkModeSwitcher from '../../components/dark-mode-switcher'
 // import MainColorSwitcher from '../../components/MainColorSwitcher'
 import SideMenuTooltip from '../../components/SideMenuTooltip'
-import logoUrl from '../../assets/images/gcec-cloud-logo.png'
+import logoUrl from '../../assets/images/gcec-cloud-mark.png'
 
 function Main() {
   const location = useLocation()
@@ -44,18 +44,19 @@ function Main() {
         <nav className="w-[85px] overflow-x-hidden pb-16 pr-5 md:block xl:w-[230px]">
           <Link
             to="/"
-            className="intro-x flex items-center pl-5 pt-4"
+            aria-label="GCEC Cloud"
+            className="intro-x flex items-center gap-2.5 pb-1 pl-5 pt-5"
           >
             <img
-              alt="GCEC Cloud"
-              className="h-12 w-12 rounded-lg object-cover shadow-md ring-1 ring-primary"
+              alt=""
+              className="h-10 w-10 shrink-0 object-contain"
               src={logoUrl}
             />
-            <span className="ml-3 hidden text-lg font-semibold tracking-tight text-primary xl:block">
+            <span className="hidden text-lg font-semibold leading-none tracking-tight text-primary xl:block">
               GCEC Cloud
             </span>
           </Link>
-          <Devider type="div" className="my-6" />
+          <div className="mx-5 mb-5 mt-4 h-px bg-white/15" />
           <ul>
             {/* BEGIN: First Child */}
             {formattedMenu.map((menu, menuKey) =>
@@ -142,7 +143,7 @@ function Main() {
         </nav>
         {/* END: Side Menu */}
         {/* BEGIN: Content */}
-        <div className="md:max-w-auto min-h-screen min-w-0 max-w-full flex-1 rounded-[30px] bg-[#F1F5F8] px-4 pb-10 before:block before:h-px before:w-full before:content-[''] dark:bg-darkmode-700 md:px-[22px]">
+        <div className="md:max-w-auto min-h-screen min-w-0 max-w-full flex-1 rounded-bl-[30px] rounded-br-[30px] rounded-tr-[30px] bg-[#F1F5F8] px-4 pb-10 before:block before:h-px before:w-full before:content-[''] dark:bg-darkmode-700 md:px-[22px]">
           <TopBar />
           <Outlet />
         </div>

@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from '../../stores/hooks'
 import { FormattedMenu, linkTo, nestedMenu, enter, leave } from './side-menu'
 import Lucide from '../../components/common/lucide'
 import SideMenuTooltip from '../../components/SideMenuTooltip'
-import brandLogo from '../../assets/images/gcec-cloud-logo.png'
+import brandLogo from '../../assets/images/gcec-cloud-mark.png'
 
 function Main() {
   const location = useLocation()
@@ -43,18 +43,19 @@ function Main() {
         <nav className="hidden w-[85px] overflow-x-hidden pb-16 pr-5 md:block xl:w-[230px]">
           <Link
             to="/"
-            className="intro-x flex items-center pl-5 pt-4"
+            aria-label="GCEC Cloud"
+            className="intro-x flex items-center gap-2.5 pb-1 pl-5 pt-5"
           >
             <img
-              alt="GCEC Cloud"
-              className="h-12 w-12 rounded-lg object-cover shadow-md ring-1 ring-primary"
+              alt=""
+              className="h-10 w-10 shrink-0 object-contain"
               src={brandLogo}
             />
-            <span className="ml-3 hidden text-lg font-semibold text-primary xl:block">
+            <span className="hidden text-lg font-semibold leading-none tracking-tight text-primary xl:block">
               GCEC Cloud
             </span>
           </Link>
-          <Devider type="div" className="my-6" />
+          <div className="mx-5 mb-5 mt-4 h-px bg-white/15" />
           <ul>
             {/* BEGIN: First Child */}
             {formattedMenu.map((menu, menuKey) =>
@@ -141,7 +142,7 @@ function Main() {
         </nav>
         {/* END: Side Menu */}
         {/* BEGIN: Content */}
-        <div className="rounded-[30px] min-w-0 min-h-screen flex-1 pb-10 bg-slate-100 dark:bg-darkmode-700 px-4 md:px-[22px] max-w-full md:max-w-auto before:content-[''] before:w-full before:h-px before:block">
+        <div className="min-w-0 min-h-screen flex-1 rounded-bl-[30px] rounded-br-[30px] rounded-tr-[30px] pb-10 bg-slate-100 dark:bg-darkmode-700 px-4 md:px-[22px] max-w-full md:max-w-auto before:content-[''] before:w-full before:h-px before:block">
           <TopBar />
           <Outlet />
         </div>
