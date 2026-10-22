@@ -1,7 +1,7 @@
 html {
   scroll-behavior: smooth;
-  /* TipApp shell — navy/charcoal dominant, subtle brand red tip (not full red) */
-  background: linear-gradient(156deg, #1a2744 0%, #121a2a 55%, #0d1118 100%);
+  /* GCEC Cloud shell — black with a gold edge */
+  background: linear-gradient(156deg, #000000 0%, #0a0a0a 60%, #1a1400 100%);
   &.dark {
     background-color: theme('colors.darkmode.800');
     body {

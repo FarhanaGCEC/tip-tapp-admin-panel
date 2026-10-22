@@ -1,294 +1,184 @@
-import React, { useEffect, useRef, useState } from 'react'
-import * as echarts from 'echarts'
-import { GetAgeByRole } from '../../../api/dashboard/dashboard'
-import NoDataFound from '../../../assets/images/NoDataFound.png'
-import Tippy from '../../common/tippy'
+import { useMemo, useState } from 'react'
+import {
+  AgeBandKey,
+  getDriverAgeStats,
+} from '../../../data/fleet-dummy'
+import { useCompanyStore } from '../../../stores/companyStore'
 
-interface AgeGroupData {
-  '18-30': number
-  '31-50': number
-  '51+': number
-  'Below 18': number
-}
+const BANDS: {
+  key: AgeBandKey
+  label: string
+  hint: string
+  color: string
+  tint: string
+}[] = [
+  {
+    key: '18-30',
+    label: '18–30 years',
+    hint: 'Young drivers',
+    color: '#F0C014',
+    tint: '#FFF8DC',
+  },
+  {
+    key: '31-50',
+    label: '31–50 years',
+    hint: 'Core of the fleet',
+    color: '#111111',
+    tint: '#F4F4F5',
+  },
+  {
+    key: '51+',
+    label: '51+ years',
+    hint: 'Experienced',
+    color: '#C99600',
+    tint: '#FFF8DC',
+  },
+  {
+    key: 'Below 18',
+    label: 'Below 18',
+    hint: 'Not eligible to drive',
+    color: '#3F3F46',
+    tint: '#F8FAFC',
+  },
+]
 
-interface AgeDistributionData {
-  tp: AgeGroupData
-  sp: AgeGroupData
-  both: AgeGroupData
+function donutBackground(
+  slices: { key: AgeBandKey; color: string; count: number }[],
+  total: number,
+  active: AgeBandKey | null
+) {
+  if (!total) return 'conic-gradient(#E2E8F0 0deg 360deg)'
+  const gap = 4
+  const visible = slices.filter((slice) => slice.count > 0)
+  let angle = 0
+  const parts: string[] = []
+  const sweepBudget = 360 - gap * visible.length
+  visible.forEach((slice) => {
+    const sweep = (slice.count / total) * sweepBudget
+    const dimmed = active !== null && slice.key !== active
+    const color = dimmed ? '#E2E8F0' : slice.color
+    parts.push(`transparent ${angle}deg ${angle + gap}deg`)
+    angle += gap
+    parts.push(`${color} ${angle}deg ${angle + sweep}deg`)
+    angle += sweep
+  })
+  return `conic-gradient(${parts.join(', ')})`
 }
 
 function AgeDistributionChart() {
-  const { data: ageDistribution, isLoading, error } = GetAgeByRole()
-  const chartRef = useRef<HTMLDivElement>(null)
-  const [selectedUserType, setSelectedUserType] = useState('both')
-  const [isChartReady, setIsChartReady] = useState(false)
+  const company = useCompanyStore((state) => state.company)
+  const [active, setActive] = useState<AgeBandKey | null>(null)
+  const stats = useMemo(() => getDriverAgeStats(company), [company])
+  const { counts, total, average, youngest, oldest } = stats
 
-  // Set chart ready state when component mounts
-  useEffect(() => {
-    setIsChartReady(true)
-  }, [])
-
-  const calculateTotalAndPercentages = (data: { [x: string]: any }) => {
-    if (!data)
-      return {
-        total: 0,
-        percentages: { '18-30': 0, '31-50': 0, '51+': 0, 'Below 18': 0 },
-      }
-
-    const total =
-      data['18-30'] + data['31-50'] + data['51+'] + data['Below 18'] || 0
-    const percentages = {
-      '18-30': ((data['18-30'] || 0) / total) * 100 || 0,
-      '31-50': ((data['31-50'] || 0) / total) * 100 || 0,
-      '51+': ((data['51+'] || 0) / total) * 100 || 0,
-      'Below 18': ((data['Below 18'] || 0) / total) * 100 || 0,
-    }
-    return { total, percentages }
-  }
-
-  useEffect(() => {
-    let myChart: echarts.ECharts
-
-    if (!isLoading && ageDistribution && chartRef.current && isChartReady) {
-      const chartDom = chartRef.current
-
-      // Validate DOM element before initialization
-      if (!chartDom || !chartDom.offsetParent) {
-        console.warn('Chart DOM element is not ready for initialization')
-        return
-      }
-
-      try {
-        myChart = echarts.init(chartDom)
-      } catch (error) {
-        console.error('Failed to initialize chart:', error)
-        return
-      }
-
-      let data: AgeGroupData = {
-        '18-30': 0,
-        '31-50': 0,
-        '51+': 0,
-        'Below 18': 0,
-      }
-
-      if (selectedUserType === 'both') {
-        data = ageDistribution?.both || data
-      } else if (selectedUserType === 'sp') {
-        data = ageDistribution?.sp || data
-      } else if (selectedUserType === 'tp') {
-        data = ageDistribution?.tp || data
-      }
-
-      const option = {
-        tooltip: {
-          trigger: 'item',
-        },
-        legend: {
-          show: false,
-        },
-        series: [
-          {
-            name: 'Age Distribution',
-            type: 'pie',
-            radius: ['80%', '60%'],
-            avoidLabelOverlap: false,
-            itemStyle: {
-              borderColor: 'transparent',
-              borderWidth: 10,
-            },
-            label: {
-              show: false,
-              position: 'outside',
-            },
-            labelLine: {
-              show: false,
-            },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: 14,
-                position: 'outside',
-                fontWeight: 'bold',
-              },
-            },
-            color: ['#7a5195', '#6B7280', '#f59e0b', '#003f5c'],
-            data: [
-              { value: data['18-30'] || 0, name: '18-30' },
-              { value: data['31-50'] || 0, name: '31-50' },
-              { value: data['51+'] || 0, name: '51+' },
-              { value: data['Below 18'] || 0, name: 'Below 18' },
-            ],
-          },
-        ],
-        graphic: {
-          type: 'text',
-          left: 'center',
-          top: 'center',
-          style: {
-            text: `${
-              data['18-30'] + data['31-50'] + data['51+'] + data['Below 18']
-            } Users`,
-            textAlign: 'center',
-            fontSize: 24,
-            fontWeight: 'lighter',
-            fill: '#787878',
-          },
-        },
-      }
-
-      myChart.setOption(option)
-
-      const handleResize = () => {
-        if (myChart) {
-          myChart.resize()
-        }
-      }
-
-      window.addEventListener('resize', handleResize)
-
-      return () => {
-        if (myChart) {
-          myChart.dispose()
-        }
-        window.removeEventListener('resize', handleResize)
-      }
-    }
-
-    // Cleanup function for when component unmounts
-    return () => {
-      if (myChart) {
-        myChart.dispose()
-      }
-    }
-  }, [ageDistribution, isLoading, selectedUserType, isChartReady])
-  if (
-    !ageDistribution ||
-    Object.values(ageDistribution as AgeDistributionData).every(
-      (group) =>
-        typeof group === 'object' &&
-        group !== null &&
-        Object.values(group).every(
-          (value) => typeof value === 'number' && value <= 0
-        )
-    )
-  ) {
-    return (
-      <div>
-        <h2 className="mr-5 mt-[28px] text-[19px] text-lg font-medium text-[#2D3748]">
-          Users Age Range
-        </h2>
-        <div className="mt-[15px] flex w-full flex-col items-center justify-center rounded-xl bg-white px-4 shadow-md">
-          <img
-            src={NoDataFound}
-            alt="No data found"
-            className="max-h-[500px] min-h-[500px] w-fit object-cover"
-          />
-          <span className="mb-12 text-center">No Data Found...</span>
-        </div>
-      </div>
-    )
-  }
-
-  const selectedData =
-    selectedUserType === 'both'
-      ? ageDistribution?.both
-      : selectedUserType === 'sp'
-      ? ageDistribution?.sp
-      : ageDistribution?.tp
-
-  const { total, percentages } = calculateTotalAndPercentages(selectedData)
+  const slices = BANDS.map((band) => ({
+    key: band.key,
+    color: band.color,
+    count: counts[band.key],
+  }))
 
   return (
     <div>
-      <h2 className="mr-5 mt-[28px] text-[19px] text-lg font-medium text-[#2D3748]">
-        Users Age Range
-      </h2>
+      <div className="mr-5 mt-[28px]">
+        <h2 className="text-[19px] text-lg font-medium text-[#2D3748]">
+          {company} driver ages
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Calculated from each driver&apos;s date of birth
+        </p>
+      </div>
 
-      <div className="mt-[19px] flex w-full flex-col items-center rounded-xl bg-white py-4">
-        <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
-          <Tippy content="Users who can give tips to service providers">
-            <button
-              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-                selectedUserType === 'tp'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 text-black'
-              }`}
-              onClick={() => setSelectedUserType('tp')}
-            >
-              Tipper
-            </button>
-          </Tippy>
-          <Tippy content="Users who can receive tips from tippers">
-            <button
-              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-                selectedUserType === 'sp'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 text-black'
-              }`}
-              onClick={() => setSelectedUserType('sp')}
-            >
-              <span className="hidden 2xl:block">Service Provider</span>
-              <span className="block 2xl:hidden">SP</span>
-            </button>
-          </Tippy>
-          <Tippy content="Users who can both give and receive tips (dual role)">
-            <button
-              className={`max-h-[30px] min-h-[30px] cursor-pointer rounded-md border-none px-2 py-1 ${
-                selectedUserType === 'both'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 text-black'
-              }`}
-              onClick={() => setSelectedUserType('both')}
-            >
-              Dual Role
-            </button>
-          </Tippy>
-        </div>
-
-        <div ref={chartRef} className="w-full" style={{ height: '410px' }}>
-          {isLoading && (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-gray-500">Loading chart...</div>
+      <div className="mt-[19px] rounded-xl bg-white px-5 py-6 sm:px-8">
+        <div className="grid items-center gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <div className="relative mx-auto h-[220px] w-[220px]">
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: donutBackground(slices, total, active),
+                transform: 'rotate(-90deg)',
+                WebkitMask:
+                  'radial-gradient(farthest-side, transparent 66%, #000 67%)',
+                mask: 'radial-gradient(farthest-side, transparent 66%, #000 67%)',
+              }}
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-[40px] font-semibold leading-none tracking-tight text-brand-navy">
+                {total}
+              </span>
+              <span className="mt-1 text-sm text-slate-500">Drivers</span>
             </div>
-          )}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {BANDS.map((band) => {
+              const count = counts[band.key]
+              const percent = total ? Math.round((count / total) * 100) : 0
+              const isActive = active === band.key
+              return (
+                <button
+                  key={band.key}
+                  type="button"
+                  onMouseEnter={() => setActive(band.key)}
+                  onMouseLeave={() => setActive(null)}
+                  onFocus={() => setActive(band.key)}
+                  onBlur={() => setActive(null)}
+                  className="rounded-xl px-3 py-2.5 text-left transition"
+                  style={{
+                    background: isActive ? band.tint : 'transparent',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: band.color }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="text-sm font-medium text-slate-800">
+                          {band.label}
+                          <span className="ml-2 font-normal text-slate-400">
+                            {band.hint}
+                          </span>
+                        </p>
+                        <p className="shrink-0 tabular-nums text-sm text-slate-600">
+                          <span className="font-semibold text-slate-900">
+                            {count}
+                          </span>
+                          <span className="ml-2 text-slate-400">{percent}%</span>
+                        </p>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${percent}%`,
+                            backgroundColor: band.color,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
-        <div className="flex flex-col items-start">
-          <div className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: '#7a5195' }}
-            ></div>
-            <span>18-30 Years old</span>
-            <span>{percentages['18-30'].toFixed(0)}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: '#6B7280' }}
-            ></div>
-            <span>31-50 Years old</span>
-            <span>{percentages['31-50'].toFixed(0)}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: '#f59e0b' }}
-            ></div>
-            <span>51+ Years old</span>
-            <span>{percentages['51+'].toFixed(0)}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: '#003f5c' }}
-            ></div>
-            <span>Below 18</span>
-            <span>{percentages['Below 18'].toFixed(0)}%</span>
-          </div>
+        <div className="mt-6 grid gap-3 border-t border-slate-100 pt-5 sm:grid-cols-3">
+          <Stat label="Average age" value={`${average} yrs`} />
+          <Stat label="Youngest driver" value={`${youngest} yrs`} />
+          <Stat label="Oldest driver" value={`${oldest} yrs`} />
         </div>
       </div>
+    </div>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-slate-50 px-4 py-3">
+      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-brand-navy">{value}</p>
     </div>
   )
 }

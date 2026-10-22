@@ -3,11 +3,11 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { useNavigate } from 'react-router-dom'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form'
-import brandLogo from '../../assets/images/tipapp-brand-logo.png'
+import brandLogo from '../../assets/images/gcec-cloud-logo.png'
 import Button from '../../components/common/button'
 import {
   FormCheck,
@@ -17,9 +17,14 @@ import Lucide from '../../components/common/lucide'
 import Toast from '../../utils/notification'
 import SharedDataContainer from '../../containers/sharedData'
 import { Icons, NotificationTypes } from '../../constants'
-import { useLogin } from '../../api/auth-management'
 import { useAppDispatch } from '../../stores/hooks'
 import { rebuildSideMenu } from '../../stores/sideMenuSlice'
+import {
+  DEMO_EMAIL,
+  DEMO_PASSWORD,
+  matchesDemoLogin,
+  saveOfflineSession,
+} from '../../utils/offlineSession'
 
 const inputClassName = clsx(
   'login__input block w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[15px] text-brand-navy shadow-none',
@@ -65,46 +70,24 @@ function Main() {
     setIsLoading(false)
   }
 
-  const { mutate, data, isSuccess, isError } = useLogin()
-
-  async function login() {
+  function login() {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailPattern.test(email)) {
       setEmailError('Please enter a valid email address')
       return
-    } else {
-      setEmailError('')
+    }
+    setEmailError('')
+
+    if (!matchesDemoLogin(email, password)) {
+      errorHandler('Please Check Your Login Credentials.')
+      return
     }
 
     setIsLoading(true)
-    mutate({ email, password })
+    saveOfflineSession()
+    dispatch(rebuildSideMenu())
+    sucessHandlerLogin(email, 'Successfully Login')
   }
-
-  useEffect(() => {
-    if (isSuccess && data) {
-      const userRole = data?.user?.Role?.toLowerCase()
-      if (userRole !== 'staff') {
-        errorHandler(
-          'Access denied. You are not authorized to access this system.'
-        )
-        localStorage.removeItem('jwtToken')
-        localStorage.removeItem('validationToken')
-        localStorage.removeItem('user')
-        return
-      }
-
-      localStorage.setItem('jwtToken', data?.access_token)
-      localStorage.setItem('validationToken', data?.validation_token)
-      localStorage.setItem('user', JSON.stringify(data?.user))
-      // Menu was built at app start before login — rebuild with fresh permissions
-      dispatch(rebuildSideMenu())
-
-      sucessHandlerLogin(email, 'Successfully Login')
-    }
-    if (isError) {
-      errorHandler('Please Check Your Login Credentials.')
-    }
-  }, [isSuccess, isError, data, dispatch, email])
 
   const UserLogin = async () => {
     setIsLoading(true)
@@ -126,8 +109,8 @@ function Main() {
         .login__input:-webkit-autofill:hover,
         .login__input:-webkit-autofill:focus {
           -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
-          -webkit-text-fill-color: #1A2744 !important;
-          caret-color: #1A2744;
+          -webkit-text-fill-color: #0A0A0A !important;
+          caret-color: #0A0A0A;
           transition: background-color 9999s ease-in-out 0s;
         }
       `}</style>
@@ -135,7 +118,7 @@ function Main() {
       
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_20%,rgba(158,42,43,0.06),transparent_45%),radial-gradient(ellipse_at_90%_80%,rgba(26,39,68,0.05),transparent_40%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_20%,rgba(240,192,20,0.14),transparent_45%),radial-gradient(ellipse_at_90%_80%,rgba(0,0,0,0.06),transparent_40%)]"
       />
 
       {/* Brand curved panel — navy dominant */}
@@ -153,8 +136,8 @@ function Main() {
           <div className="hidden min-h-screen flex-col items-center justify-center xl:flex">
             <div className="-translate-x-8 -translate-y-4 transform">
               <img
-                alt="TipApp — the tipping app"
-                className="h-auto w-[280px] drop-shadow-2xl xl:w-[320px]"
+                alt="GCEC Cloud"
+                className="h-auto w-[220px] drop-shadow-2xl xl:w-[260px]"
                 src={brandLogo}
               />
             </div>
@@ -165,24 +148,27 @@ function Main() {
             <div className="w-full max-w-[420px]">
               <div className="mb-8 flex justify-center xl:hidden">
                 <img
-                  alt="TipApp"
+                  alt="GCEC Cloud"
                   className="h-auto w-28 rounded-2xl shadow-lg sm:w-32"
                   src={brandLogo}
                 />
               </div>
 
               <form
-                className="rounded-2xl border border-slate-200/80 bg-white px-6 py-8 shadow-[0_12px_40px_rgba(26,39,68,0.06)] sm:px-8 sm:py-9"
+                className="rounded-2xl border border-slate-200/80 bg-white px-6 py-8 shadow-[0_12px_40px_rgba(0,0,0,0.08)] sm:px-8 sm:py-9"
                 onSubmit={handleSubmit(onSubmit)}
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                  TipTapp Admin
+                  GCEC Cloud
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-tight text-brand-navy sm:text-[28px]">
                   Welcome back
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                  Sign in to manage tips, users, and payouts.
+                  Sign in to track cars, drivers, and rentals on Uber, Yango, and Bolt.
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                  Local sign-in: {DEMO_EMAIL} / {DEMO_PASSWORD}
                 </p>
 
                 <div className="mt-8 space-y-5">
@@ -269,7 +255,7 @@ function Main() {
               </form>
 
               <p className="mt-6 text-center text-xs text-slate-400 sm:text-sm">
-                TIPAPP © {new Date().getFullYear()} All rights reserved.
+                GCEC Cloud © {new Date().getFullYear()} All rights reserved.
               </p>
             </div>
           </div>

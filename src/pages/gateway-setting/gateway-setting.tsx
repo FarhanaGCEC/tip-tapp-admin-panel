@@ -187,8 +187,8 @@ const GatewaySettingPage = () => {
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 Only one Stripe or PayPal gateway can be active for payments.
-                Activating any gateway here deactivates all others except tip
-                platform settings (managed under Tip Settings).
+                Activating any gateway here deactivates all others except fleet
+                payout settings (managed under Fleet Settings).
               </p>
             </div>
             {activePaymentGateway ? (

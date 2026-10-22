@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 import SharedDataContainer from '../containers/sharedData'
 import Toast from '../utils/notification'
+import { OFFLINE_DEMO } from '../utils/offlineSession'
 
 interface Notification {
   message: string
@@ -24,7 +25,7 @@ const SocketClient: React.FC<SocketClientProps> = ({ email, role }) => {
 
   useEffect(() => {
     const socketUrl = import.meta.env.VITE_SOCKET_API
-    if (!socketUrl || !email) {
+    if (OFFLINE_DEMO || !socketUrl || !email) {
       return undefined
     }
 

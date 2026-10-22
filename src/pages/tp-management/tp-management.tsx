@@ -28,6 +28,9 @@ import NoDataFound from '../../assets/images/NoDataFound.png'
 import { downloadUsersExcel } from '../../utils/exportUsersExcel'
 import Toast from '../../utils/notification'
 import { Icons, NotificationTypes } from '../../constants'
+import { useCountryStore } from '../../stores/countryStore'
+import CountryEmptyState from '../../components/common/country-empty-state'
+import RoleUsersTabs from '../../components/country/role-users-tabs'
 
 interface FormContent {
   title: string
@@ -45,6 +48,8 @@ const TpManagementPage = () => {
   const [temparayStore, settemparayStore] = useState('')
   const [activeordeactive, setactiveordeactive] = useState<string>('')
   const [isExporting, setIsExporting] = useState(false)
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
   const { data, isSuccess, isLoading, isError, error } = GetTpAndSpDetails(
     query,
     'tp',
@@ -203,17 +208,29 @@ const TpManagementPage = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [query, temparayStore, takedates])
+  }, [query, temparayStore, takedates, countryCode])
 
   const totalPages = data?.data?.meta?.totalPages ?? 0
 
+  if (!countryCode) {
+    return (
+      <div className="col-span-12 mt-6">
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="Tippers are listed only after you pick a country. This screen does not fall back to every country."
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="col-span-12 mt-6 ">
-      <div className="intro-y mb-8 block h-10 items-center sm:flex">
+      <div className="intro-y mb-4 block h-10 items-center sm:flex">
         <h2 className=" truncate text-[19px] text-lg font-medium text-[#2D3748]">
           Tipper Management
         </h2>
       </div>
+      <RoleUsersTabs active="tp" />
 
       <div className="mb-8 mt-3 flex items-center justify-between sm:ml-auto sm:mt-0">
         <div className="relative flex sm:mt-0 sm:w-auto">

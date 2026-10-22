@@ -1,20 +1,24 @@
 import date from 'date-and-time'
 import Table from '../common/table'
 import { WithdrawalItem } from '../../types/tips'
-import { useCurrencyStore } from '../../stores/currencyStore'
-import { formatMoney } from '../../utils/formatMoney'
+import { formatDisplayAmount } from '../../utils/formatMoney'
 
 interface WithdrawalTableProps {
   headers: { key: number; label: string }[]
   withdrawalItems: WithdrawalItem[]
 }
 
+function formatWithdrawDate(value?: string): string {
+  if (!value) return '—'
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return '—'
+  return date.format(parsed, 'DD MMM YYYY')
+}
+
 const WithdrawalTable: React.FC<WithdrawalTableProps> = ({
   headers,
   withdrawalItems,
 }) => {
-  const currency = useCurrencyStore((state) => state.currency)
-
   return (
     <Table cards>
       <Table.Thead variant="default">
@@ -41,11 +45,11 @@ const WithdrawalTable: React.FC<WithdrawalTableProps> = ({
               #{item.WithdrawId || 0}
             </Table.Td>
             <Table.Td className="whitespace-nowrap text-end">
-              {date.format(new Date(item.DateCreate), 'DD MMM YYYY')}
+              {formatWithdrawDate(item.DateCreate)}
             </Table.Td>
             <Table.Td>{item.serviceProviderName || 'N/A'}</Table.Td>
             <Table.Td className="text-end font-semibold">
-              {formatMoney(item, currency)}
+              {formatDisplayAmount(item.amounts ?? item)}
             </Table.Td>
           </Table.Tr>
         ))}

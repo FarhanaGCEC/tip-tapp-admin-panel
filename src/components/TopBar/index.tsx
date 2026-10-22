@@ -26,7 +26,7 @@ import {
   useMarkNotificationAsRead,
 } from '../../api/notification'
 import NoDataFound from '../../assets/images/NoDataFound.png'
-import CurrencyToggle from '../common/currency-toggle'
+import CountrySelector from '../common/country-selector'
 
 // function getCurrentDate() {
 //   const currentDate = new Date()
@@ -38,12 +38,14 @@ import CurrencyToggle from '../common/currency-toggle'
 
 // Define the breadcrumb map with specific types
 const breadcrumbMap: { [key: string]: string } = {
-  '/tip-setting': 'Tip Settings',
+  '/tip-setting': 'Fleet Settings',
   '/manage-users': 'Admin User Management',
   '/manage-user-roles': 'Admin Role Management',
-  '/manage-tippers': 'Tipper Management',
-  '/manage-service-providers': 'Service Provider Management',
-  '/manage-finances': 'Tip Management',
+  '/manage-tippers': 'Drivers',
+  '/manage-service-providers': 'Cars',
+  '/manage-dual-role': 'Multi-Platform Drivers',
+  '/manage-finances': 'Rentals',
+  '/accounts': 'Platform Accounts',
   '/manage-reviews': 'Review Management',
   '/gateway-setting': 'Gateway Settings',
   '/footer-management': 'Footer Management',
@@ -124,7 +126,7 @@ function Main() {
         {/* BEGIN: Breadcrumb */}
         <Breadcrumb className="-intro-x mr-auto hidden sm:flex">
           <Breadcrumb.Link to="/" className="text-brand-navy">
-            TipApp
+            GCEC Cloud
           </Breadcrumb.Link>
           <Breadcrumb.Link to={pathname} active>
             {breadcrumbLabel}
@@ -186,7 +188,7 @@ function Main() {
             </Button> */}
 
         <div className="intro-x relative mr-3">
-          <CurrencyToggle />
+          <CountrySelector />
         </div>
         <div className="flex items-center justify-end space-x-2">
           <Popover className="intro-x mr-4 sm:mr-2">

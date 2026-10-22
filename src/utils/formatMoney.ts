@@ -1,5 +1,14 @@
 import { AmountLike, Currency, DualAmount } from '../types/currency'
 
+export const CURRENCY_SYMBOL: Record<Currency, string> = {
+  GBP: '£',
+  AED: 'AED ',
+  USD: '$',
+  EUR: '€',
+}
+
+const CURRENCY_KEYS: Currency[] = ['GBP', 'AED', 'USD', 'EUR']
+
 function isAmountShape(value: unknown): value is AmountLike {
   if (!value || typeof value !== 'object') return false
   const obj = value as Record<string, unknown>
@@ -7,34 +16,35 @@ function isAmountShape(value: unknown): value is AmountLike {
     'amounts' in obj ||
     'amount' in obj ||
     'amountAED' in obj ||
+    'amountUSD' in obj ||
+    'amountEUR' in obj ||
     'Amount' in obj ||
     'totalTipAmount' in obj
   )
 }
 
-/** Reads `{ GBP, AED }` from flat or nested `toAmountResponse` shapes. */
+function readCurrencyMap(source: Record<string, unknown>): DualAmount | undefined {
+  const hasCurrency = CURRENCY_KEYS.some((code) => code in source)
+  if (!hasCurrency) return undefined
+  return {
+    GBP: Number(source.GBP) || 0,
+    AED: Number(source.AED) || 0,
+    USD: Number(source.USD) || 0,
+    EUR: Number(source.EUR) || 0,
+  }
+}
+
+/** Reads currency totals from flat or nested `toAmountResponse` shapes. */
 export function extractDualAmount(source: unknown): DualAmount | undefined {
   if (!source || typeof source !== 'object') return undefined
   const obj = source as Record<string, unknown>
 
   if (obj.amounts && typeof obj.amounts === 'object') {
-    const nested = obj.amounts as Record<string, unknown>
-    if ('GBP' in nested || 'AED' in nested) {
-      return {
-        GBP: Number(nested.GBP) || 0,
-        AED: Number(nested.AED) || 0,
-      }
-    }
+    const nested = readCurrencyMap(obj.amounts as Record<string, unknown>)
+    if (nested) return nested
   }
 
-  if ('GBP' in obj || 'AED' in obj) {
-    return {
-      GBP: Number(obj.GBP) || 0,
-      AED: Number(obj.AED) || 0,
-    }
-  }
-
-  return undefined
+  return readCurrencyMap(obj)
 }
 
 /** Unwraps `{ data: ... }` API envelopes and legacy string balances. */
@@ -93,21 +103,84 @@ export function getAmountValue(
     return Number(normalized.totalTipAmount)
   }
 
-  const fallback =
-    selected === 'GBP' ? normalized.amount : normalized.amountAED
-  if (fallback == null || Number.isNaN(Number(fallback))) return undefined
-  return Number(fallback)
+  const named =
+    selected === 'GBP'
+      ? normalized.amount
+      : selected === 'AED'
+        ? normalized.amountAED
+        : selected === 'USD'
+          ? (normalized as { amountUSD?: number }).amountUSD
+          : (normalized as { amountEUR?: number }).amountEUR
+  if (named == null || Number.isNaN(Number(named))) return undefined
+  return Number(named)
+}
+
+export function formatPlainMoney(value: number, selected: Currency): string {
+  return `${CURRENCY_SYMBOL[selected]}${value.toFixed(2)}`
+}
+
+const EXTRA_CURRENCY_SYMBOL: Record<string, string> = {
+  LKR: 'Rs ',
+}
+
+export function formatAmountWithCurrency(value: number, currency: string): string {
+  if (!Number.isFinite(value)) return '—'
+  const known = CURRENCY_SYMBOL[currency as Currency] ?? EXTRA_CURRENCY_SYMBOL[currency]
+  const prefix = known ?? (currency ? `${currency} ` : '')
+  return `${prefix}${value.toFixed(2)}`
+}
+
+function readDirectDisplay(
+  source: object
+): { amount: number; currency: string } | undefined {
+  const obj = source as Record<string, unknown>
+  if (obj.displayAmount == null || typeof obj.currency !== 'string' || !obj.currency) {
+    return undefined
+  }
+  const amount = Number(obj.displayAmount)
+  if (Number.isNaN(amount)) return undefined
+  return { amount, currency: obj.currency }
+}
+
+/** Country dashboards display `displayAmount` in that object's currency. */
+export function readDisplayMoney(
+  source: unknown
+): { amount: number; currency: string } | undefined {
+  if (!source || typeof source !== 'object') return undefined
+  const obj = source as Record<string, unknown>
+
+  if (obj.amounts && typeof obj.amounts === 'object') {
+    const nested = readDirectDisplay(obj.amounts)
+    if (nested) return nested
+  }
+
+  const direct = readDirectDisplay(obj)
+  if (direct) return direct
+
+  if (obj.amount && typeof obj.amount === 'object') {
+    return readDirectDisplay(obj.amount)
+  }
+
+  return undefined
+}
+
+export function formatDisplayAmount(source: unknown): string {
+  const money = readDisplayMoney(source)
+  if (!money) return '—'
+  return formatAmountWithCurrency(money.amount, money.currency)
 }
 
 export function formatMoney(
   data: AmountLike | unknown,
   selected: Currency
 ): string {
+  const display = readDisplayMoney(data)
+  if (display) {
+    return formatAmountWithCurrency(display.amount, display.currency)
+  }
   const value = getAmountValue(data, selected)
   if (value == null) return '—'
-  return selected === 'GBP'
-    ? `£${value.toFixed(2)}`
-    : `AED ${value.toFixed(2)}`
+  return formatPlainMoney(value, selected)
 }
 
 export function getDualAmountValue(

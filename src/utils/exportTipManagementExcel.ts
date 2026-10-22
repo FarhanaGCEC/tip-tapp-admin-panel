@@ -1,68 +1,118 @@
 import * as XLSX from 'xlsx'
 import { TipItem, WithdrawalItem } from '../types/tips'
-import { extractDualAmount } from './formatMoney'
+import { formatCountryName } from './countryLabels'
+import { readDisplayMoney } from './formatMoney'
 
 function formatCellDate(value?: string | null): string {
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString('en-GB')
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
 }
 
-function excelAmounts(source: unknown): { GBP: number; AED: number } {
-  const dual = extractDualAmount(source)
-  if (dual) return dual
-
-  if (source && typeof source === 'object') {
-    const obj = source as Record<string, unknown>
-    const gbp = Number(obj.amount ?? obj.Amount ?? 0) || 0
-    const aed = Number(obj.amountAED ?? 0) || 0
-    return { GBP: gbp, AED: aed }
-  }
-
-  return { GBP: 0, AED: 0 }
+function excelDisplay(source: unknown): { amount: string | number; currency: string } {
+  const money = readDisplayMoney(source)
+  if (!money) return { amount: '', currency: '' }
+  return { amount: money.amount.toFixed(2), currency: money.currency }
 }
+
+function excelCountry(value?: string | null): string {
+  const name = formatCountryName(value)
+  return name === '—' ? '' : name
+}
+
+type TipExcelItem = TipItem & { direction?: 'sent' | 'received' }
 
 /** Downloads tips list as Excel. */
 export function downloadTipsExcel(
-  items: TipItem[],
-  filename = 'tipapp-tips'
+  items: TipExcelItem[],
+  filename = 'tipapp-tips',
+  fallbackCountry?: string | null,
+  options?: { includeDirection?: boolean }
 ): void {
+  const includeDirection = Boolean(options?.includeDirection)
   const rows = items.map((item) => {
-    const amounts = excelAmounts(item)
-    return {
-      'Tip ID': item.TipId ?? '',
-      Date: formatCellDate(item.createdAt),
+    const display = excelDisplay(item.amounts ?? item)
+    const base = {
+      '#': item.TipId ?? '',
+      'Date & Time': formatCellDate(item.createdAt),
       Tipper: item.tipperName || '',
+      'Tipper Country': excelCountry(item.tipperCountry || fallbackCountry),
       'Service Provider': item.serviceProviderName || '',
-      'Amount (GBP)': amounts.GBP,
-      'Amount (AED)': amounts.AED,
+      'Service Provider Country': excelCountry(
+        item.serviceProviderCountry || fallbackCountry
+      ),
+      Amount: display.amount,
+      Currency: display.currency,
+    }
+    if (!includeDirection) return base
+    return {
+      '#': base['#'],
+      Type: item.direction === 'received' ? 'Received' : 'Sent',
+      'Date & Time': base['Date & Time'],
+      Tipper: base.Tipper,
+      'Tipper Country': base['Tipper Country'],
+      'Service Provider': base['Service Provider'],
+      'Service Provider Country': base['Service Provider Country'],
+      Amount: base.Amount,
+      Currency: base.Currency,
     }
   })
 
-  const worksheet = XLSX.utils.json_to_sheet(
-    rows.length
-      ? rows
-      : [
-          {
-            'Tip ID': '',
-            Date: '',
-            Tipper: '',
-            'Service Provider': '',
-            'Amount (GBP)': '',
-            'Amount (AED)': '',
-          },
-        ]
-  )
+  const emptyRow = includeDirection
+    ? {
+        '#': '',
+        Type: '',
+        'Date & Time': '',
+        Tipper: '',
+        'Tipper Country': '',
+        'Service Provider': '',
+        'Service Provider Country': '',
+        Amount: '',
+        Currency: '',
+      }
+    : {
+        '#': '',
+        'Date & Time': '',
+        Tipper: '',
+        'Tipper Country': '',
+        'Service Provider': '',
+        'Service Provider Country': '',
+        Amount: '',
+        Currency: '',
+      }
 
-  worksheet['!cols'] = [
-    { wch: 10 },
-    { wch: 14 },
-    { wch: 22 },
-    { wch: 22 },
-    { wch: 14 },
-    { wch: 14 },
-  ]
+  const worksheet = XLSX.utils.json_to_sheet(rows.length ? rows : [emptyRow])
+
+  worksheet['!cols'] = includeDirection
+    ? [
+        { wch: 8 },
+        { wch: 10 },
+        { wch: 20 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 24 },
+        { wch: 10 },
+        { wch: 10 },
+      ]
+    : [
+        { wch: 8 },
+        { wch: 20 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 24 },
+        { wch: 10 },
+        { wch: 10 },
+      ]
 
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Tips')
@@ -76,14 +126,14 @@ export function downloadWithdrawalsExcel(
   filename = 'tipapp-withdrawals'
 ): void {
   const rows = items.map((item) => {
-    const amounts = excelAmounts(item)
+    const display = excelDisplay(item.amounts ?? item)
     return {
       'Withdraw ID': item.WithdrawId ?? '',
       Date: formatCellDate(item.DateCreate),
       'Service Provider': item.serviceProviderName || '',
       Method: item.Method || '',
-      'Amount (GBP)': amounts.GBP,
-      'Amount (AED)': amounts.AED,
+      Amount: display.amount,
+      Currency: display.currency,
     }
   })
 
@@ -96,8 +146,8 @@ export function downloadWithdrawalsExcel(
             Date: '',
             'Service Provider': '',
             Method: '',
-            'Amount (GBP)': '',
-            'Amount (AED)': '',
+            Amount: '',
+            Currency: '',
           },
         ]
   )

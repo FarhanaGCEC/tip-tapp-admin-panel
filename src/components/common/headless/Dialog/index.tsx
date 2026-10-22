@@ -94,18 +94,18 @@ Dialog.Panel = function ({
       />
       <Transition.Child
         as="div"
-        enter="ease-in-out duration-500"
-        enterFrom="opacity-0 -mt-16"
-        enterTo="opacity-100 mt-16"
-        leave="ease-in-out duration-[400ms]"
-        leaveFrom="opacity-100 mt-16"
-        leaveTo="opacity-0 -mt-16"
-        className="fixed inset-0"
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+        className="fixed inset-0 flex items-center justify-center overflow-y-auto p-4"
       >
         <HeadlessDialog.Panel
           as={as}
           className={twMerge([
-            'relative mx-auto w-[90%] rounded-md bg-white shadow-md transition-transform dark:bg-darkmode-600',
+            'relative mx-auto my-auto w-[90%] rounded-md bg-white shadow-md transition-transform dark:bg-darkmode-600',
             dialog.size == 'md' && 'sm:w-[460px]',
             dialog.size == 'sm' && 'sm:w-[300px]',
             dialog.size == 'lg' && 'sm:w-[600px]',

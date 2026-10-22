@@ -1,90 +1,48 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react/no-array-index-key */
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GetTopTippersThisWeek } from '../../api/dashboard/dashboard'
 import Button from '../common/button'
-import { getProfilePictureUrl, DEFAULT_AVATAR } from '../../utils/profilePicture'
-import NoDataFound from '../../assets/images/NoDataFound.png'
-import { useCurrencyStore } from '../../stores/currencyStore'
-import { formatMoney } from '../../utils/formatMoney'
+import { DRIVERS, formatAed } from '../../data/fleet-dummy'
+import { useCompanyStore } from '../../stores/companyStore'
 
 function TopTippers() {
-  const topTippers = GetTopTippersThisWeek()
-  const currency = useCurrencyStore((state) => state.currency)
   const navigate = useNavigate()
-
-  useEffect(() => {}, [topTippers])
-
-  const handleViewAllClick = () => {
-    navigate('/manage-finances')
-  }
+  const company = useCompanyStore((state) => state.company)
+  const drivers = DRIVERS.filter((driver) => driver.platforms.includes(company))
+    .sort((a, b) => b.rentThisWeek - a.rentThisWeek)
+    .slice(0, 5)
 
   return (
     <div>
       <div className="col-span-12 mt-6">
         <div className="intro-y block h-10 items-center sm:flex">
           <h2 className="mb-[5px] mr-5 text-[19px] text-lg font-medium text-[#2D3748]">
-            Top Tippers This Week
+            Top Drivers This Week
           </h2>
         </div>
         <div className="h-full w-full">
-          {topTippers?.data && topTippers.data.length > 0 ? (
-            Array.from({ length: 5 }).map((_, index) => {
-              const tipper = topTippers.data[index]
-              return (
-                <div
-                  key={index}
-                  className="mt-[10px] flex h-[95px] w-full items-center justify-between rounded-xl bg-white px-4 shadow-md"
-                >
-                  {tipper ? (
-                    <div className="flex items-center">
-                      <img
-                        src={getProfilePictureUrl(tipper.profilePictureUrl)}
-                        alt={`${tipper.firstName} ${tipper.lastName}`}
-                        className="mr-3 h-[55px] w-[55px] rounded-[30px] object-cover"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null
-                          e.currentTarget.src = DEFAULT_AVATAR
-                        }}
-                      />
-                      <div>
-                        <p className="text-base font-semibold capitalize">{`${tipper.firstName} ${tipper.lastName}`}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatMoney(tipper, currency)}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center"></div>
-                  )}
-                  {tipper && (
-                    <div className="flex h-[29px] w-[78px] items-center justify-center rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white">
-                      {`${tipper.tipCount || 0} Tips`}
-                    </div>
-                  )}
-                </div>
-              )
-            })
-          ) : (
-            <div className="mt-[10px] flex w-full flex-col items-center  justify-center rounded-xl bg-white px-4  shadow-md">
-              <img
-                src={NoDataFound}
-                alt="No data found"
-                className="max-h-[500px] min-h-[500px] w-fit object-cover"
-              />
-              <span className="mb-12 text-center">No Data Found...</span>
-            </div>
-          )}
-
-          {topTippers?.data && topTippers.data.length > 0 && (
-            <Button
-              className="mt-[15px] h-[40px] w-full bg-primary hover:bg-brand-red-dark"
-              onClick={handleViewAllClick}
+          {drivers.map((driver) => (
+            <div
+              key={driver.id}
+              className="mt-[10px] flex h-[95px] w-full items-center justify-between rounded-xl bg-white px-4 shadow-md"
             >
-              <span className="text-white">View all</span>
-            </Button>
-          )}
+              <div>
+                <p className="text-base font-semibold">{driver.name}</p>
+                <p className="text-sm text-gray-500">
+                  {company} · {driver.city} · {formatAed(driver.rentThisWeek)}
+                </p>
+              </div>
+              <div className="flex h-[29px] items-center justify-center rounded-full bg-primary px-3 py-1 text-xs font-semibold text-slate-900">
+                {driver.tripsThisWeek} trips
+              </div>
+            </div>
+          ))}
+          <Button
+            className="mt-[15px] h-[40px] w-full bg-primary hover:bg-brand-red-dark"
+            onClick={() => navigate('/manage-tippers')}
+          >
+            <span className="text-slate-900">View all</span>
+          </Button>
         </div>
       </div>
     </div>

@@ -168,9 +168,10 @@ import Tabulator from '../pages/tabulator'
 import Drag from '../pages/drag/drag'
 import Table from '../pages/table'
 import PrivateRoute from './PrivateRoute'
-import TpManagemtComponent from '../pages/tp-management/tp-management'
+import DriversPage from '../pages/fleet/drivers'
 import FeedbackManagementPage from '../pages/feedback-management'
-import TipManagementPage from '../pages/tip-management'
+import RentalsPage from '../pages/fleet/rentals'
+import AccountsPage from '../pages/fleet/accounts'
 import {
   CommonComponent,
   DatepickerComponent,
@@ -182,7 +183,8 @@ import {
   ImageUploadComponent,
   ProgressComponent,
 } from '../pages/forms'
-import SpManagementComponent from '../pages/sp-management/sp-management'
+import CarsPage from '../pages/fleet/cars'
+import MultiPlatformPage from '../pages/fleet/multi-platform'
 import GatewaySettingtPage from '../pages/gateway-setting/gateway-setting'
 import TipSetting from '../pages/tip-setting/tip-setting'
 import AdminUserManagePage from '../pages/admin-management/admin-users'
@@ -227,11 +229,15 @@ function Router() {
         },
         {
           path: 'manage-tippers',
-          element: <TpManagemtComponent />,
+          element: <DriversPage />,
         },
         {
           path: 'manage-service-providers',
-          element: <SpManagementComponent />,
+          element: <CarsPage />,
+        },
+        {
+          path: 'manage-dual-role',
+          element: <MultiPlatformPage />,
         },
         {
           path: 'manage-reviews',
@@ -239,7 +245,11 @@ function Router() {
         },
         {
           path: 'manage-finances',
-          element: <TipManagementPage />,
+          element: <RentalsPage />,
+        },
+        {
+          path: 'accounts',
+          element: <AccountsPage />,
         },
         {
           path: 'footer-management',

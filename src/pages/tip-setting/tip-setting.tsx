@@ -406,13 +406,13 @@ function TipSetting() {
     <form className="validate-form lg:ml-32 lg:mr-32">
       <div className="mb-4 mt-8 flex  flex-col">
         <h2 className="mb-4 mr-auto text-base font-medium">
-          {`${t('App Tip Settings')}`}
+          Fleet Settings
         </h2>
       </div>
       <div className="intro-y box ">
         <div className=" flex flex-col  px-5 py-3 ">
           <h2 className=" mr-auto text-base font-medium">{`${t(
-            'Tip Commission'
+            'Platform Commission'
           )}`}</h2>
         </div>
 
@@ -420,7 +420,7 @@ function TipSetting() {
         <div className="mb-3  grid grid-cols-1 px-5  py-5  max-lg:gap-2 md:grid-cols-2 lg:gap-7">
           <div className=" mb-5">
             <InputElement
-              label="Tip Commission"
+              label="Platform Commission"
               name="tipCommission"
               id="tipCommission"
               error={
@@ -429,7 +429,7 @@ function TipSetting() {
                   : errors.tipCommission
               }
               value={formData.tipCommission}
-              placeholder="Tip Commission"
+              placeholder="Platform Commission"
               required
               onChange={handleChangess}
             />
@@ -451,7 +451,7 @@ function TipSetting() {
       <div className="intro-y box mt-7 ">
         <div className=" flex flex-col  px-5 py-3 ">
           <h2 className=" mr-auto text-base font-medium">
-            {`${t('Tip withdrawal Limit')}`}
+            Driver Payout Limit
           </h2>
         </div>
         {/* <div className="  border-t border-[#C7C7C7]"></div> */}
@@ -495,7 +495,7 @@ function TipSetting() {
       <div className="intro-y box mt-7 ">
         <div className=" flex flex-col  px-5 py-3 text-base font-medium dark:border-darkmode-400">
           <h2 className=" mr-auto text-base font-medium">{`${t(
-            'Tipping Limit'
+            'Daily Rent Limit'
           )}`}</h2>
         </div>
         {/* <div className="  border-t border-[#C7C7C7]"></div> */}

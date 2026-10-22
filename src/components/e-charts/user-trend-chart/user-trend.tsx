@@ -4,60 +4,60 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import React, { useEffect, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
-import {
-  GetNewTPCountByMonth,
-  GetNewSPCountByMonth,
-  GetNewBothCountByMonth,
-} from '../../../api/dashboard/dashboard'
 import { monthNames } from '../../../constants/months'
-import NoDataFound from '../../../assets/images/NoDataFound.png'
 import PeriodSelector from '../../common/period-selector/period-selector'
-import Tippy from '../../common/tippy'
 import {
   getMonthKey,
   getPeriodLabel,
   getPreviousMonthKey,
   PeriodMonth,
 } from '../../../utils/periodFilter'
+import { monthlyTripCounts } from '../../../data/fleet-dummy'
+import { useCompanyStore } from '../../../stores/companyStore'
 
 const UserTrendChart: React.FC = () => {
-  const spQuery = GetNewSPCountByMonth()
-  const tpQuery = GetNewTPCountByMonth()
-  const bothQuery = GetNewBothCountByMonth()
-
-  const [spChartData, setSpChartData] = useState<
-    { month: string; count: string }[] | undefined
-  >()
-  const [tpChartData, setTpChartData] = useState<
-    { month: string; count: string }[] | undefined
-  >()
-  const [bothChartData, setBothChartData] = useState<
-    { month: string; count: string }[] | undefined
-  >()
-
-  const [selectedType, setSelectedType] = useState('All')
+  const company = useCompanyStore((state) => state.company)
+  const [selectedType, setSelectedType] = useState<string>(company)
   const [selectedYear, setSelectedYear] = useState(
     new Date().getFullYear().toString()
   )
   const [selectedMonth, setSelectedMonth] = useState<PeriodMonth>('all')
+  const [spChartData, setSpChartData] = useState<
+    { month: string; count: string }[] | undefined
+  >(() => monthlyTripCounts(new Date().getFullYear().toString(), 'uber'))
+  const [tpChartData, setTpChartData] = useState<
+    { month: string; count: string }[] | undefined
+  >(() => monthlyTripCounts(new Date().getFullYear().toString(), 'bolt'))
+  const [bothChartData, setBothChartData] = useState<
+    { month: string; count: string }[] | undefined
+  >(() => monthlyTripCounts(new Date().getFullYear().toString(), 'yango'))
   const [primaryTotal, setPrimaryTotal] = useState(0)
   const [secondaryTotal, setSecondaryTotal] = useState(0)
   const [primaryLabel, setPrimaryLabel] = useState('This Month')
   const [secondaryLabel, setSecondaryLabel] = useState('Last Month')
 
   useEffect(() => {
-    if (spQuery.data && tpQuery.data && bothQuery.data) {
-      const spData = spQuery.data.SPCount
-      const tpData = tpQuery.data.TPCount
-      const bothData = bothQuery.data.BothCount
+    const uberData = monthlyTripCounts(selectedYear, 'uber')
+    const boltData = monthlyTripCounts(selectedYear, 'bolt')
+    const yangoData = monthlyTripCounts(selectedYear, 'yango')
 
-      setSpChartData(spData)
-      setTpChartData(tpData)
-      setBothChartData(bothData)
+    setSpChartData(uberData)
+    setTpChartData(boltData)
+    setBothChartData(yangoData)
 
-      calculateTotals(spData, tpData, bothData, selectedType, selectedYear, selectedMonth)
-    }
-  }, [spQuery.data, tpQuery.data, bothQuery.data, selectedType, selectedYear, selectedMonth])
+    calculateTotals(
+      uberData,
+      boltData,
+      yangoData,
+      selectedType,
+      selectedYear,
+      selectedMonth
+    )
+  }, [selectedType, selectedYear, selectedMonth])
+
+  useEffect(() => {
+    setSelectedType(company)
+  }, [company])
 
   const calculateTotals = (
     spData: { month: string; count: string }[] | undefined,
@@ -82,10 +82,10 @@ const UserTrendChart: React.FC = () => {
           getMonthCount(bothData, targetMonth)
         )
       }
-      if (selectedType === 'Service Providers') {
+      if (selectedType === 'Uber') {
         return getMonthCount(spData, targetMonth)
       }
-      if (selectedType === 'Tippers') {
+      if (selectedType === 'Bolt') {
         return getMonthCount(tpData, targetMonth)
       }
       return getMonthCount(bothData, targetMonth)
@@ -189,37 +189,37 @@ const UserTrendChart: React.FC = () => {
   if (selectedType === 'All') {
     seriesData = [
       {
-        name: 'Service Providers',
+        name: 'Uber',
         type: chartType,
         data: spYAxisData,
         smooth: !isSingleMonthView,
         lineStyle: {
-          color: '#06768d',
+          color: '#F0C014',
           width: 3,
           type: 'solid',
         },
         itemStyle: {
-          color: '#06768d',
+          color: '#F0C014',
           borderWidth: 3,
         },
       },
       {
-        name: 'Tippers',
+        name: 'Bolt',
         type: chartType,
         data: tpYAxisData,
         smooth: !isSingleMonthView,
         lineStyle: {
-          color: '#010048',
+          color: '#111111',
           width: 3,
           type: 'solid',
         },
         itemStyle: {
-          color: '#010048',
+          color: '#111111',
           borderWidth: 3,
         },
       },
       {
-        name: 'Both',
+        name: 'Yango',
         type: chartType,
         data: bothYAxisData,
         smooth: !isSingleMonthView,
@@ -234,46 +234,46 @@ const UserTrendChart: React.FC = () => {
         },
       },
     ]
-  } else if (selectedType === 'Service Providers') {
+  } else if (selectedType === 'Uber') {
     seriesData = [
       {
-        name: 'Service Providers',
+        name: 'Uber',
         type: chartType,
         data: spYAxisData,
         smooth: !isSingleMonthView,
         lineStyle: {
-          color: '#06768d',
+          color: '#F0C014',
           width: 3,
           type: 'solid',
         },
         itemStyle: {
-          color: '#06768d',
+          color: '#F0C014',
           borderWidth: 3,
         },
       },
     ]
-  } else if (selectedType === 'Tippers') {
+  } else if (selectedType === 'Bolt') {
     seriesData = [
       {
-        name: 'Tippers',
+        name: 'Bolt',
         type: chartType,
         data: tpYAxisData,
         smooth: !isSingleMonthView,
         lineStyle: {
-          color: '#010048',
+          color: '#111111',
           width: 3,
           type: 'solid',
         },
         itemStyle: {
-          color: '#010048',
+          color: '#111111',
           borderWidth: 3,
         },
       },
     ]
-  } else if (selectedType === 'Both') {
+  } else if (selectedType === 'Yango') {
     seriesData = [
       {
-        name: 'Both',
+        name: 'Yango',
         type: chartType,
         data: bothYAxisData,
         smooth: !isSingleMonthView,
@@ -323,7 +323,7 @@ const UserTrendChart: React.FC = () => {
       nameTextStyle: {
         fontFamily: 'Ciutadella-Medium',
         fontSize: 14,
-        color: '#101B33',
+        color: '#0A0A0A',
       },
       nameGap: 24,
       axisLine: {
@@ -344,16 +344,12 @@ const UserTrendChart: React.FC = () => {
     },
     series: seriesData,
   }
-  const hasData =
-    (spChartData?.length ?? 0) > 0 ||
-    (tpChartData?.length ?? 0) > 0 ||
-    (bothChartData?.length ?? 0) > 0
 
   return (
     <div>
       <div className="intro-y block h-fit items-center justify-between space-x-4 sm:flex">
         <h2 className="mt-[30px] w-fit text-[19px] text-lg font-medium text-[#2D3748]">
-          User Trend
+          {company} trip trend
         </h2>
         <div className="mt-[20px]">
           <PeriodSelector
@@ -369,17 +365,7 @@ const UserTrendChart: React.FC = () => {
       </div>
 
       <div className="relative mt-[15px] rounded-xl bg-white">
-        {!hasData ? (
-          <div className="mt-[10px] flex w-full flex-col items-center  justify-center rounded-xl bg-white px-4  shadow-md">
-            <img
-              src={NoDataFound}
-              alt="No data found"
-              className="max-h-[395px] min-h-[395px] w-fit object-cover"
-            />
-            <span className="mb-12 text-center">No Data Found...</span>
-          </div>
-        ) : (
-          <>
+        <>
             <div className="ml-[25px] flex h-[50px] w-full items-center justify-between">
               <div className="mt-[20px] flex items-center space-x-4">
                 <div className="text-center font-semibold">
@@ -397,20 +383,6 @@ const UserTrendChart: React.FC = () => {
                   <div className="text-sm">{secondaryLabel}</div>
                 </div>
               </div>
-              <div className="mr-[25px] mt-[12px]">
-                <Tippy content="Filter by user role: Tipper (can give tips), Service Provider (can receive tips), Dual Role (can both give and receive tips)">
-                  <select
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    className="mr-[25px] h-10 w-[140px] appearance-none rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-[#2D3748] shadow-sm focus:border-[#06768d] focus:outline-none focus:ring-2 focus:ring-[#06768d]/20"
-                  >
-                    <option value="All">All</option>
-                    <option value="Service Providers">Service Providers</option>
-                    <option value="Tippers">Tippers</option>
-                    <option value="Both">Dual Role</option>
-                  </select>
-                </Tippy>
-              </div>
             </div>
 
             <ReactECharts
@@ -426,8 +398,7 @@ const UserTrendChart: React.FC = () => {
                 borderRadius: '12px',
               }}
             />
-          </>
-        )}
+        </>
       </div>
     </div>
   )

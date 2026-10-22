@@ -82,7 +82,7 @@ const Button: ButtonComponent = forwardRef(
 
     // Main Colors
     const primary = [
-      'bg-primary border-primary text-white dark:border-primary', // Default
+      'bg-primary border-primary text-slate-900 dark:border-primary', // Default
     ]
     const secondary = [
       'bg-secondary/70 border-secondary/70 text-slate-500', // Default

@@ -17,7 +17,7 @@ import Lucide from '../../components/common/lucide'
 // import DarkModeSwitcher from '../../components/dark-mode-switcher'
 // import MainColorSwitcher from '../../components/MainColorSwitcher'
 import SideMenuTooltip from '../../components/SideMenuTooltip'
-import logoUrl from '../../assets/images/tipapp-brand-logo.png'
+import logoUrl from '../../assets/images/gcec-cloud-logo.png'
 
 function Main() {
   const location = useLocation()
@@ -47,12 +47,12 @@ function Main() {
             className="intro-x flex items-center pl-5 pt-4"
           >
             <img
-              alt="TipApp"
-              className="h-10 w-10 rounded-lg object-cover shadow-md ring-1 ring-white/40"
+              alt="GCEC Cloud"
+              className="h-12 w-12 rounded-lg object-cover shadow-md ring-1 ring-primary"
               src={logoUrl}
             />
-            <span className="ml-3 hidden text-lg font-semibold tracking-tight text-white xl:block">
-              TipApp
+            <span className="ml-3 hidden text-lg font-semibold tracking-tight text-primary xl:block">
+              GCEC Cloud
             </span>
           </Link>
           <Devider type="div" className="my-6" />

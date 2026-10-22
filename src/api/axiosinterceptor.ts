@@ -7,6 +7,7 @@ import {
   isValidationTokenExpired,
 } from '../utils/authSession'
 import { API_BASE_URL } from './api-origin'
+import { OFFLINE_DEMO } from '../utils/offlineSession'
 
 const authFetch = axios.create({
   baseURL: API_BASE_URL,
@@ -37,6 +38,16 @@ function assertValidSession(url?: string): void {
 
 authFetch.interceptors.request.use(
   (config) => {
+    if (OFFLINE_DEMO) {
+      config.adapter = async () => ({
+        data: { data: { items: [], meta: {} } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      })
+      return config
+    }
     assertValidSession(config.url)
     return applyAdminAuthHeaders(config)
   },

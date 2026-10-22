@@ -104,10 +104,14 @@ export const TableHeadingsTP = [
   },
   {
     key: 6,
-    label: 'STATUS',
+    label: 'TIPS GIVEN',
   },
   {
     key: 7,
+    label: 'STATUS',
+  },
+  {
+    key: 8,
     label: 'ACTION',
   },
 ]
@@ -301,6 +305,37 @@ export const TipHeadings = [
   {
     key: 5,
     label: 'AMOUNT',
+  },
+  {
+    key: 6,
+    label: 'CHARGE',
+  },
+]
+
+export const GivenTipHeadings = [
+  {
+    key: 1,
+    label: 'TIP REFERENCE',
+  },
+  {
+    key: 2,
+    label: 'TIP DATE',
+  },
+  {
+    key: 3,
+    label: 'TIPPER',
+  },
+  {
+    key: 4,
+    label: 'SERVICE PROVIDER',
+  },
+  {
+    key: 5,
+    label: 'AMOUNT',
+  },
+  {
+    key: 6,
+    label: 'CHARGE',
   },
 ]
 
