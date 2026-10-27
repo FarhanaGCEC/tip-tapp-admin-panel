@@ -71,6 +71,11 @@ export interface TipItem {
   TotalTipsGivenOriginal?: number
   TotalTipsGivenAED?: number
   PendingStripeFees?: string | number
+  tipsGiven?: {
+    count?: number
+    amounts?: unknown
+    includedInCountryCash?: boolean
+  }
   financials?: {
     balance?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }
     totalTips?: { amounts?: { GBP: number; AED: number }; amount?: number; amountAED?: number }

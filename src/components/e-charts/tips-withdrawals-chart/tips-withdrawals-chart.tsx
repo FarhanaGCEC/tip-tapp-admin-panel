@@ -1,17 +1,18 @@
 /* eslint-disable react/function-component-definition */
 import React, { useMemo, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
-import {
-  GetWithdrawalReceivedTrend,
-  MonthlyTrendPoint,
-} from '../../../api/dashboard/dashboard'
+import { useAdminDashboard } from '../../../api/admin-country'
+import { useCountryStore } from '../../../stores/countryStore'
+import { MonthlyReceivedPoint } from '../../../types/admin-country'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
 import LoadingIcon from '../../common/loading-icon'
 import PeriodSelector from '../../common/period-selector/period-selector'
+import CountryEmptyState from '../../common/country-empty-state'
 import { PeriodMonth } from '../../../utils/periodFilter'
-import { useCurrencyStore } from '../../../stores/currencyStore'
-import { formatMoney, getAmountValue } from '../../../utils/formatMoney'
-import { Currency } from '../../../types/currency'
+import {
+  formatAmountWithCurrency,
+  readDisplayMoney,
+} from '../../../utils/formatMoney'
 import {
   getChartWindowPoints,
   getMonthKey,
@@ -23,59 +24,46 @@ import { monthNames } from '../../../constants/months'
 
 type TrendType = 'All' | 'Withdrawals' | 'Tips'
 
-const getMonthAmount = (
-  point: MonthlyTrendPoint | undefined,
-  currency: Currency
-): number => {
+const getMonthAmount = (point: MonthlyReceivedPoint | undefined): number => {
   if (!point) return 0
-  if (point.amounts) {
-    return getAmountValue(point.amounts, currency) ?? 0
-  }
-  return currency === 'GBP'
-    ? Number(point.total) || 0
-    : Number(point.totalAED) || 0
-}
-
-const formatChartMoney = (value: number, currency: Currency): string =>
-  formatMoney(
-    currency === 'GBP' ? { amount: value } : { amountAED: value },
-    currency
-  )
-
-const formatAxisValue = (value: number, currency: Currency): string => {
-  if (value >= 1000) {
-    return currency === 'GBP'
-      ? `£${(value / 1000).toFixed(1)}k`
-      : `${(value / 1000).toFixed(1)}k`
-  }
-  return currency === 'GBP' ? `£${value}` : `${value}`
-}
-
-const sumForType = (
-  withdrawalPoint: MonthlyTrendPoint | undefined,
-  tipsPoint: MonthlyTrendPoint | undefined,
-  selectedType: TrendType,
-  currency: Currency
-): number => {
-  const withdrawal = getMonthAmount(withdrawalPoint, currency)
-  const tips = getMonthAmount(tipsPoint, currency)
-  if (selectedType === 'Withdrawals') return withdrawal
-  if (selectedType === 'Tips') return tips
-  return withdrawal + tips
+  const display = readDisplayMoney(point.amounts) ?? readDisplayMoney(point)
+  if (display) return display.amount
+  return Number(point.total) || 0
 }
 
 const TipsAndWithdrawalsChart: React.FC = () => {
-  const currency = useCurrencyStore((state) => state.currency)
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
+  const selectedYear = useCountryStore((state) => state.year)
+  const setYear = useCountryStore((state) => state.setYear)
+
   const [selectedType, setSelectedType] = useState<TrendType>('All')
-  const [selectedYear, setSelectedYear] = useState(
-    new Date().getFullYear().toString()
-  )
   const [selectedMonth, setSelectedMonth] = useState<PeriodMonth>('all')
 
-  const { data, isLoading, isError } = GetWithdrawalReceivedTrend(selectedYear)
+  const { data, isLoading, isError } = useAdminDashboard()
+  const marketCurrency = data?.market.currency || 'GBP'
 
-  const withdrawalsByMonth = data?.withdrawals?.totalsByMonth ?? []
-  const tipsByMonth = data?.received?.totalsByMonth ?? []
+  const formatChartMoney = (value: number): string =>
+    formatAmountWithCurrency(value, marketCurrency)
+
+  const formatAxisValue = (value: number): string => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}k`
+    }
+    return String(value)
+  }
+
+  const tipsByMonth = data?.monthlyReceived?.totalsByMonth ?? []
+  // Country dashboard currently exposes monthly tips received only.
+  const withdrawalsByMonth = useMemo<MonthlyReceivedPoint[]>(
+    () =>
+      tipsByMonth.map((point) => ({
+        ...point,
+        total: 0,
+        amounts: undefined,
+      })),
+    [tipsByMonth]
+  )
 
   const chartWithdrawals = useMemo(
     () =>
@@ -97,14 +85,26 @@ const TipsAndWithdrawalsChart: React.FC = () => {
   )
 
   const withdrawalsSeries = useMemo(
-    () => chartWithdrawals.map((point) => getMonthAmount(point, currency)),
-    [chartWithdrawals, currency]
+    () => chartWithdrawals.map((point) => getMonthAmount(point)),
+    [chartWithdrawals]
   )
 
   const tipsSeries = useMemo(
-    () => chartTips.map((point) => getMonthAmount(point, currency)),
-    [chartTips, currency]
+    () => chartTips.map((point) => getMonthAmount(point)),
+    [chartTips]
   )
+
+  const sumForType = (
+    withdrawalPoint: MonthlyReceivedPoint | undefined,
+    tipsPoint: MonthlyReceivedPoint | undefined,
+    type: TrendType
+  ): number => {
+    const withdrawal = getMonthAmount(withdrawalPoint)
+    const tips = getMonthAmount(tipsPoint)
+    if (type === 'Withdrawals') return withdrawal
+    if (type === 'Tips') return tips
+    return withdrawal + tips
+  }
 
   const { primaryTotal, secondaryTotal, primaryLabel, secondaryLabel } =
     useMemo(() => {
@@ -127,14 +127,12 @@ const TipsAndWithdrawalsChart: React.FC = () => {
           primaryTotal: sumForType(
             withdrawalPoint,
             tipsPoint,
-            selectedType,
-            currency
+            selectedType
           ),
           secondaryTotal: sumForType(
             prevWithdrawal,
             prevTips,
-            selectedType,
-            currency
+            selectedType
           ),
           primaryLabel: getPeriodLabel(selectedYear, selectedMonth),
           secondaryLabel: 'Previous Month',
@@ -154,22 +152,20 @@ const TipsAndWithdrawalsChart: React.FC = () => {
           primaryTotal: sumForType(
             withdrawalsByMonth.find((point) => point.month === thisKey),
             tipsByMonth.find((point) => point.month === thisKey),
-            selectedType,
-            currency
+            selectedType
           ),
           secondaryTotal: sumForType(
             withdrawalsByMonth.find((point) => point.month === lastKey),
             tipsByMonth.find((point) => point.month === lastKey),
-            selectedType,
-            currency
+            selectedType
           ),
           primaryLabel: 'This Month',
           secondaryLabel: 'Last Month',
         }
       }
 
-      const yearTotals = withdrawalsByMonth.map((point, index) =>
-        sumForType(point, tipsByMonth[index], selectedType, currency)
+      const yearTotals = tipsByMonth.map((point, index) =>
+        sumForType(withdrawalsByMonth[index], point, selectedType)
       )
       const yearTotal = yearTotals.reduce((sum, value) => sum + value, 0)
       const peak = yearTotals.reduce(
@@ -187,7 +183,6 @@ const TipsAndWithdrawalsChart: React.FC = () => {
           : 'Peak Month',
       }
     }, [
-      currency,
       selectedMonth,
       selectedType,
       selectedYear,
@@ -264,8 +259,8 @@ const TipsAndWithdrawalsChart: React.FC = () => {
       selectedType === 'Withdrawals'
         ? withdrawalsSeries
         : selectedType === 'Tips'
-        ? tipsSeries
-        : [...withdrawalsSeries, ...tipsSeries]
+          ? tipsSeries
+          : [...withdrawalsSeries, ...tipsSeries]
     return Math.max(...values, 0)
   }, [selectedType, tipsSeries, withdrawalsSeries])
 
@@ -285,7 +280,7 @@ const TipsAndWithdrawalsChart: React.FC = () => {
       }[]) => {
         const lines = params.map(
           (item) =>
-            `${escapeHtml(item.seriesName)}: ${formatChartMoney(item.value, currency)}`
+            `${escapeHtml(item.seriesName)}: ${formatChartMoney(item.value)}`
         )
         const header = escapeHtml(params[0]?.axisValue ?? '')
         return [header, ...lines].join('\n')
@@ -324,7 +319,7 @@ const TipsAndWithdrawalsChart: React.FC = () => {
       axisLabel: {
         fontSize: 12,
         color: '#64748b',
-        formatter: (value: number) => formatAxisValue(value, currency),
+        formatter: (value: number) => formatAxisValue(value),
       },
       splitLine: { lineStyle: { type: 'dashed', color: '#F1F5F9' } },
     },
@@ -332,6 +327,17 @@ const TipsAndWithdrawalsChart: React.FC = () => {
   }
 
   const emptyPeriodLabel = getPeriodLabel(selectedYear, selectedMonth)
+
+  if (!countryCode) {
+    return (
+      <div className="mt-[30px]">
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="Trend chart loads for the selected country only."
+        />
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -346,7 +352,7 @@ const TipsAndWithdrawalsChart: React.FC = () => {
     )
   }
 
-  if (isError || (!withdrawalsByMonth.length && !tipsByMonth.length)) {
+  if (isError || !tipsByMonth.length) {
     return (
       <div className="mt-[30px]">
         <h2 className="text-[19px] text-lg font-medium text-[#2D3748]">
@@ -377,7 +383,7 @@ const TipsAndWithdrawalsChart: React.FC = () => {
             year={selectedYear}
             month={selectedMonth}
             onYearChange={(year) => {
-              setSelectedYear(year)
+              setYear(year)
               setSelectedMonth('all')
             }}
             onMonthChange={setSelectedMonth}
@@ -398,14 +404,14 @@ const TipsAndWithdrawalsChart: React.FC = () => {
         <div className="mb-4 flex flex-wrap items-center gap-6 border-b border-gray-100 pb-4">
           <div>
             <p className="text-2xl font-semibold text-[#2D3748]">
-              {formatChartMoney(primaryTotal, currency)}
+              {formatChartMoney(primaryTotal)}
             </p>
             <p className="text-sm text-gray-500">{primaryLabel}</p>
           </div>
           <div className="hidden h-10 border-l border-dashed border-gray-300 sm:block" />
           <div>
             <p className="text-2xl font-semibold text-[#2D3748]">
-              {formatChartMoney(secondaryTotal, currency)}
+              {formatChartMoney(secondaryTotal)}
             </p>
             <p className="text-sm text-gray-500">{secondaryLabel}</p>
           </div>

@@ -78,14 +78,19 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
                 <span>
                   {`${item.FirstName || ''} ${item.LastName || ''}`.trim() ||
                     'Not Provided Yet'}
+                  {String(item.Role || '').toLowerCase() === 'both' ? (
+                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                      Both
+                    </span>
+                  ) : null}
                 </span>
               </div>
             </Table.Td>
             <Table.Td className="max-w-[220px] truncate">
               {item.Email || 'Not Provided Yet'}
             </Table.Td>
-            <Table.Td>{item.Whatsapp || 'Not Provided Yet'}</Table.Td>
             <Table.Td>{item.Phone || 'Not Provided Yet'}</Table.Td>
+            <Table.Td>{item.Whatsapp || 'Not Provided Yet'}</Table.Td>
             <Table.Td>{item.Country || 'N/A'}</Table.Td>
             {pending ? (
               <Table.Td>{item.EmiratesId || 'Not Provided Yet'}</Table.Td>

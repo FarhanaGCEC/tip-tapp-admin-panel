@@ -20,10 +20,16 @@ export interface TipItem {
   TipId: number
   tipperName: string
   serviceProviderName: string
+  tipperCountry?: string
+  serviceProviderCountry?: string
   createdAt: string
   amount: number
   amountAED?: number
-  amounts?: DualAmount
+  amounts?: DualAmount | { displayAmount?: number; currency?: string }
+  chargeAmount?: number | string | null
+  chargeCurrency?: string | null
+  side?: string
+  includedInCountryCash?: boolean
 }
 
 export interface WithdrawalItem {

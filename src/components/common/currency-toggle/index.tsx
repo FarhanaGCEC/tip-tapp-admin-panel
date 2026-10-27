@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Currency } from '../../../types/currency'
 import { useCurrencyStore } from '../../../stores/currencyStore'
 
-const CURRENCIES: Currency[] = ['GBP', 'AED']
+const CURRENCIES: Currency[] = ['GBP', 'AED', 'USD', 'EUR']
 
 function CurrencyToggle() {
   const currency = useCurrencyStore((state) => state.currency)

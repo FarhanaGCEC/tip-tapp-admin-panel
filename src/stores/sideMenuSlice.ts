@@ -91,6 +91,13 @@ export function buildSideMenu(): Array<Menu | 'devider'> {
           pathname: '/manage-service-providers',
         }
       : null,
+    hasPermission('tp_management.view') || hasPermission('sp_management.view')
+      ? {
+          icon: 'UserPlus',
+          title: 'Dual Role',
+          pathname: '/manage-dual-role',
+        }
+      : null,
     {
       icon: 'Wallet',
       title: 'Tip Management',

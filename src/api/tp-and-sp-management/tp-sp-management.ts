@@ -15,6 +15,8 @@ import {
   isAuthErrorStatus,
   isValidNumericUserId,
 } from '../../utils/authSession'
+import { readUserPage } from '../admin-country'
+import { useCountryStore } from '../../stores/countryStore'
 
 export const GetTpAndSpDetails = (
   searchdata: string,
@@ -24,9 +26,11 @@ export const GetTpAndSpDetails = (
   active?: string,
   dates?: string
 ): UseQueryResult<GetTpAndspiResponse> => {
+  const countryCode = useCountryStore((state) => state.countryCode)
   return useQuery({
     queryKey: [
       'get_tp_and_sp_all_and_search_user',
+      countryCode,
       searchdata,
       roletype,
       page,
@@ -34,16 +38,19 @@ export const GetTpAndSpDetails = (
       dates,
       pageSize,
     ],
+    enabled: Boolean(countryCode),
     queryFn: async () => {
       try {
-        const response = await authFetch.get<GetTpAndspiResponse>(
-          `/user-details?limit=${pageSize}&page=${page}${
-            active ? `&status=${active}` : ''
-          }&role=${roletype}${
-            searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
-          }${dates ? `&date=${dates}` : ''}`
-        )
-        return response?.data
+        const params = new URLSearchParams({
+          countryCode: countryCode || '',
+          role: roletype,
+          page: String(page),
+          limit: String(pageSize),
+          search: searchdata || '',
+          status: active || '',
+        })
+        const response = await authFetch.get(`/admin/users?${params.toString()}`)
+        return readUserPage(response.data, page, pageSize)
       } catch (error) {
         throw error
       }
@@ -114,6 +121,7 @@ export const ServiceProviderPending = (
 ): UseQueryResult<GetPending> => {
   return useQuery({
     queryKey: ['get_pending_sp', searchdata, page, pageSize],
+    enabled: false,
     queryFn: async () => {
       try {
         const response = await authFetch.get(
@@ -135,26 +143,30 @@ export const ServiceProviderPending = (
 
 /** Fetches all tipper/SP rows for Excel export (paginates until done). */
 export async function fetchAllTpSpUsers(params: {
-  roletype: 'tp' | 'sp'
+  roletype: 'tp' | 'sp' | 'both'
   searchdata?: string
   active?: string
   dates?: string
 }): Promise<TipItem[]> {
-  const { roletype, searchdata = '', active = '', dates = '' } = params
+  const { roletype, searchdata = '', active = '' } = params
+  const countryCode = useCountryStore.getState().countryCode
+  if (!countryCode) return []
   const pageSize = 100
   let page = 1
   let totalPages = 1
   const items: TipItem[] = []
 
   while (page <= totalPages) {
-    const response = await authFetch.get<GetTpAndspiResponse>(
-      `/user-details?limit=${pageSize}&page=${page}${
-        active ? `&status=${active}` : ''
-      }&role=${roletype}${
-        searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
-      }${dates ? `&date=${dates}` : ''}`
-    )
-    const payload = response?.data?.data
+    const paramsQuery = new URLSearchParams({
+      countryCode,
+      role: roletype,
+      page: String(page),
+      limit: String(pageSize),
+      search: searchdata || '',
+      status: active || '',
+    })
+    const response = await authFetch.get(`/admin/users?${paramsQuery.toString()}`)
+    const payload = readUserPage(response.data, page, pageSize).data
     const pageItems = payload?.items ?? []
     items.push(...pageItems)
     totalPages = payload?.meta?.totalPages ?? 1
@@ -166,30 +178,10 @@ export async function fetchAllTpSpUsers(params: {
   return items
 }
 
-/** Fetches all pending SP rows for Excel export. */
+/** Pending approvals are not part of a country dashboard. */
 export async function fetchAllPendingSpUsers(
-  searchdata = ''
+  _searchdata = ''
 ): Promise<TipItem[]> {
-  const pageSize = 100
-  let page = 1
-  let totalPages = 1
-  const items: TipItem[] = []
-
-  while (page <= totalPages) {
-    const response = await authFetch.get<GetPending>(
-      `/user-details/pending?limit=${pageSize}&page=${page}${
-        searchdata ? `&search=${encodeURIComponent(searchdata)}` : ''
-      }`
-    )
-    const payload = response?.data?.data
-    const pageItems = payload?.items ?? []
-    items.push(...pageItems)
-    totalPages = payload?.meta?.totalPages ?? 1
-    page += 1
-
-    if (pageItems.length === 0) break
-  }
-
-  return items
+  return []
 }
 

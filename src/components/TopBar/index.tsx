@@ -26,7 +26,8 @@ import {
   useMarkNotificationAsRead,
 } from '../../api/notification'
 import NoDataFound from '../../assets/images/NoDataFound.png'
-import CurrencyToggle from '../common/currency-toggle'
+import CountrySelector from '../common/country-selector'
+import PlatformSelector from '../common/platform-selector'
 
 // function getCurrentDate() {
 //   const currentDate = new Date()
@@ -43,6 +44,7 @@ const breadcrumbMap: { [key: string]: string } = {
   '/manage-user-roles': 'Admin Role Management',
   '/manage-tippers': 'Tipper Management',
   '/manage-service-providers': 'Service Provider Management',
+  '/manage-dual-role': 'Dual Role Management',
   '/manage-finances': 'Tip Management',
   '/manage-reviews': 'Review Management',
   '/gateway-setting': 'Gateway Settings',
@@ -185,8 +187,9 @@ function Main() {
               </span>
             </Button> */}
 
-        <div className="intro-x relative mr-3">
-          <CurrencyToggle />
+        <div className="intro-x relative mr-3 flex items-center gap-3">
+          <PlatformSelector />
+          <CountrySelector />
         </div>
         <div className="flex items-center justify-end space-x-2">
           <Popover className="intro-x mr-4 sm:mr-2">

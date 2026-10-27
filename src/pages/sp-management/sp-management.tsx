@@ -33,6 +33,9 @@ import NoDataFound from '../../assets/images/NoDataFound.png'
 import { downloadUsersExcel } from '../../utils/exportUsersExcel'
 import Toast from '../../utils/notification'
 import { Icons, NotificationTypes } from '../../constants'
+import { useCountryStore } from '../../stores/countryStore'
+import CountryEmptyState from '../../components/common/country-empty-state'
+import RoleUsersTabs from '../../components/country/role-users-tabs'
 
 interface FormContent {
   title: string
@@ -54,6 +57,8 @@ const SpManagementPage = () => {
   const [takedates, setTakedates] = useState('')
   const [activeordeactive, setactiveordeactive] = useState<string>('')
   const [isExporting, setIsExporting] = useState(false)
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
   const { data, isSuccess, isLoading } = GetTpAndSpDetails(
     query,
     'sp',
@@ -199,7 +204,7 @@ const SpManagementPage = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [query, temparayStore, dates])
+  }, [query, temparayStore, dates, countryCode])
 
   const cleantoggleFilters = () => {
     setdates('')
@@ -258,15 +263,27 @@ const SpManagementPage = () => {
   }
 
   const totalPages = data?.data?.meta?.totalPages ?? 0
+
+  if (!countryCode) {
+    return (
+      <div className="col-span-12 mt-6">
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="Service providers are listed only for the selected country."
+        />
+      </div>
+    )
+  }
   const totalPagesPending = pendingdata?.data?.meta?.totalPages ?? 0
 
   return (
     <div className="col-span-12 mt-6">
-      <div className="intro-y  mb-8   block h-10 items-center sm:flex">
+      <div className="intro-y  mb-4   block h-10 items-center sm:flex">
         <h2 className="mr-5 truncate text-[19px] text-lg font-medium text-[#2D3748]">
           Service Provider Management
         </h2>
       </div>
+      <RoleUsersTabs active="sp" />
       <div className="m-[29px] mx-auto   hidden max-w-[250px] items-center justify-center rounded-[7px] bg-white">
         <ToggleButtonSecondary
           style={'hidden'}

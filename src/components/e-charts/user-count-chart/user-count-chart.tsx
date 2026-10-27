@@ -3,8 +3,12 @@ import * as echarts from 'echarts'
 import { GetUsersCountByType } from '../../../api/dashboard/dashboard'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
 import Tippy from '../../common/tippy'
+import { useCountryStore } from '../../../stores/countryStore'
+import CountryEmptyState from '../../common/country-empty-state'
 
 function UserCountChart() {
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
   const { data: counts, isLoading, error } = GetUsersCountByType()
 
   const chartRef = useRef<HTMLDivElement>(null)
@@ -135,6 +139,17 @@ function UserCountChart() {
       }
     }
   }, [counts, isLoading, selectedUserType, isChartReady])
+
+  if (!countryCode) {
+    return (
+      <div className="mt-[30px]">
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="User insights are shown for the selected country only."
+        />
+      </div>
+    )
+  }
 
   if (isLoading) {
     return <div>Loading...</div>

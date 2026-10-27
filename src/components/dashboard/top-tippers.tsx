@@ -1,23 +1,34 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react/no-array-index-key */
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GetTopTippersThisWeek } from '../../api/dashboard/dashboard'
+import { useAdminDashboard } from '../../api/admin-country'
+import { useCountryStore } from '../../stores/countryStore'
 import Button from '../common/button'
 import { getProfilePictureUrl, DEFAULT_AVATAR } from '../../utils/profilePicture'
 import NoDataFound from '../../assets/images/NoDataFound.png'
-import { useCurrencyStore } from '../../stores/currencyStore'
-import { formatMoney } from '../../utils/formatMoney'
+import { formatDisplayAmount } from '../../utils/formatMoney'
+import CountryEmptyState from '../common/country-empty-state'
 
 function TopTippers() {
-  const topTippers = GetTopTippersThisWeek()
-  const currency = useCurrencyStore((state) => state.currency)
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
+  const { data, isLoading } = useAdminDashboard()
   const navigate = useNavigate()
-
-  useEffect(() => {}, [topTippers])
+  const tippers = data?.topTippers ?? []
 
   const handleViewAllClick = () => {
     navigate('/manage-finances')
+  }
+
+  if (!countryCode) {
+    return (
+      <div className="col-span-12 mt-6">
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="Top tippers are shown for the selected country only."
+        />
+      </div>
+    )
   }
 
   return (
@@ -29,9 +40,13 @@ function TopTippers() {
           </h2>
         </div>
         <div className="h-full w-full">
-          {topTippers?.data && topTippers.data.length > 0 ? (
+          {isLoading ? (
+            <div className="mt-[10px] flex h-[200px] w-full items-center justify-center rounded-xl bg-white shadow-md">
+              <span className="text-slate-500">Loading…</span>
+            </div>
+          ) : tippers.length > 0 ? (
             Array.from({ length: 5 }).map((_, index) => {
-              const tipper = topTippers.data[index]
+              const tipper = tippers[index]
               return (
                 <div
                   key={index}
@@ -51,7 +66,7 @@ function TopTippers() {
                       <div>
                         <p className="text-base font-semibold capitalize">{`${tipper.firstName} ${tipper.lastName}`}</p>
                         <p className="text-sm text-gray-500">
-                          {formatMoney(tipper, currency)}
+                          {formatDisplayAmount(tipper.amount)}
                         </p>
                       </div>
                     </div>
@@ -77,7 +92,7 @@ function TopTippers() {
             </div>
           )}
 
-          {topTippers?.data && topTippers.data.length > 0 && (
+          {tippers.length > 0 && (
             <Button
               className="mt-[15px] h-[40px] w-full bg-primary hover:bg-brand-red-dark"
               onClick={handleViewAllClick}

@@ -3,6 +3,8 @@ import * as echarts from 'echarts'
 import { GetAgeByRole } from '../../../api/dashboard/dashboard'
 import NoDataFound from '../../../assets/images/NoDataFound.png'
 import Tippy from '../../common/tippy'
+import { useCountryStore } from '../../../stores/countryStore'
+import CountryEmptyState from '../../common/country-empty-state'
 
 interface AgeGroupData {
   '18-30': number
@@ -18,6 +20,8 @@ interface AgeDistributionData {
 }
 
 function AgeDistributionChart() {
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
   const { data: ageDistribution, isLoading, error } = GetAgeByRole()
   const chartRef = useRef<HTMLDivElement>(null)
   const [selectedUserType, setSelectedUserType] = useState('both')
@@ -162,6 +166,18 @@ function AgeDistributionChart() {
       }
     }
   }, [ageDistribution, isLoading, selectedUserType, isChartReady])
+
+  if (!countryCode) {
+    return (
+      <div>
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="Age range is shown for the selected country only."
+        />
+      </div>
+    )
+  }
+
   if (
     !ageDistribution ||
     Object.values(ageDistribution as AgeDistributionData).every(

@@ -19,8 +19,12 @@ import {
   getPreviousMonthKey,
   PeriodMonth,
 } from '../../../utils/periodFilter'
+import { useCountryStore } from '../../../stores/countryStore'
+import CountryEmptyState from '../../common/country-empty-state'
 
 const UserTrendChart: React.FC = () => {
+  const countryCode = useCountryStore((state) => state.countryCode)
+  const selection = useCountryStore((state) => state.selection)
   const spQuery = GetNewSPCountByMonth()
   const tpQuery = GetNewTPCountByMonth()
   const bothQuery = GetNewBothCountByMonth()
@@ -344,6 +348,18 @@ const UserTrendChart: React.FC = () => {
     },
     series: seriesData,
   }
+
+  if (!countryCode) {
+    return (
+      <div className="mt-[30px]">
+        <CountryEmptyState
+          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          message="User trend is shown for the selected country only."
+        />
+      </div>
+    )
+  }
+
   const hasData =
     (spChartData?.length ?? 0) > 0 ||
     (tpChartData?.length ?? 0) > 0 ||

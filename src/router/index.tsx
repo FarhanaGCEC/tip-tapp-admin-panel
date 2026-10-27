@@ -183,6 +183,7 @@ import {
   ProgressComponent,
 } from '../pages/forms'
 import SpManagementComponent from '../pages/sp-management/sp-management'
+import DualRoleManagementPage from '../pages/dual-role-management/dual-role-management'
 import GatewaySettingtPage from '../pages/gateway-setting/gateway-setting'
 import TipSetting from '../pages/tip-setting/tip-setting'
 import AdminUserManagePage from '../pages/admin-management/admin-users'
@@ -232,6 +233,10 @@ function Router() {
         {
           path: 'manage-service-providers',
           element: <SpManagementComponent />,
+        },
+        {
+          path: 'manage-dual-role',
+          element: <DualRoleManagementPage />,
         },
         {
           path: 'manage-reviews',

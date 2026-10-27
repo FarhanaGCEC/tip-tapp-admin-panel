@@ -1,11 +1,21 @@
 import { useQuery, UseQueryResult } from "react-query"
 import authFetch from "../axiosinterceptor"
+import { useCountryStore } from "../../stores/countryStore"
+
+function withCountryCode(path: string, countryCode: string): string {
+  const separator = path.includes('?') ? '&' : '?'
+  return `${path}${separator}countryCode=${encodeURIComponent(countryCode)}`
+}
 
 export const GetNewSPCountByMonth =(): UseQueryResult<any> => {
+  const countryCode = useCountryStore((state) => state.countryCode)
   return useQuery({
-    queryKey: ['get_new_sp_count_by_month'],
+    queryKey: ['get_new_sp_count_by_month', countryCode],
+    enabled: Boolean(countryCode),
     queryFn: async () => {
-      return await authFetch.get('/user-details/stats/new-sp-by-month')
+      return await authFetch.get(
+        withCountryCode('/user-details/stats/new-sp-by-month', countryCode || '')
+      )
     },
     select(data: { data: any }) {
       return data?.data;
@@ -13,10 +23,14 @@ export const GetNewSPCountByMonth =(): UseQueryResult<any> => {
   })
 }
 export const GetNewTPCountByMonth = (): UseQueryResult<any> => {
+  const countryCode = useCountryStore((state) => state.countryCode)
   return useQuery({
-    queryKey: ['get_new_tp_count_by_month'],
+    queryKey: ['get_new_tp_count_by_month', countryCode],
+    enabled: Boolean(countryCode),
     queryFn: async () => {
-      return await authFetch.get('/user-details/stats/new-tp-by-month')
+      return await authFetch.get(
+        withCountryCode('/user-details/stats/new-tp-by-month', countryCode || '')
+      )
     },
     select(data: { data: any }) {
       return data?.data
@@ -24,10 +38,17 @@ export const GetNewTPCountByMonth = (): UseQueryResult<any> => {
   })
 }
 export const GetNewBothCountByMonth = (): UseQueryResult<any> => {
+  const countryCode = useCountryStore((state) => state.countryCode)
   return useQuery({
-    queryKey: ['get_new_both_count_by_month'],
+    queryKey: ['get_new_both_count_by_month', countryCode],
+    enabled: Boolean(countryCode),
     queryFn: async () => {
-      return await authFetch.get('/user-details/stats/new-both-by-month')
+      return await authFetch.get(
+        withCountryCode(
+          '/user-details/stats/new-both-by-month',
+          countryCode || ''
+        )
+      )
     },
     select(data: { data: any }) {
       return data?.data
@@ -90,10 +111,17 @@ export const GetTopServiceProviders = (): UseQueryResult<any> => {
 }
 
 export const GetUsersCountByType = (): UseQueryResult<any> => {
+  const countryCode = useCountryStore((state) => state.countryCode)
   return useQuery({
-    queryKey: ['get_user_count_by_type'],
+    queryKey: ['get_user_count_by_type', countryCode],
+    enabled: Boolean(countryCode),
     queryFn: async () => {
-      return await authFetch.get('/user-details/stats/counts-by-status')
+      return await authFetch.get(
+        withCountryCode(
+          '/user-details/stats/counts-by-status',
+          countryCode || ''
+        )
+      )
     },
     select(data: { data: any }) {
       return data?.data
@@ -179,10 +207,17 @@ export const GetTipsPerMonth = (year?: string): UseQueryResult<MonthlyTrendRespo
 }
 
 export const GetAgeByRole = (): UseQueryResult<any> => {
+  const countryCode = useCountryStore((state) => state.countryCode)
   return useQuery({
-    queryKey: ['get_age_by_role'],
+    queryKey: ['get_age_by_role', countryCode],
+    enabled: Boolean(countryCode),
     queryFn: async () => {
-      return await authFetch.get('/user-details/stats/age-distribution-by-role')
+      return await authFetch.get(
+        withCountryCode(
+          '/user-details/stats/age-distribution-by-role',
+          countryCode || ''
+        )
+      )
     },
     select(data: { data: any }) {
       return data?.data

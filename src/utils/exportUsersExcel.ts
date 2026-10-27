@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx'
 import { TipItem } from '../types/tpandsptype'
+import { readDisplayMoney } from './formatMoney'
 
 function formatCellDate(value?: string | null): string {
   if (!value) return ''
@@ -41,6 +42,14 @@ export function downloadUsersExcel(
       Phone: item.Phone || '',
       WhatsApp: item.Whatsapp || '',
       Country: item.Country || '',
+      'Tips given count': item.tipsGiven?.count ?? '',
+      'Tips given amount': readDisplayMoney(item.tipsGiven?.amounts)?.amount ?? '',
+      'Tips given currency': readDisplayMoney(item.tipsGiven?.amounts)?.currency ?? '',
+      'Tips given in country cash': item.tipsGiven
+        ? item.tipsGiven.includedInCountryCash
+          ? 'Yes'
+          : 'No'
+        : '',
       Status: displayStatus(item.Status),
       'Registered Date': formatCellDate(item.CreatedAt),
     }
@@ -58,6 +67,10 @@ export function downloadUsersExcel(
     Phone: '',
     WhatsApp: '',
     Country: '',
+    'Tips given count': '',
+    'Tips given amount': '',
+    'Tips given currency': '',
+    'Tips given in country cash': '',
     Status: '',
     'Registered Date': '',
   }
