@@ -13,26 +13,38 @@ interface CountryState {
   setYear: (year: string) => void
 }
 
+const DEFAULT_COUNTRY = {
+  selection: 'country' as CountrySelection,
+  countryCode: 'GB',
+}
+
 export const useCountryStore = create<CountryState>()(
   persist(
     (set) => ({
-      selection: 'unset',
-      countryCode: null,
+      ...DEFAULT_COUNTRY,
       year: new Date().getFullYear().toString(),
       setCountry: (countryCode) =>
         set({ selection: 'country', countryCode }),
       setUnassigned: () =>
         set({ selection: 'unassigned', countryCode: 'UNASSIGNED' }),
-      clearCountry: () => set({ selection: 'unset', countryCode: null }),
+      clearCountry: () => set({ ...DEFAULT_COUNTRY }),
       setYear: (year) => set({ year }),
     }),
     {
       name: 'adminCountry',
+      version: 2,
       partialize: (state) => ({
         selection: state.selection,
         countryCode: state.countryCode,
         year: state.year,
       }),
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as Partial<CountryState>
+        if (!state.countryCode || state.selection === 'unset') {
+          return { ...state, ...DEFAULT_COUNTRY }
+        }
+        return state
+      },
     }
   )
 )
