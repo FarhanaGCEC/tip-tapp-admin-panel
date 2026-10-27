@@ -47,23 +47,6 @@ const PLATFORMS: {
       </span>
     ),
   },
-  {
-    id: 'yango',
-    label: 'Yango',
-    activeClass: 'border-amber-400 bg-amber-400 text-slate-900',
-    logo: (
-      <span className="flex items-center gap-1 text-[13px] font-extrabold tracking-tight">
-        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden>
-          <circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.2" />
-          <path
-            fill="currentColor"
-            d="M4.2 4.2 8 11.4l3.8-7.2H9.9L8 8.4 6.1 4.2H4.2Z"
-          />
-        </svg>
-        Yango
-      </span>
-    ),
-  },
 ]
 
 function PlatformSelector() {

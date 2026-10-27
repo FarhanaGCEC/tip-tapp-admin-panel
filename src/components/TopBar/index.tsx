@@ -27,7 +27,6 @@ import {
 } from '../../api/notification'
 import NoDataFound from '../../assets/images/NoDataFound.png'
 import CountrySelector from '../common/country-selector'
-import PlatformSelector from '../common/platform-selector'
 
 // function getCurrentDate() {
 //   const currentDate = new Date()
@@ -187,8 +186,7 @@ function Main() {
               </span>
             </Button> */}
 
-        <div className="intro-x relative mr-3 flex items-center gap-3">
-          <PlatformSelector />
+        <div className="intro-x relative mr-3 ml-auto flex items-center sm:ml-0">
           <CountrySelector />
         </div>
         <div className="flex items-center justify-end space-x-2">

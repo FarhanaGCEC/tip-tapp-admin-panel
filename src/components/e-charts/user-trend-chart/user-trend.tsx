@@ -24,7 +24,6 @@ import CountryEmptyState from '../../common/country-empty-state'
 
 const UserTrendChart: React.FC = () => {
   const countryCode = useCountryStore((state) => state.countryCode)
-  const selection = useCountryStore((state) => state.selection)
   const spQuery = GetNewSPCountByMonth()
   const tpQuery = GetNewTPCountByMonth()
   const bothQuery = GetNewBothCountByMonth()
@@ -353,7 +352,7 @@ const UserTrendChart: React.FC = () => {
     return (
       <div className="mt-[30px]">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="User trend is shown for the selected country only."
         />
       </div>

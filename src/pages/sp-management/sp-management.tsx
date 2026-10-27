@@ -268,8 +268,8 @@ const SpManagementPage = () => {
     return (
       <div className="col-span-12 mt-6">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
-          message="Service providers are listed only for the selected country."
+          title="Select a country"
+          message="Service providers are listed only after you pick a country, or Unassigned for incomplete profiles."
         />
       </div>
     )
@@ -280,7 +280,9 @@ const SpManagementPage = () => {
     <div className="col-span-12 mt-6">
       <div className="intro-y  mb-4   block h-10 items-center sm:flex">
         <h2 className="mr-5 truncate text-[19px] text-lg font-medium text-[#2D3748]">
-          Service Provider Management
+          {countryCode === 'UNASSIGNED' || selection === 'unassigned'
+            ? 'Incomplete profiles'
+            : 'Service Provider Management'}
         </h2>
       </div>
       <RoleUsersTabs active="sp" />

@@ -216,8 +216,20 @@ const TpManagementPage = () => {
     return (
       <div className="col-span-12 mt-6">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
-          message="Tippers are listed only after you pick a country. This screen does not fall back to every country."
+          title="Select a country"
+          message="Tippers are listed only after you pick a country."
+        />
+      </div>
+    )
+  }
+
+  if (countryCode === 'UNASSIGNED' || selection === 'unassigned') {
+    return (
+      <div className="col-span-12 mt-6">
+        <RoleUsersTabs active="tp" />
+        <CountryEmptyState
+          title="Incomplete profiles are under Service Provider"
+          message="Unfinished signups default to the SP queue. Open the Service Provider tab (or pick Unassigned again) to see them."
         />
       </div>
     )

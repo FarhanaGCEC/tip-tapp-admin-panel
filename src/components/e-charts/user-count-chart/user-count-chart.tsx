@@ -8,7 +8,6 @@ import CountryEmptyState from '../../common/country-empty-state'
 
 function UserCountChart() {
   const countryCode = useCountryStore((state) => state.countryCode)
-  const selection = useCountryStore((state) => state.selection)
   const { data: counts, isLoading, error } = GetUsersCountByType()
 
   const chartRef = useRef<HTMLDivElement>(null)
@@ -144,7 +143,7 @@ function UserCountChart() {
     return (
       <div className="mt-[30px]">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="User insights are shown for the selected country only."
         />
       </div>

@@ -171,15 +171,15 @@ function AgeDistributionChart() {
     return (
       <div>
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="Age range is shown for the selected country only."
         />
       </div>
     )
   }
 
-  if (
-    !ageDistribution ||
+  const allAgeZero =
+    !!ageDistribution &&
     Object.values(ageDistribution as AgeDistributionData).every(
       (group) =>
         typeof group === 'object' &&
@@ -188,6 +188,13 @@ function AgeDistributionChart() {
           (value) => typeof value === 'number' && value <= 0
         )
     )
+
+  // Unassigned shows the chart shell with zeros; other countries keep empty art.
+  if (
+    !ageDistribution ||
+    (allAgeZero &&
+      countryCode !== 'UNASSIGNED' &&
+      selection !== 'unassigned')
   ) {
     return (
       <div>

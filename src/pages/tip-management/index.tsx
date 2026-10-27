@@ -23,12 +23,16 @@ const TipManagementPage = () => {
       settips(true)
     }
   }
-  if (!countryCode) {
+  if (!countryCode || countryCode === 'UNASSIGNED' || selection === 'unassigned') {
     return (
       <div className="col-span-12 mt-6">
         <CountryEmptyState
           title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
-          message="Tips and withdrawals are shown only for the selected country."
+          message={
+            selection === 'unassigned'
+              ? 'Incomplete users are listed under Tipper / Dual Role. Pick a country for tips and withdrawals.'
+              : 'Tips and withdrawals are shown only for the selected country.'
+          }
         />
       </div>
     )

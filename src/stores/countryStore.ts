@@ -22,7 +22,7 @@ export const useCountryStore = create<CountryState>()(
       setCountry: (countryCode) =>
         set({ selection: 'country', countryCode }),
       setUnassigned: () =>
-        set({ selection: 'unassigned', countryCode: null }),
+        set({ selection: 'unassigned', countryCode: 'UNASSIGNED' }),
       clearCountry: () => set({ selection: 'unset', countryCode: null }),
       setYear: (year) => set({ year }),
     }),

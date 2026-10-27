@@ -1,6 +1,12 @@
 import { useQuery, UseQueryResult } from "react-query"
 import authFetch from "../axiosinterceptor"
 import { useCountryStore } from "../../stores/countryStore"
+import {
+  isUnassignedCountry,
+  zeroMonthlySignups,
+  ZERO_AGE_BY_ROLE,
+  ZERO_USER_COUNTS,
+} from "../../utils/unassignedDashboardZeros"
 
 function withCountryCode(path: string, countryCode: string): string {
   const separator = path.includes('?') ? '&' : '?'
@@ -9,10 +15,14 @@ function withCountryCode(path: string, countryCode: string): string {
 
 export const GetNewSPCountByMonth =(): UseQueryResult<any> => {
   const countryCode = useCountryStore((state) => state.countryCode)
+  const unassigned = isUnassignedCountry(countryCode)
   return useQuery({
     queryKey: ['get_new_sp_count_by_month', countryCode],
     enabled: Boolean(countryCode),
     queryFn: async () => {
+      if (unassigned) {
+        return { data: { SPCount: zeroMonthlySignups() } }
+      }
       return await authFetch.get(
         withCountryCode('/user-details/stats/new-sp-by-month', countryCode || '')
       )
@@ -24,10 +34,14 @@ export const GetNewSPCountByMonth =(): UseQueryResult<any> => {
 }
 export const GetNewTPCountByMonth = (): UseQueryResult<any> => {
   const countryCode = useCountryStore((state) => state.countryCode)
+  const unassigned = isUnassignedCountry(countryCode)
   return useQuery({
     queryKey: ['get_new_tp_count_by_month', countryCode],
     enabled: Boolean(countryCode),
     queryFn: async () => {
+      if (unassigned) {
+        return { data: { TPCount: zeroMonthlySignups() } }
+      }
       return await authFetch.get(
         withCountryCode('/user-details/stats/new-tp-by-month', countryCode || '')
       )
@@ -39,10 +53,14 @@ export const GetNewTPCountByMonth = (): UseQueryResult<any> => {
 }
 export const GetNewBothCountByMonth = (): UseQueryResult<any> => {
   const countryCode = useCountryStore((state) => state.countryCode)
+  const unassigned = isUnassignedCountry(countryCode)
   return useQuery({
     queryKey: ['get_new_both_count_by_month', countryCode],
     enabled: Boolean(countryCode),
     queryFn: async () => {
+      if (unassigned) {
+        return { data: { BothCount: zeroMonthlySignups() } }
+      }
       return await authFetch.get(
         withCountryCode(
           '/user-details/stats/new-both-by-month',
@@ -112,10 +130,14 @@ export const GetTopServiceProviders = (): UseQueryResult<any> => {
 
 export const GetUsersCountByType = (): UseQueryResult<any> => {
   const countryCode = useCountryStore((state) => state.countryCode)
+  const unassigned = isUnassignedCountry(countryCode)
   return useQuery({
     queryKey: ['get_user_count_by_type', countryCode],
     enabled: Boolean(countryCode),
     queryFn: async () => {
+      if (unassigned) {
+        return { data: ZERO_USER_COUNTS }
+      }
       return await authFetch.get(
         withCountryCode(
           '/user-details/stats/counts-by-status',
@@ -208,10 +230,14 @@ export const GetTipsPerMonth = (year?: string): UseQueryResult<MonthlyTrendRespo
 
 export const GetAgeByRole = (): UseQueryResult<any> => {
   const countryCode = useCountryStore((state) => state.countryCode)
+  const unassigned = isUnassignedCountry(countryCode)
   return useQuery({
     queryKey: ['get_age_by_role', countryCode],
     enabled: Boolean(countryCode),
     queryFn: async () => {
+      if (unassigned) {
+        return { data: ZERO_AGE_BY_ROLE }
+      }
       return await authFetch.get(
         withCountryCode(
           '/user-details/stats/age-distribution-by-role',

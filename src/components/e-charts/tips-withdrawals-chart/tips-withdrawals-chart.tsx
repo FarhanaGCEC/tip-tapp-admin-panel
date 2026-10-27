@@ -33,7 +33,6 @@ const getMonthAmount = (point: MonthlyReceivedPoint | undefined): number => {
 
 const TipsAndWithdrawalsChart: React.FC = () => {
   const countryCode = useCountryStore((state) => state.countryCode)
-  const selection = useCountryStore((state) => state.selection)
   const selectedYear = useCountryStore((state) => state.year)
   const setYear = useCountryStore((state) => state.setYear)
 
@@ -332,7 +331,7 @@ const TipsAndWithdrawalsChart: React.FC = () => {
     return (
       <div className="mt-[30px]">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="Trend chart loads for the selected country only."
         />
       </div>

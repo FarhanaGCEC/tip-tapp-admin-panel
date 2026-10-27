@@ -8,19 +8,14 @@ import TipWithdrawIcon from '../../assets/images/tip-withdraw-icon.png'
 import CountryEmptyState from '../common/country-empty-state'
 
 function DashboardTilesCard() {
-  const selection = useCountryStore((state) => state.selection)
   const countryCode = useCountryStore((state) => state.countryCode)
   const { data, isLoading, isError } = useAdminDashboard()
 
-  if (selection === 'unassigned' || !countryCode) {
+  if (!countryCode) {
     return (
       <CountryEmptyState
-        title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
-        message={
-          selection === 'unassigned'
-            ? 'Unassigned users are not a country cash dashboard.'
-            : 'Choose a country to load Tips Overview.'
-        }
+        title="Select a country"
+        message="Choose a country to load Tips Overview."
       />
     )
   }

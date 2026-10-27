@@ -216,8 +216,20 @@ const DualRoleManagementPage = () => {
     return (
       <div className="col-span-12 mt-6">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="Dual-role users are listed only after you pick a country."
+        />
+      </div>
+    )
+  }
+
+  if (countryCode === 'UNASSIGNED' || selection === 'unassigned') {
+    return (
+      <div className="col-span-12 mt-6">
+        <RoleUsersTabs active="both" />
+        <CountryEmptyState
+          title="Incomplete profiles are under Service Provider"
+          message="Unfinished signups default to the SP queue. Open the Service Provider tab to see them."
         />
       </div>
     )

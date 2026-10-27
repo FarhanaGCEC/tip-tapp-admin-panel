@@ -11,7 +11,6 @@ import CountryEmptyState from '../common/country-empty-state'
 
 function TopTippers() {
   const countryCode = useCountryStore((state) => state.countryCode)
-  const selection = useCountryStore((state) => state.selection)
   const { data, isLoading } = useAdminDashboard()
   const navigate = useNavigate()
   const tippers = data?.topTippers ?? []
@@ -24,7 +23,7 @@ function TopTippers() {
     return (
       <div className="col-span-12 mt-6">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="Top tippers are shown for the selected country only."
         />
       </div>

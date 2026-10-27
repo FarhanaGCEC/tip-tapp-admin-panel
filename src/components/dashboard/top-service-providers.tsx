@@ -13,7 +13,6 @@ import { formatDisplayAmount } from '../../utils/formatMoney'
 
 function TopServiceProviders() {
   const countryCode = useCountryStore((state) => state.countryCode)
-  const selection = useCountryStore((state) => state.selection)
   const { data, isLoading } = useAdminDashboard()
   const navigate = useNavigate()
   const providers = data?.topServiceProviders ?? []
@@ -26,7 +25,7 @@ function TopServiceProviders() {
     return (
       <div className="col-span-12 mt-6">
         <CountryEmptyState
-          title={selection === 'unassigned' ? 'Unassigned' : 'Select a country'}
+          title="Select a country"
           message="Top service providers are shown for the selected country only."
         />
       </div>

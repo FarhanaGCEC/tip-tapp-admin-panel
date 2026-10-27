@@ -91,7 +91,7 @@ const SPManagemenTable: React.FC<TpAndSpManagemenTableProps> = ({
             </Table.Td>
             <Table.Td>{item.Phone || 'Not Provided Yet'}</Table.Td>
             <Table.Td>{item.Whatsapp || 'Not Provided Yet'}</Table.Td>
-            <Table.Td>{item.Country || 'N/A'}</Table.Td>
+            <Table.Td>{item.Country || 'Not Provided Yet'}</Table.Td>
             {pending ? (
               <Table.Td>{item.EmiratesId || 'Not Provided Yet'}</Table.Td>
             ) : (
